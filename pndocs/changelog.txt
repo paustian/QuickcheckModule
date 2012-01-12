@@ -1,0 +1,9 @@
+Changelog for the quickcheck module
+4/1/10
+update all question types to use categories correctly (done) 4/1/10
+Modify answer is not working for multiple answer questions. Probably a problem in how it is saved to the database.
+In the create/modify exams, have the questions listed by category 
+Create a preview mode for an exam and for a question
+Create the grading method
+    For this you need to grab each question, and then compare it to the answers the students have made
+    check back to your old code to see if there is anything useful (the exam module).

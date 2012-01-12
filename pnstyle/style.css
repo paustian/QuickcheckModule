@@ -1,0 +1,30 @@
+/* 
+This is an example of a module stylesheet. It is used to hold css definitions used within the module templates
+
+A module stylesheet can be overrriden by a theme by creating a copy of the stylesheet in 
+themes/<theme name>/style/<module>/style.css.
+
+To avoid clashes with other css definitions it's best to use the module name within module class and id names
+
+All styles in this stylesheet should be considered as examples only not recommendations of styling to be used 
+within a module
+*/
+
+table.questions {
+    width:60%;
+}
+tr.table_header{
+    text-align: left;
+    font-weight: bold;
+    color:red;
+    background-color: #fff
+}
+
+td.questions {
+    padding:2px;
+}
+
+td.quiz-table{
+    padding-left: 2px;
+    padding-right: 2px;
+}
