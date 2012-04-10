@@ -1010,7 +1010,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
         }
 
         $render = zikula_View::getInstance('Quickcheck', false);
-        $questions = _build_questions_list();
+        $questions = $this->_build_questions_list();
 
         if (!$questions) {
             return LogUtil::registerError('There are no questions to modify. Create some first.');
