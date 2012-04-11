@@ -48,8 +48,8 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
         if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_READ)) {
             return;
         }
-
-
+        
+        
         // add this response to the event stack
         $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'quickcheck_user_display.htm');
         $hook->setResponse($response);
@@ -141,79 +141,6 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
     }
 
     /**
-     * Filter hook for view
-     *
-     * Subject is the object being viewed that we're attaching to.
-     * args[id] is the id of the object.
-     * args[caller] the module who notified of this event.
-     *
-     * @param Zikula_Hook $hook
-     *
-     * @return void
-     */
-    public static function ui_filter(Zikula_FilterHook $hook)
-    {
-        $data = $hook->getData();
-        $data .= "<br />" . __('This data has been transformed by adding this text.');
-        $hook->setData($data);
-    }
-
-    /**
-     * validation handler for validate_edit hook type.
-     *
-     * The property $event->data is an instance of Zikula_Collection_HookValidationProviders
-     * Use the $event->data->set() method to log the validation response.
-     *
-     * This method populates this hookhandler object with a Zikula_Hook_ValidationResponse
-     * so the information is available to the ui_edit method if validation fails,
-     * and so the process_* can write the validated data to the database.
-     *
-     * @param Zikula_Hook $hook
-     *
-     * @return void
-     */
-    public function validate_edit(Zikula_ValidationHook $hook)
-    {
-        // get data from post
-        $mhp_data = FormUtil::getPassedValue('mhp_data', null, 'POST');
-
-        // create a new hook validation object and assign it to $this->validation
-        $this->validation = new Zikula_Hook_ValidationResponse('mhp_data', $mhp_data);
-
-        // do the actual validation
-        // for this example, the validation passes if our dummydata is a number between 1 and 9
-        // otherwise the validation fais
-        if (!is_numeric($mhp_data['dummydata']) || ((int)$mhp_data['dummydata'] < 1 || (int)$mhp_data['dummydata'] > 9)) {
-            $this->validation->addError('dummydata', 'You must fill a number between 1 and 9.');
-        }
-
-        $hook->setValidator('provider.Quickcheck.ui_hooks.mhp', $this->validation);
-    }
-
-    /**
-     * validation handler for validate_delete hook type.
-     *
-     * The property $event->data is an instance of Zikula_Collection_HookValidationProviders
-     * Use the $event->data->set() method to log the validation response.
-     *
-     * This method populates this hookhandler object with a Zikula_Hook_ValidationResponse
-     * so the information is available to the ui_edit method if validation fails,
-     * and so the process_* can write the validated data to the database.
-     *
-     * @param Zikula_ValidationHook $hook
-     *
-     * @return void
-     */
-    public function validate_delete(Zikula_ValidationHook $hook)
-    {
-        // nothing to do here really, just return
-        // if however i wanted to check for something, i would do it like the
-        // validate_edit function!!! [make sure you check ui_edit and process_edit also]
-
-        return;
-    }
-
-    /**
      * process edit hook handler.
      *
      * This should be executed only if the validation has succeeded.
@@ -230,15 +157,6 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
      */
     public function process_edit(Zikula_ProcessHook $hook)
     {
-        // check for validation here
-        if (!$this->validation) {
-            return;
-        }
-
-        // and perform necessary action depending on insert or update
-        // this example does not store any data, but if it would,
-        // then we could do something like this
-        $mhp_data = $this->validation->getObject();
 
         if (!$hook->getId()) {
             // new so do an INSERT

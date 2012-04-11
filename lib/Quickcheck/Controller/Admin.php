@@ -272,7 +272,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
             $data['q_explan'] = FormUtil::getPassedValue('q_explan');
             $cat = FormUtil::getPassedValue('quickcheck_quest');
             $data['__CATEGORIES__'] = $cat['__CATEGORIES__'];
-            if (_validate_createTextQuestion($data)) {
+            if ($this->_validate_createTextQuestion($data)) {
                 if (isset($id)) {
                     if (!modUtil::apiFunc('quickcheck', 'admin', 'updatequestion', $data)) {
                         return LogUtil::registerError(_UPDATEFAILED);
@@ -354,7 +354,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
                 break;
 
             case 'create':
-                if (!_validate_createMatchQuestion($data)) {
+                if (!$this->_validate_createMatchQuestion($data)) {
                     //if the form is not valid, send it back to the user
                     //A suitable status message is also displayed.
                     return $this->newMatchQuest($data);
@@ -479,7 +479,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
             $cat = FormUtil::getPassedValue('quickcheck_quest');
             $data['__CATEGORIES__'] = $cat['__CATEGORIES__'];
 
-            if (_validate_TFQuestion($data)) {
+            if ($this->_validate_TFQuestion($data)) {
                 if (isset($id)) {
                     $data['id'] = $id;
                     if (!modUtil::apiFunc('quickcheck', 'admin', 'updatequestion', $data)) {
@@ -570,7 +570,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
                 break;
 
             case 'create':
-                if (!_validate_createMCQuestion($data)) {
+                if (!$this->_validate_createMCQuestion($data)) {
                     //if the form is not valid, send it back to the user
                     //A suitable status message is also displayed.
                     return $pointer($data);
@@ -840,19 +840,19 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
         }
 
         switch ($item['q_type']) {
-            case _QUICKCHECK_TEXT_TYPE:
+            case self::_QUICKCHECK_TEXT_TYPE:
                 return $this->modifyTextQuest(array('item' => $item));
                 break;
-            case _QUICKCHECK_MATCHING_TYPE:
+            case self::_QUICKCHECK_MATCHING_TYPE:
                 return $this->modifyMatchQuest(array('item' => $item));
                 break;
-            case _QUICKCHECK_MULTIANSWER_TYPE:
+            case self::_QUICKCHECK_MULTIANSWER_TYPE:
                 return $this->modifyMANSQuest(array('item' => $item));
                 break;
-            case _QUICKCHECK_MULTIPLECHOICE_TYPE:
+            case self::_QUICKCHECK_MULTIPLECHOICE_TYPE:
                 return $this->modifyMCQuest(array('item' => $item));
                 break;
-            case _QUICKCHECK_TF_TYPE:
+            case self::_QUICKCHECK_TF_TYPE:
                 return $this->modifyTFQuest(array('item' => $item));
                 break;
         }

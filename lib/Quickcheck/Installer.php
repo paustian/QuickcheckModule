@@ -47,7 +47,8 @@ class Quickcheck_Installer extends Zikula_AbstractInstaller {
         if (!$this->_quickcheck_createdefaultcategory()) {
             return LogUtil::registerError(__('Category creaction failed.'));
         }
-
+        
+        HookUtil::registerProviderBundles($this->version->getHookProviderBundles());
         // Initialisation successful
         return true;
     }
@@ -91,7 +92,7 @@ class Quickcheck_Installer extends Zikula_AbstractInstaller {
             //nothing to do for the older version
             //structure is the same
         }
-
+        
         // Update successful
         return true;
     }
@@ -114,7 +115,7 @@ class Quickcheck_Installer extends Zikula_AbstractInstaller {
             return false;
         }
 
-
+        HookUtil::unregisterProviderBundles($this->version->getHookProviderBundles());
         return true;
     }
 

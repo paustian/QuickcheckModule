@@ -24,7 +24,7 @@
  * 
  * @return   array   array of items, or false on failure
  */
-class Quick_Api_User extends Zikula_AbstractApi{
+class Quickcheck_Api_User extends Zikula_AbstractApi{
 
     public function getall() {
         $items = array();
