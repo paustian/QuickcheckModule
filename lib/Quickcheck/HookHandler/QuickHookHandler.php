@@ -49,13 +49,9 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
             return;
         }
 
-        // do some stuff here like get data from database to show in template
-        // our example doesn't have any data to fetch, so we will create a random number to show :)
-        $mhp_data = array('dummydata' => rand(1,9));
-        $this->view->assign('mhp_data', $mhp_data);
 
         // add this response to the event stack
-        $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'Quickcheck_hook_mhp_ui_view.tpl');
+        $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'quickcheck_user_display.htm');
         $hook->setResponse($response);
     }
 
@@ -158,7 +154,7 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
     public static function ui_filter(Zikula_FilterHook $hook)
     {
         $data = $hook->getData();
-        $data .= "<br />" . $this->__('This data has been transformed by adding this text.');
+        $data .= "<br />" . __('This data has been transformed by adding this text.');
         $hook->setData($data);
     }
 
