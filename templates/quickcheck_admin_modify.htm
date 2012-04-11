@@ -7,10 +7,10 @@
         {section loop=$exams name=i}
         <tr>
             <td><input type="checkbox" name="exams[]" value="{$exams[i].id}"> {$exams[i].name}</td>
-            <td>{pnbutton src=edit.gif set=icons/extrasmall alt="Edit" title="Edit" value="edit_`$exams[i].id`"}</td>
-            <td>{pnbutton src=edit_remove.gif set=icons/extrasmall alt="Delete" title="Delete" value="delete_`$exams[i].id`"}</td>
+            <td>{button src=edit.gif set=icons/extrasmall alt="Edit" title="Edit" value="edit_`$exams[i].id`"}</td>
+            <td>{button src=edit_remove.gif set=icons/extrasmall alt="Delete" title="Delete" value="delete_`$exams[i].id`"}</td>
         </tr>
         {/section}
     </table>
-    {pnbutton src=button_ok.gif set=icons/small alt="Delete checked items" title="Delete checked items" value="delete_exams"} {gt text="Delete checked items"}
+    {button src=button_ok.gif set=icons/small alt="Delete checked items" title="Delete checked items" value="delete_exams"} {gt text="Delete checked items"}
 </form>

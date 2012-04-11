@@ -1,5 +1,6 @@
 {*  $Id: quickcheck_admin_new.htm 19361 2006-07-03 14:57:57Z timpaustian $  *}
 {include file="quickcheck_admin_menu.htm"}
+<div class="z-adminbox">
 <h3>{gt text="Create a new text question"}</h3>
 <p>{gt text="Fill in the text areas below with the question, its answer and any explanation necessary. Note that these questions are not graded by the module."}</p>
 <form action="{pnmodurl modname="quickcheck" type="admin" func="createTextQuestion"}" method="post"
@@ -38,6 +39,9 @@
         </ul>
         {/nocache}
     </div>
-    {pnbutton src=button_ok.gif set=icons/small alt="_CREATE" title="Update" value="update"}
-    {pnbutton src=button_cancel.gif set=icons/small alt="_CANCEL" title="Cancel" value="cancel"}
+    <div class="z-buttons">
+    {button src=button_ok.gif set=icons/small alt="_CREATE" title="Update" value="update"}
+    {button src=button_cancel.gif set=icons/small alt="_CANCEL" title="Cancel" value="cancel"}
+    </div>
 </form>
+</div>

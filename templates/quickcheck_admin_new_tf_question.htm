@@ -1,5 +1,6 @@
 {*  $Id: quickcheck_admin_new.htm 19361 2006-07-03 14:57:57Z timpaustian $  *}
 {include file="quickcheck_admin_menu.htm"}
+<div class="z-adminbox">
 <h3>{gt text="New True/False Question"}</h3>
 <p>{gt text="Write your new T/F question in the text box, choose whether it is true or false, and explain the correct answer"}</p>
 <form action="{pnmodurl modname="quickcheck" type="admin" func="createTFQuest"}" method="post"
@@ -60,6 +61,7 @@
         </ul>
         {/nocache}
     </div>
-    {pnbutton src=button_ok.gif set=icons/small alt="_CREATE" title="Update" value="update"}
-    {pnbutton src=button_cancel.gif set=icons/small alt="_CANCEL" title="Cancel" value="cancel"}
+    {button src=button_ok.gif set=icons/small alt="_CREATE" title="Update" value="update"}
+    {button src=button_cancel.gif set=icons/small alt="_CANCEL" title="Cancel" value="cancel"}
 </form>
+</div>

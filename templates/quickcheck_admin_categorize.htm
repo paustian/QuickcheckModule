@@ -1,4 +1,6 @@
 {include file="quickcheck_admin_menu.htm"}
+
+<div class="z-adminbox">
 <h3>{gt text="Assign categories to questions"}</h3>
 <p>{gt text="Select question(s) to categorize. Choose the category and then hit the categorize button."}</p>
 <form action="{pnmodurl modname="quickcheck" type="admin" func="addtocategory"}" method="post"
@@ -23,7 +25,7 @@
         </ul>
         {/nocache}
     </div>
-    <p>{pnbutton src=folder_txt.gif set=icons/small alt="Categorize" title="Categorize" value="categorize_checked"}{gt text="Categorize"}</p>
+    <p>{button src=folder_documents.png set=icons/small alt="Categorize" title="Categorize" value="categorize_checked"}{gt text="Categorize"}</p>
 </form>
 <script type="text/javascript">
 
@@ -31,3 +33,4 @@
     ddtreemenu.createTree("treemenu2", true, 5)
 
 </script>
+</div>

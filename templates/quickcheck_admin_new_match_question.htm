@@ -1,5 +1,6 @@
 {*  $Id: quickcheck_admin_new.htm 19361 2006-07-03 14:57:57Z timpaustian $  *}
 {include file="quickcheck_admin_menu.htm"}
+<div class="z-adminbox">
 <h3>{gt text="New Matching Question"}</h3>
 <p>{gt text="Create a new matching question. Put the matched text into the fact and matching concept dialogs. When the question is asked, they will be randomized."}</p>
 <form action="{pnmodurl modname="quickcheck" type="admin" func="createMatchQuestion"}" method="post"
@@ -25,8 +26,8 @@
         {/section}
 
         <tr>
-            <td>{pnbutton src=edit_remove.gif set=icons/small alt="Remove" title="Remove" value="remove"} Remove Choice</td>
-            <td>{pnbutton src=edit_add.gif set=icons/small alt="Add" title="Add" value="add"} Add Choice</td>
+            <td>{button src=edit_remove.gif set=icons/small alt="Remove" title="Remove" value="remove"} Remove Choice</td>
+            <td>{button src=edit_add.gif set=icons/small alt="Add" title="Add" value="add"} Add Choice</td>
         </tr>
 
     </table>
@@ -48,5 +49,6 @@
         </ul>
         {/nocache}
     </div>
-    {pnbutton src=button_ok.gif set=icons/small alt="_CREATE" title="_CREATE" value="create"} { gt text="Create Question"}
+    {button src=button_ok.gif set=icons/small alt="_CREATE" title="_CREATE" value="create"} { gt text="Create Question"}
 </form>
+</div>
