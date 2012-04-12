@@ -1298,7 +1298,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
      *
      */
     public function doimport($args) {
-        $ret_url = pnModURL('quickcheck', 'admin', 'import');
+        $ret_url = pnModURL('quickcheck', 'admin', 'importquiz');
 // Confirm authorisation code.
         if (!SecurityUtil::confirmAuthKey('quickcheck')) {
             return LogUtil::registerAuthidError($ret_url);

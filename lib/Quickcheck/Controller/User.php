@@ -20,11 +20,6 @@
  * @license      http://www.gnu.org/copyleft/gpl.html GNU General Public License
  */
 class Quickcheck_Controller_User extends Zikula_AbstractController {
-    const _QUICKCHECK_TEXT_TYPE = 0;
-    const _QUICKCHECK_MULTIPLECHOICE_TYPE = 1;
-    const _QUICKCHECK_TF_TYPE = 2;
-    const _QUICKCHECK_MATCHING_TYPE = 3;
-    const _QUICKCHECK_MULTIANSWER_TYPE = 4;
     /**
      * redirect to the view funciton
      */
@@ -269,20 +264,20 @@ class Quickcheck_Controller_User extends Zikula_AbstractController {
             $question['correct'] = false;
 
             switch ($question['q_type']) {
-                case _QUICKCHECK_TEXT_TYPE:
+                case Quickcheck_Controller_Admin::_QUICKCHECK_TEXT_TYPE:
                     $score += 1;
                     $question['correct'] = true;
                     $question['ur_answer'] = $student_answer;
 //we don't grade text types
                     break;
-                case _QUICKCHECK_TF_TYPE:
+                case Quickcheck_Controller_Admin::_QUICKCHECK_TF_TYPE:
                     if ($student_answer == $question['q_answer']) {
                         $score += 1;
                         $question['correct'] = true;
                     }
                     $question['ur_answer'] = $student_answer;
                     break;
-                case _QUICKCHECK_MATCHING_TYPE:
+                case Quickcheck_Controller_Admin::_QUICKCHECK_MATCHING_TYPE:
 //The first member of the array is the randomized array that the student saw
                     $matches_array = explode(',', $student_answer[0]);
 //push the first one off.
@@ -310,8 +305,8 @@ class Quickcheck_Controller_User extends Zikula_AbstractController {
                     $score += $this_score;
 
                     break;
-                case _QUICKCHECK_MULTIANSWER_TYPE:
-                case _QUICKCHECK_MULTIPLECHOICE_TYPE:
+                case Quickcheck_Controller_Admin::_QUICKCHECK_MULTIANSWER_TYPE:
+                case Quickcheck_Controller_Admin::_QUICKCHECK_MULTIPLECHOICE_TYPE:
 //the student answer containg the position of the values that
 //they entered. Award points for correct answers. and subtract for incorrect answers
                     $total = 0;

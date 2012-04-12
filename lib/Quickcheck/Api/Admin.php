@@ -299,38 +299,47 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
             //now convert this into the correct number
             switch ($q_type[1]) {
                 case 'multichoice':
-                    $q_data['q_type'] = 1; //_QUICKCHECK_MULTIPLECHOICE_TYPE
+                    $q_data['q_type'] = Quickcheck_Controller_Admin::_QUICKCHECK_MULTIPLECHOICE_TYPE;
                     break;
                 case 'text':
-                    $q_data['q_type'] = 0; //_QUICKCHECK_TEXT_TYPE
+                    $q_data['q_type'] = Quickcheck_Controller_Admin_QUICKCHECK_TEXT_TYPE;
                     break;
                 case 'multianswer':
-                    $q_data['q_type'] = 4; //_QUICKCHECK_MULTIANSWER_TYPE
+                    $q_data['q_type'] = Quickcheck_Controller_Admin::_QUICKCHECK_MULTIANSWER_TYPE;
                     break;
                 case 'matching':
-                    $q_data['q_type'] = 3; //_QUICKCHECK_MATCHING_TYPE
+                    $q_data['q_type'] = Quickcheck_Controller_Admin::_QUICKCHECK_MATCHING_TYPE;
                     break;
                 case 'truefalse':
-                    $q_data['q_type'] = 2; //_QUICKCHECK_TF_TYPE
+                    $q_data['q_type'] = Quickcheck_Controller_Admin::_QUICKCHECK_TF_TYPE;
+                    break;
+                default:
+                    //if we get here there is an issue, throw an error
+                    $this->throwNotFound($this->__('Unrecognized question type, was your qtype empty in the xml file?'));
                     break;
             }
             //grab the text of the questsion
             $preg_match = preg_match("|<qtext>(.*?)</qtext>|", $q_item, $q_text);
             $q_data['q_text'] = $q_text[1];
+            //grab the explanation
+            preg_match("|<qexplanation>(.*?)</qexplanation>|", $q_item, $q_explan);
+            $q_data['q_explan'] = $q_explan[1];
             //grab the answer
             preg_match("|<qanswer>(.*?)</qanswer>|", $q_item, $q_answer);
             preg_match("|<qparam>(.*?)</qparam>|", $q_item, $q_param);
             //get the id if it exists
             //we have to process multichoice, multianswer and matching because they are arrays
-            if (($q_data['q_type'] == _QUICKCHECK_MULTIPLECHOICE_TYPE) ||
-                    ($q_data['q_type'] == _QUICKCHECK_MULTIANSWER_TYPE) ||
-                    ($q_data['q_type'] == _QUICKCHECK_MATCHING_TYPE)) {
+            if (($q_data['q_type'] == Quickcheck_Controller_Admin::_QUICKCHECK_MULTIPLECHOICE_TYPE) ||
+                    ($q_data['q_type'] == Quickcheck_Controller_Admin::_QUICKCHECK_MULTIANSWER_TYPE) ||
+                    ($q_data['q_type'] == Quickcheck_Controller_Admin::_QUICKCHECK_MATCHING_TYPE)) {
                 $q_data['q_answer'] = serialize(explode('|', $q_answer[1]));
                 $q_data['q_param'] = serialize(explode('|', $q_param[1]));
             } else {
                 $q_data['q_answer'] = $q_answer[1];
                 $q_data['q_param'] = "";
             }
+            
+            
             //check to see if this items exists (an id came with the item
             //and that id exists in the databse.
             $do_update = false;
@@ -341,7 +350,7 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
             }
             if ($do_update) {
 
-                if (!DBUtil::updateObject($q_data, 'quickcheck_quest', 'id')) {
+                if (!DBUtil::updateObject($q_data, 'quickcheck_quest')) {
                     return LogUtil::registerError($this->__("insert of question failed"));
                 }
             } else {
@@ -392,27 +401,27 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
             $type = "";
             //write the type
             switch ($q_item['q_type']) {
-                case _QUICKCHECK_TEXT_TYPE:
+                case Quickcheck_Controller_Admin::_QUICKCHECK_TEXT_TYPE:
                     $type = 'text';
                     $answer = $q_item['q_answer'];
                     $param = $q_item['q_param'];
                     break;
-                case _QUICKCHECK_MULTIPLECHOICE_TYPE:
+                case Quickcheck_Controller_Admin::_QUICKCHECK_MULTIPLECHOICE_TYPE:
                     $type = 'multichoice';
                     $answer = implode('|', $q_item['q_answer']);
                     $param = implode('|', $q_item['q_param']);
                     break;
-                case _QUICKCHECK_TF_TYPE:
+                case Quickcheck_Controller_Admin::_QUICKCHECK_TF_TYPE:
                     $type = 'truefalse';
                     $answer = $q_item['q_answer'];
                     $param = $q_item['q_param'];
                     break;
-                case _QUICKCHECK_MATCHING_TYPE:
+                case Quickcheck_Controller_Admin::_QUICKCHECK_MATCHING_TYPE:
                     $type = 'matching';
                     $answer = implode('|', $q_item['q_answer']);
                     $param = implode('|', $q_item['q_param']);
                     break;
-                case _QUICKCHECK_MULTIANSWER_TYPE:
+                case Quickcheck_Controller_Admin::_QUICKCHECK_MULTIANSWER_TYPE:
                     $type = 'multianswer';
                     $answer = implode('|', $q_item['q_answer']);
                     $param = implode('|', $q_item['q_param']);
