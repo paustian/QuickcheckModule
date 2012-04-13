@@ -20,6 +20,7 @@
  * @license      http://www.gnu.org/copyleft/gpl.html GNU General Public License
  */
 class Quickcheck_Controller_User extends Zikula_AbstractController {
+
     /**
      * redirect to the view funciton
      */

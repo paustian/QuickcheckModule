@@ -11,9 +11,8 @@
  * Please see the NOTICE file distributed with this source code for further
  * information regarding copyright and licensing.
  */
+class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler {
 
-class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
-{
     /**
      * Zikula_View instance
      *
@@ -26,8 +25,7 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
      *
      * @return void
      */
-    public function setup()
-    {
+    public function setup() {
         $this->view = Zikula_View::getInstance("Quickcheck");
     }
 
@@ -42,20 +40,68 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
      *
      * @return void
      */
-    public function ui_view(Zikula_DisplayHook $hook)
-    {
+    public function ui_view(Zikula_DisplayHook $hook) {
         // Security check
-        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_READ)) {
+        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_OVERVIEW)) {
             return;
         }
-        
-        
-        // add this response to the event stack
-        $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'quickcheck_user_display.htm');
+        $is_admin = SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_ADMIN);
+        //get the id of the caller
+        $id = $hook->getId();
+        //look for it in our exam database
+        $exam = modUtil::apiFunc('quickcheck', 'user', 'get', array('art_id' => $id));
+        $response = '';
+        if ($exam) {
+            //we have an exam associated with the id of the caller
+            //make the quiz and put it in the response
+            foreach ($exam['questions'] as $quest) {
+                $questions[] = modUtil::apiFunc('quickcheck', 'user', 'getquestion', array('id' => $quest));
+            }
+            $total = count($questions);
+            $q_ids = array();
+            for ($i = 0; $i < $total; $i++) {
+                $item = $questions[$i];
+                $q_ids[] = $item['id'];
+                if ($item['q_type'] == 3) {
+                    //matching question, add a new parameter
+                    $ran_array = $item['q_answer'];
+                    shuffle($ran_array);
+                    $item['ran_array'] = $ran_array;
+                    $questions[$i] = $item;
+                }
+            }
+
+            $q_ids = DataUtil::formatForDisplay(serialize($q_ids));
+            $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
+            $this->view->assign('letters', $letters);
+            $this->view->assign('q_ids', $q_ids);
+            $this->view->assign('questions', $questions);
+            $this->view->assign('notice', $notice);
+            $ret_url = $hook->getUrl()->getUrl();
+            $this->view->assign('ret_url', $ret_url);
+            $this->view->assign('exam_name', $exam_name);
+            $this->view->assign('art_id', $id);
+            if($is_admin){
+                $this->view->assign('admin', 'yes');
+            }
+            // add this response to the event stack
+            $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'quickcheck_user_display.htm');
+        } else {
+            //only let admins see this.
+            if ($is_admin) {
+                $ret_url = $hook->getUrl()->getUrl();
+                $this->view->assign('ret_url', $ret_url);
+                $this->view->assign('art_id', $id);
+                $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'quickcheck_admin_pickquestions.htm');
+            } else {
+                //just send back an empty response
+                $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, '');
+            }
+        }
         $hook->setResponse($response);
     }
 
-     /**
+    /**
      * Display hook for edit views.
      *
      * Subject is the object being created/edited that we're attaching to.
@@ -66,8 +112,7 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
      *
      * @return void
      */
-    public function ui_edit(Zikula_DisplayHook $hook)
-    {
+    public function ui_edit(Zikula_DisplayHook $hook) {
         // get data from $event
         $id = $hook->getId();
 
@@ -92,7 +137,7 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
             } else {
                 // this is an edit action so we probably need to get the data from the DB for editing
                 // for this example however, we don't have any data stored in db, so display something random :)
-                $mhp_data = array('dummydata' => rand(1,9));
+                $mhp_data = array('dummydata' => rand(1, 9));
             }
         } else {
             // this is a re-entry because the form didn't validate.
@@ -123,8 +168,7 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
      *
      * @return void
      */
-    public function ui_delete(Zikula_DisplayHook $hook)
-    {
+    public function ui_delete(Zikula_DisplayHook $hook) {
         // Security check
         if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_DELETE)) {
             return;
@@ -132,7 +176,7 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
 
         // do some stuff here like get data from database to show in template
         // our example doesn't have any data to fetch, so we will create a random number to show :)
-        $mhp_data = array('dummydata' => rand(1,9));
+        $mhp_data = array('dummydata' => rand(1, 9));
         $this->view->assign('mhp_data', $mhp_data);
 
         // add this response to the event stack
@@ -155,8 +199,7 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
      *
      * @return void
      */
-    public function process_edit(Zikula_ProcessHook $hook)
-    {
+    public function process_edit(Zikula_ProcessHook $hook) {
 
         if (!$hook->getId()) {
             // new so do an INSERT
@@ -176,10 +219,11 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler
      *
      * @return void
      */
-    public function process_delete(Zikula_ProcessHook $hook)
-    {
+    public function process_delete(Zikula_ProcessHook $hook) {
         // this example does not have an data stored in database to delete
         // however, if i had any, i would execute a db call here to delete them
     }
+
 }
+
 ?>
