@@ -81,7 +81,7 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler {
             $this->view->assign('ret_url', $ret_url);
             $this->view->assign('exam_name', $exam_name);
             $this->view->assign('art_id', $id);
-            if($is_admin){
+            if ($is_admin) {
                 $this->view->assign('admin', 'yes');
             }
             // add this response to the event stack
@@ -113,45 +113,8 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler {
      * @return void
      */
     public function ui_edit(Zikula_DisplayHook $hook) {
-        // get data from $event
-        $id = $hook->getId();
-
-        if (!$id) {
-            $access_type = ACCESS_ADD;
-        } else {
-            $access_type = ACCESS_EDIT;
-        }
-
-        // Security check
-        if (!SecurityUtil::checkPermission('Quickcheck::', '::', $access_type)) {
-            return;
-        }
-
-        // if validation object does not exist, this is the first time display of the create/edit form.
-        if (!$this->validation) {
-            // either display an empty form,
-            // or fill the form with existing data
-            if (!$id) {
-                // this is a create action so create a new empty object for editing
-                $mhp_data = array('dummydata' => '');
-            } else {
-                // this is an edit action so we probably need to get the data from the DB for editing
-                // for this example however, we don't have any data stored in db, so display something random :)
-                $mhp_data = array('dummydata' => rand(1, 9));
-            }
-        } else {
-            // this is a re-entry because the form didn't validate.
-            // We need to gather the input from the form and render display
-            // get the input from the form (this was populated by the validation hook).
-            $mhp_data = $this->validation->getObject();
-        }
-
-        // assign the hook data to the template
-        $this->view->assign('mhp_data', $mhp_data);
-
-        // and also assign the id
-        $this->view->assign('id', $id);
-
+        //I am thinking we really don't have a response to editing something
+        //we only want to deal with it if it is deleted.
         // add this response to the event stack
         $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'Quickcheck_hook_mhp_ui_edit.tpl');
         $hook->setResponse($response);
@@ -173,12 +136,17 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler {
         if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_DELETE)) {
             return;
         }
-
+        $id = $hook->getId();
+        if ($id) {
+            //Check to see if we have an exam attached to this ID
+            $exam = modUtil::apiFunc('quickcheck', 'user', 'get', array('art_id' => $id));
+            //if we have an exam, detach it from the hooked sample.
+            if ($exam) {
+                
+            }
+        }
         // do some stuff here like get data from database to show in template
         // our example doesn't have any data to fetch, so we will create a random number to show :)
-        $mhp_data = array('dummydata' => rand(1, 9));
-        $this->view->assign('mhp_data', $mhp_data);
-
         // add this response to the event stack
         $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'Quickcheck_hook_mhp_ui_delete.tpl');
         $hook->setResponse($response);
