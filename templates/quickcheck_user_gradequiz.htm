@@ -23,7 +23,12 @@
 {assign var=the_index value=$questions[i].ur_answer[0]}
 <p>{$letters[$the_index]}</p>
 <h4>{gt text="Correct answer"}</h4>
-<p>{$questions[i].q_explan}</p>
+<p>{section loop=$questions[i].q_param name=w}
+    {if $questions[i].q_param[w] > 0}
+    {$letters[$smarty.section.w.index]},
+    {/if}
+    {/section}
+    {$questions[i].q_explan}</p>
 
 {elseif $questions[i].q_type == 2}
 <!-- true/false question -->
@@ -74,14 +79,14 @@
 <p>
     {section loop=$questions[i].ur_answer name=p}
     {assign var=the_index value=$questions[i].ur_answer[p]}
-    {$letters[$the_index]},
+    {$letters[$the_index]} 
     {/section}
 </p>
 <h4>{gt text="Correct answer"}</h4>
 <p>
     {section loop=$questions[i].q_param name=w}
     {if $questions[i].q_param[w] > 0}
-        {$letters[$smarty.section.w.index]},
+    {$letters[$smarty.section.w.index]} 
     {/if}
     {/section}
 </p>

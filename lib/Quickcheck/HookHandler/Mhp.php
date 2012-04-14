@@ -142,14 +142,14 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler {
             $exam = modUtil::apiFunc('quickcheck', 'user', 'get', array('art_id' => $id));
             //if we have an exam, detach it from the hooked sample.
             if ($exam) {
-                
+                $exam['art_id'] = -1; //no article attached
+                modUtil::apiFunc('quickcheck', 'admin', 'update', $exam);
             }
         }
-        // do some stuff here like get data from database to show in template
-        // our example doesn't have any data to fetch, so we will create a random number to show :)
-        // add this response to the event stack
-        $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'Quickcheck_hook_mhp_ui_delete.tpl');
-        $hook->setResponse($response);
+        //we don't need to respond to this. We just detach the exam.
+          // add this response to the event stack
+//        $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, '');
+  //      $hook->setResponse($response);
     }
 
     /**

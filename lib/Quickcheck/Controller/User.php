@@ -123,7 +123,7 @@ class Quickcheck_Controller_User extends Zikula_AbstractController {
         $quiz_questions = array(); //the array that will hold the questions
 //sort the question based upon their category id
         $questions = modUtil::apiFunc('quickcheck', 'user', 'getallquestions');
-        usort($questions, Quickcheck_Controller_User::sort_by_catid);
+        usort($questions, "Quickcheck_Controller_User::sort_by_catid");
 //walk the data array and see where we need questions
         $notice = array();
         foreach ($data as $cat_id => $number) {
@@ -263,13 +263,15 @@ class Quickcheck_Controller_User extends Zikula_AbstractController {
             $student_answer = FormUtil::getPassedValue($q_id, isset($args[$q_id]) ? $args[$q_id] : null);
             $question = modUtil::apiFunc('quickcheck', 'user', 'getquestion', array('id' => $q_id));
             $question['correct'] = false;
-
+            if (!isset($student_answer)) {
+                $student_answer = "";
+            }
             switch ($question['q_type']) {
                 case Quickcheck_Controller_Admin::_QUICKCHECK_TEXT_TYPE:
                     $score += 1;
                     $question['correct'] = true;
                     $question['ur_answer'] = $student_answer;
-//we don't grade text types
+                    //we don't grade text types
                     break;
                 case Quickcheck_Controller_Admin::_QUICKCHECK_TF_TYPE:
                     if ($student_answer == $question['q_answer']) {
@@ -279,54 +281,58 @@ class Quickcheck_Controller_User extends Zikula_AbstractController {
                     $question['ur_answer'] = $student_answer;
                     break;
                 case Quickcheck_Controller_Admin::_QUICKCHECK_MATCHING_TYPE:
-//The first member of the array is the randomized array that the student saw
-                    $matches_array = explode(',', $student_answer[0]);
-//push the first one off.
-                    array_shift($student_answer);
-                    $unscrambled = array();
-                    foreach ($student_answer as $number) {
-                        $unscrambled[] = $matches_array[$number - 1];
-                    }
-                    $question['ur_answer'] = $unscrambled;
-//grab the correct answers from the question.
                     $correct_answer = $question['q_answer'];
-                    $size = count($correct_answer);
-//walk the arrays comapring each value. I cannot use a php array
-//function because position is important
-                    $match_right = 0;
-                    for ($i = 0; $i < $size; $i++) {
-                        if ($correct_answer[$i] == $unscrambled[$i]) {
-                            $match_right++;
-                        }
-                    }
-                    $this_score = $match_right / $size;
-                    if ($this_score >= 1) {
-                        $question['correct'] = true;
-                    }
-                    $score += $this_score;
 
+                    if (is_array($student_answer)) {
+                        //The first member of the array is the randomized array that the student saw
+                        $matches_array = explode(',', $student_answer[0]);
+                        //push the first one off.
+                        array_shift($student_answer);
+                        $unscrambled = array();
+                        foreach ($student_answer as $number) {
+                            $unscrambled[] = $matches_array[$number - 1];
+                        }
+                        $question['ur_answer'] = $unscrambled;
+                        //grab the correct answers from the question.
+                        $size = count($correct_answer);
+                        //walk the arrays comapring each value. I cannot use a php array
+                        //function because position is important
+                        $match_right = 0;
+                        for ($i = 0; $i < $size; $i++) {
+                            if ($correct_answer[$i] == $unscrambled[$i]) {
+                                $match_right++;
+                            }
+                        }
+                        $this_score = $match_right / $size;
+                        if ($this_score >= 1) {
+                            $question['correct'] = true;
+                        }
+                        $score += $this_score;
+                    }
                     break;
                 case Quickcheck_Controller_Admin::_QUICKCHECK_MULTIANSWER_TYPE:
                 case Quickcheck_Controller_Admin::_QUICKCHECK_MULTIPLECHOICE_TYPE:
-//the student answer containg the position of the values that
-//they entered. Award points for correct answers. and subtract for incorrect answers
+                    //the student answer containg the position of the values that
+                    //they entered. Award points for correct answers. and subtract for incorrect answers
                     $total = 0;
-//the weight given to each answer.
+                    //the weight given to each answer.
                     $answer_wt = $question['q_param'];
                     $deduction = 100 / count($answer_wt);
-                    foreach ($student_answer as $check_mark) {
-//you get points added if this is a correct mark
-                        $total += $answer_wt[$check_mark];
-//but if it's incorrect, then a deduction equal to the
-//fract of available answers is taken off.
-                        if ($answer_wt[$check_mark] == 0) {
-                            $total -= $deduction;
+                    if (is_array($student_answer)) {
+                        foreach ($student_answer as $check_mark) {
+                            //you get points added if this is a correct mark
+                            $total += $answer_wt[$check_mark];
+                            //but if it's incorrect, then a deduction equal to the
+                            //fract of available answers is taken off.
+                            if ($answer_wt[$check_mark] == 0) {
+                                $total -= $deduction;
+                            }
                         }
+                        if ($total >= 100) {
+                            $question['correct'] = true;
+                        }
+                        $score += $total / 100;
                     }
-                    if ($total >= 100) {
-                        $question['correct'] = true;
-                    }
-                    $score += $total / 100;
                     $question['ur_answer'] = $student_answer;
                     break;
             }

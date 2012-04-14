@@ -46,7 +46,6 @@ class Quickcheck_Version extends Zikula_AbstractVersion {
     protected function setupHookBundles() {
         $bundle = new Zikula_HookManager_ProviderBundle($this->name, 'provider.quickcheck.ui_hooks.mhp', 'ui_hooks', __('Quickcheck Hook Handlers'));
         $bundle->addServiceHandler('display_view', 'Quickcheck_HookHandler_Mhp', 'ui_view', 'quickcheck.mhp');
-        $bundle->addServiceHandler('process_edit', 'Quickcheck_HookHandler_Mhp', 'ui_edit', 'quickcheck.mhp');
         $bundle->addServiceHandler('process_delete', 'Quickcheck_HookHandler_Mhp', 'ui_delete', 'quickcheck.mhp');
         $this->registerHookProviderBundle($bundle);
     }
