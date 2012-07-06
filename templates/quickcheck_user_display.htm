@@ -1,10 +1,10 @@
 <!--This template displays the question for the exam and also provides a form for checking the answers-->
 <!--Author: TImothy Paustian date: July 11 2010-->
-
+<hr />
 <form action="{pnmodurl modname="quickcheck" type="user" func="gradequiz"}" method="post">
       <input type="hidden" name="ret_url" value="{$ret_url}" />
     <input type="hidden" name="q_ids" value='{$q_ids}' />
-    <hr />
+    
     <h3>{$exam_name}</h3>
     {if count($notice)>0}
     <p>{gt text='The following sections did not have the number of questions that you requested. All questions in that catagory were added.'}</p>
