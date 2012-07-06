@@ -48,7 +48,7 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
 
         //insert a new object. The id is inserted into the $args array
         if (!DBUtil::insertObject($args, 'quickcheck_exam')) {
-            return LogUtil::registerError( __("insert of strain failed"));
+            return LogUtil::registerError( $this->__("insert of strain failed"));
         }
 
         // Return the id of the newly created item to the calling process
