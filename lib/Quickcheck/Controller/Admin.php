@@ -227,7 +227,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
-            return DataUtil::formatForDisplayHTML(_MODULENOAUTH);
+            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add questions."));
         }
         $render = zikula_View::getInstance('Quickcheck', false);
         if (array_key_exists('q_text', $args)) {
@@ -275,13 +275,13 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
             if ($this->_validate_createTextQuestion($data)) {
                 if (isset($id)) {
                     if (!modUtil::apiFunc('quickcheck', 'admin', 'updatequestion', $data)) {
-                        return LogUtil::registerError(_UPDATEFAILED);
+                        return LogUtil::registerError($this->__("Update of the text quesiton failed."));
                     }
                     //if we have gotten here, we were successful
                     SessionUtil::setVar('statusmsg', $this->__('Text question modified successfully.'));
                 } else {
                     if (!modUtil::apiFunc('quickcheck', 'admin', 'createquestion', $data)) {
-                        return LogUtil::registerError(_CREATEFAILED);
+                        return LogUtil::registerError($this->__("Creation of the question failed."));
                     }
                     //if we have gotten here, we were successful
                     SessionUtil::setVar('statusmsg', $this->__('New text question created.'));
@@ -365,14 +365,14 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
                 //grab the various MC options
                 if ($data['id'] == '') {
                     if (!modUtil::apiFunc('quickcheck', 'admin', 'createquestion', $data)) {
-                        return LogUtil::registerError(_CREATEFAILED);
+                        return LogUtil::registerError($this->__("Creation of the matching question failed."));
                     }
                     SessionUtil::setVar('statusmsg', 'The question was created.');
                 } else {
                     if (!modUtil::apiFunc('quickcheck', 'admin', 'updatequestion', $data)) {
-                        return LogUtil::registerError(_CREATEFAILED);
+                        return LogUtil::registerError($this->__("Update of the matching question failed."));
                     }
-                    SessionUtil::setVar('statusmsg', 'The question was modified.');
+                    SessionUtil::setVar('statusmsg', $this->__("The question was modified."));
                 }
                 //if we have gotten here, we were successful
                 return pnRedirect(pnModURL('quickcheck', 'admin', 'newMatchQuest'));
@@ -423,7 +423,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
-            return DataUtil::formatForDisplayHTML(_MODULENOAUTH);
+            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add questions."));
         }
         $render = zikula_View::getInstance('Quickcheck', false);
         if (array_key_exists('q_text', $args)) {
@@ -483,13 +483,13 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
                 if (isset($id)) {
                     $data['id'] = $id;
                     if (!modUtil::apiFunc('quickcheck', 'admin', 'updatequestion', $data)) {
-                        return LogUtil::registerError(_UPDATEFAILED);
+                        return LogUtil::registerError($this->__("Update of the TF quetsion failed."));
                     }
                     //if we have gotten here, we were successful
                     SessionUtil::setVar('statusmsg', $this->__('True/False question modified successfully.'));
                 } else {
                     if (!modUtil::apiFunc('quickcheck', 'admin', 'createquestion', $data)) {
-                        return LogUtil::registerError(_CREATEFAILED);
+                        return LogUtil::registerError($this->__("Creation of the TF question failed."));
                     }
                     //if we have gotten here, we were successful
                     SessionUtil::setVar('statusmsg', $this->__('New True/False question created.'));
@@ -665,7 +665,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
-            return DataUtil::formatForDisplayHTML(_MODULENOAUTH);
+            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add "));
         }
 
         // Create output object - this object will store all of our output so that
@@ -707,7 +707,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
 
         // load the categories system
         if (!($class = Loader::loadClass('CategoryRegistryUtil'))) {
-            pn_exit(pnML('_UNABLETOLOADCLASS', array('s' => 'CategoryRegistryUtil')));
+            z_exit($this->__("Unable to load class CategoryRegistryUtil"));
         }
 
         $catregistry = CategoryRegistryUtil::getRegisteredModuleCategories('Quickcheck', 'quickcheck_quest');
@@ -723,7 +723,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
      */
     public function modify() {
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
-            return DataUtil::formatForDisplayHTML(_MODULENOAUTH);
+            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add questions."));
         }
         //create a list to choose from. I think I will use radio buttons
         //because that is easier to deal with.
@@ -738,7 +738,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
     public function modify2($args) {
 
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
-            return DataUtil::formatForDisplayHTML(_MODULENOAUTH);
+            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add questions."));
         }
 
         //Find out the button that was pressed
@@ -803,14 +803,14 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
     public function modifyquest($args) {
 
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
-            return DataUtil::formatForDisplayHTML(_MODULENOAUTH);
+            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add questions."));
         }
 
 
         $items = modUtil::apiFunc('quickcheck', 'user', 'getallquestions');
 
         if (!$items) {
-            return DataUtil::formatForDisplayHTML(_NOSUCHITEM);
+            return DataUtil::formatForDisplayHTML($this->__("That question does not exist"));
         }
 
         // Create output object - this object will store all of our output so that
@@ -877,7 +877,7 @@ class Quickcheck_Controller_Admin extends Zikula_AbstractController {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_EDIT)) {
-            return DataUtil::formatForDisplayHTML(_MODULENOAUTH);
+            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add questions."));
         }
 
         // Create output object - this object will store all of our output so that

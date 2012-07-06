@@ -7,8 +7,7 @@
  * end of modules. This is idea for modules that display information
  * that you then want to test comprehension on.
  * 
- * Purpose of file:  Table information for quickcheck module --
- *                   Version information.
+ * Purpose of file:  Version information for quickcheck module
  *
  * @package      None
  * @subpackage   Quickcheck

@@ -17,7 +17,7 @@
 
 
 /**
- * Populate tables array for StrainID module
+ * Populate tables array for Quickcheck module
  *
  * This function is called internally by the core whenever the module is
  * loaded. It delivers the table information to the core.

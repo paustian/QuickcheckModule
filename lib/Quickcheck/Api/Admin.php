@@ -48,7 +48,7 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
 
         //insert a new object. The id is inserted into the $args array
         if (!DBUtil::insertObject($args, 'quickcheck_exam')) {
-            return LogUtil::registerError(_CREATEFAILED . "insert of strain failed");
+            return LogUtil::registerError( __("insert of strain failed"));
         }
 
         // Return the id of the newly created item to the calling process
@@ -89,7 +89,7 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
 
         //insert a new object. The id is inserted into the $args array
         if (!DBUtil::insertObject($args, 'quickcheck_quest')) {
-            return LogUtil::registerError(_CREATEFAILED . "insert of question failed");
+            return LogUtil::registerError($this->__("insert of question failed"));
         }
 
         // Return the id of the newly created item to the calling process
@@ -115,7 +115,7 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
         $item = modUtil::apiFunc('quickcheck', 'user', 'get', array('id' => $id));
 
         if (!$item) {
-            LogUtil::registerError(_NOSUCHITEM);
+            LogUtil::registerError($this->__("There is no exam to delete."));
             return false;
         }
 
@@ -128,7 +128,7 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
             return false;
         }
         if (!DBUtil::deleteObjectByID('quickcheck_exam', $args['id'])) {
-            return LogUtil::registerError(_DELETEFAILED . "strainID delete");
+            return LogUtil::registerError($this->__("Deletion of the exam failed"));
         }
         // Let any hooks know that we have deleted an item.
         pnModCallHooks('item', 'delete', $id, array('module' => 'quickcheck'));
@@ -159,13 +159,13 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
         $item = modUtil::apiFunc('quickcheck', 'user', 'getquestion', array('id' => $id));
 
         if (!$item) {
-            LogUtil::registerError(_NOSUCHITEM);
+            LogUtil::registerError($this->__("That question does not exist and cannot be deleted"));
             return false;
         }
 
 
         if (!DBUtil::deleteObjectByID('quickcheck_quest', $args['id'])) {
-            return LogUtil::registerError(_DELETEFAILED . "quickcheck delete");
+            return LogUtil::registerError($this->__("Deletion of the question failed."));
         }
 
         // Let the calling process know that we have finished successfully

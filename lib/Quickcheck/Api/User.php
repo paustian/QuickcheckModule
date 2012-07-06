@@ -37,7 +37,7 @@ class Quickcheck_Api_User extends Zikula_AbstractApi{
         $items = DBUtil::selectObjectArray('quickcheck_exam');
 
         if ($items === false) {
-            return LogUtil::registerError(_GETFAILED);
+            return LogUtil::registerError($this->__("Unable to get the desired exam."));
         }
 
 
@@ -132,7 +132,7 @@ class Quickcheck_Api_User extends Zikula_AbstractApi{
 
         $item = DBUtil::selectObjectByID('quickcheck_quest', $id);
         if ($item === false) {
-            return LogUtil::registerError(_GETFAILED);
+            return LogUtil::registerError($this->__("Unable to load the desired question."));
         }
         $answer = @unserialize($item['q_answer']);
         if ($answer !== false)
