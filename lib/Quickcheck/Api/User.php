@@ -1,4 +1,4 @@
-1<?php
+<?php
 /**
  * quickcheck Module
  *
