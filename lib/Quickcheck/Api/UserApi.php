@@ -1,4 +1,5 @@
 <?php
+
 /**
  * quickcheck Module
  *
@@ -18,31 +19,54 @@
  * @copyright    Copyright (C) 2009 by Timothy Paustian
  * @license      http://www.gnu.org/copyleft/gpl.html GNU General Public License
  */
+namespace Zikula\QuickcheckModule\Api;
 
+use Zikula\QuickcheckModule\Entity\QuickcheckExamEntity;
+use Ziukla\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 /**
  * get all strains in database items
  * 
  * @return   array   array of items, or false on failure
  */
-class Quickcheck_Api_User extends Zikula_AbstractApi{
+class UserApi extends \Zikula_AbstractApi {
 
-    public function getall() {
+    public function getall($args) {
         $items = array();
 
         //security check, almost anyone can see this
-        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
+        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_OVERVIEW)) {
             return $items;
         }
 
-        $items = DBUtil::selectObjectArray('quickcheck_exam');
+        // create a QueryBuilder instance
+        $qb = $this->entityManager->createQueryBuilder();
 
-        if ($items === false) {
-            return LogUtil::registerError($this->__("Unable to get the desired exam."));
+        // add select and from params
+        $qb->select('u')
+                ->from('QuickcheckModule:QuickcheckExamsEntity', 'u');
+
+        // add limit and offset
+        $startnum = (!isset($args['startnum']) || !is_numeric($args['startnum'])) ? 0 : (int) $args['startnum'];
+        $numitems = (!isset($args['numitems']) || !is_numeric($args['numitems'])) ? 0 : (int) $args['numitems'];
+
+        if ($numitems > 0) {
+            $qb->setFirstResult($startnum)
+                    ->setMaxResults($numitems);
         }
 
+        // convert querybuilder instance into a Query object
+        $query = $qb->getQuery();
+
+        // execute query
+        $objArray = $query->getResult();
+
+        // Check for an error with the database code
+        if ($objArray === false) {
+            return false;
+        }
 
         // Return the items
-        return $items;
+        return $objArray;
     }
 
     /**
@@ -52,24 +76,40 @@ class Quickcheck_Api_User extends Zikula_AbstractApi{
      * @return   array         item array, or false on failure
      */
     public function get($args) {
+        //security check, almost anyone can see this
+        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_OVERVIEW)) {
+            return false;
+        }
+
         if (isset($args['id'])) {
             $id = $args['id'];
         }
         if (isset($args['art_id'])) {
             $art_id = $args['art_id'];
         }
-
+        $item = FALSE;
         if (isset($id) && is_numeric($id)) {
-            $item = DBUtil::selectObjectByID('quickcheck_exam', $id);
+            $item = $this->entityManager->find('QuickcheckModule:QuickcheckExamEntity', $args['id']);
         } else if (isset($art_id) && is_numeric($art_id)) {
-            $item = DBUtil::selectObjectByID('quickcheck_exam', $art_id, 'art_id');
+            // create a QueryBuilder instance
+            $qb = $this->entityManager->createQueryBuilder();
+
+            // add select and from params
+            $qb->select('u')
+                            ->from('QuickcheckModule:QuickcheckExamsEntity', 'u')
+                            ->where('u.getQuickcheckart_id = ?1') - setParameter(1, $art_id);
+            //get the query object
+            $query = $qb->getQuery();
+
+            // execute query
+            $item = $query->getResult();
         } else {
             LogUtil::registerArgsError();
             return false;
         }
 
         if ($item != false) {
-            $item['questions'] = unserialize($item['questions']);
+            $item['quickcheckquestions'] = unserialize($item['quickcheckquestions']);
         }
         //no check for failure. We just return false and the calling
         //function has to deal with it. It's fine for this to fail, because
@@ -84,22 +124,34 @@ class Quickcheck_Api_User extends Zikula_AbstractApi{
      *
      */
     public function getallquestions($args) {
-        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
+        //security check, almost anyone can see this
+        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_OVERVIEW)) {
             return false;
         }
+
+        $qb = $this->entityManager->createQueryBuilder();
         if (isset($args['missing_explan']) && $args['missing_explan']) {
             //create a where clause to get only empty explanations
-            $pntable = & pnDBGetTables();
-            $question_column = &$pntable['quickcheck_quest_column'];
-            $where = "WHERE " . $question_column['q_explan'] . " IS NULL OR " . $question_column['q_explan'] . " = '' AND ("
-                    . $question_column['q_type'] . " = 4 OR " . $question_column['q_type'] . " = 1)";
+            $qb->select('u')
+                ->from('QuickcheckQuestionEntity', 'u')
+                ->where('(u.quickcheckq_expan = ?1 OR quickcheckq_expan = ?2) AND (u.quickcheckq_type = ?3 OR u.quickcheckq_type = ?4)')
+                ->setParameters(array(1 => 'NULL',
+                                2 => '',
+                                3 => 4,
+                                4 => 1));
 
-            $items = DBUtil::selectObjectArray('quickcheck_quest', $where);
+            
         } else {
-            $items = DBUtil::selectObjectArray('quickcheck_quest');
-            //we don't log an error here since its ok to not get any questions.
+            // add select and from params
+            $qb->select('u')
+                    ->from('QuickcheckQuestionEntity', 'u');
         }
 
+        // convert querybuilder instance into a Query object
+        $query = $qb->getQuery();
+
+        // execute query
+        $items = $query->getResult();
         //we need to unserialize all question params and answers.
         $item_count = count($items);
         for ($i = 0; $i < $item_count; $i++) {
@@ -123,16 +175,15 @@ class Quickcheck_Api_User extends Zikula_AbstractApi{
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
             return $item;
         }
-        $id = FormUtil::getPassedValue('id', isset($args['id']) ? $args['id'] : null);
+        $id = $args['id'];
 
         if (!isset($id) || !is_numeric($id)) {
-            LogUtil::registerArgsError();
-            return false;
+            throw new \InvalidArgumentException(__('id wrong in getquestion'));
         }
 
-        $item = DBUtil::selectObjectByID('quickcheck_quest', $id);
+        $item = $this->entityManager->find('QuickcheckModule:QuickcheckQuestionEntity', $args['id']);
         if ($item === false) {
-            return LogUtil::registerError($this->__("Unable to load the desired question."));
+            return $item;
         }
         $answer = @unserialize($item['q_answer']);
         if ($answer !== false)
@@ -151,8 +202,9 @@ class Quickcheck_Api_User extends Zikula_AbstractApi{
      * @return   integer   number of items held by this module
      */
     public function countitems() {
-        
+        //Not implemented
     }
 
 }
+
 ?>

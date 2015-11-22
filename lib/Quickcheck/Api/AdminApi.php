@@ -3,10 +3,8 @@
 /**
  * quickcheck Module
  *
- * The quickcheck module is a module for entering microbial strain data into 
- * a mysql database. The completed database can then be used to identify unknown
- * microbes. I also used this module as an example Zikula module to demonstrates 
- * some of the frameworks functionality
+ * The quickcheck module is a module for creating quizzes that
+ * can be attached to other text modules.
  * 
  * Purpose of file:  Table information for quickcheck module --
  *                   This file contains all information on database
@@ -14,13 +12,51 @@
  *
  * @package      None
  * @subpackage   Quickcheck
- * @version      2.0
+ * @version      3.0
  * @author       Timothy Paustian
- * @copyright    Copyright (C) 2009 by Timothy Paustian
+ * @copyright    Copyright (C) 2015 by Timothy Paustian
  * @license      http://www.gnu.org/copyleft/gpl.html GNU General Public License
  */
-class Quickcheck_Api_Admin extends Zikula_AbstractApi {
+namespace Zikula\QuickcheckModule\Api;
 
+use Zikula\QuickcheckModule\Entity\QuickcheckExamEntity;
+use Ziukla\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+
+class AdminApi extends \Zikula_AbstractApi {
+    
+    protected function postInitialize()
+    {
+        // In this controller we do not want caching.
+        $this->view->setCaching(Zikula_View::CACHE_DISABLED);
+    }
+    /**
+     * remove a deleted question from an exam
+     * @param   the id of the question to delete
+     * 
+     * @returns true is successful
+     */
+    
+    private function _removeQuestionFromExams($id){
+        $exams = modUtil::apiFunc('quickcheck', 'user', 'getall');
+        foreach ($exams as $exam) {
+            $questions = unserialize($exam['questions']);
+            $q_index = array_search($id, $questions);
+            //we have to be careful here and use boolean operators
+            //$q_index can be 0
+            if($q_index == FALSE){
+                continue;
+            }
+            //if we got here, the quesiton is part of the array
+            //remove the item
+            unset($questions[$q_index]);
+            //we need to copy this over again to reset the index. May not be necessary in 
+            //this case, but it's nicer to have a continuous index of values.
+            $questions = array_values($questions);
+            $exam['questions'] = serialize($questions);
+            modUtil::apiFunc('quickcheck', 'admin', 'update', $exam);
+        }
+        return true;
+    }
     /**
      * create a new Example item
      * 
@@ -31,28 +67,32 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
     public function create($args) {
         // Argument check - make sure that all required arguments are present,
         // if not then set an appropriate error message and return
-        if (!isset($args['name']) || !isset($args['questions'])) {
-            LogUtil::registerArgsError();
-            return false;
+        if (!isset($args['quickcheckname']) || !isset($args['quickcheckquestions'])) {
+            throw new \InvalidArgumentException(__('Invalid name or question received'));
         }
-        // Security check - important to do this as early on as possible to 
-        // avoid potential security holes or just too much wasted processing
-        if (!SecurityUtil::checkPermission('Quickcheck::', "::", ACCESS_ADD)) {
-            LogUtil::registerAuthidError();
-            return false;
+        
+        // Security check
+        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_ADD)) {
+            throw new AccessDeniedException();
         }
+        
         //if the qeustions are array serialize it
-        if (is_array($args['questions'])) {
-            $args['questions'] = serialize($args['questions']);
+        if (is_array($args['quickcheckquestions'])) {
+            $args['quickcheckquestions'] = serialize($args['quickcheckquestions']);
         }
-
-        //insert a new object. The id is inserted into the $args array
-        if (!DBUtil::insertObject($args, 'quickcheck_exam')) {
-            return LogUtil::registerError( $this->__("insert of strain failed"));
-        }
+        
+        $obj = new QuickcheckExamEntity;
+        $obj['quickcheckname'] = $args['quickcheckname'];
+        $obj['quickcheckquestions'] = $args['quickcheckquestions'];
+        $obj['quickcheckart_id'] = $args['quickcheckart_id'];
+        
+        $this->entityManager->persist($obj);
+        $this->entityManager->flush();
+        
+        $examId = $obj->getId();
 
         // Return the id of the newly created item to the calling process
-        return $args['id'];
+        return $examId;
     }
 
     /**
@@ -69,14 +109,12 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
         // Argument check - make sure that all required arguments are present,
         // if not then set an appropriate error message and return
         if (!isset($args['q_type']) || !isset($args['q_text']) || !isset($args['q_answer'])) {
-            LogUtil::registerArgsError();
-            return false;
+            throw new \InvalidArgumentException(__('Invalid question type, text, or answer received'));
         }
-        // Security check - important to do this as early on as possible to
-        // avoid potential security holes or just too much wasted processing
-        if (!SecurityUtil::checkPermission('Quickcheck::', "::", ACCESS_ADD)) {
-            LogUtil::registerAuthidError();
-            return false;
+        
+        // Security check
+        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_ADD)) {
+            throw new AccessDeniedException();
         }
         //if the questions are array serialize it
         if (is_array($args['q_answer'])) {
@@ -86,15 +124,22 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
         if (is_array($args['q_param'])) {
             $args['q_param'] = serialize($args['q_param']);
         }
-
-        //insert a new object. The id is inserted into the $args array
-        if (!DBUtil::insertObject($args, 'quickcheck_quest')) {
-            return LogUtil::registerError($this->__("insert of question failed"));
-        }
+        
+        $obj = new QuickcheckQuestionEntity;
+        $obj['quickcheckq_type'] = $args['quickcheckq_type'];
+        $obj['quickcheckq_text'] = $args['quickcheckq_text'];
+        $obj['$quickcheckq_answer'] = $args['$quickcheckq_answer'];
+        $obj['$quickcheckq_expan'] = $args['$quickcheckq_expan'];
+        $obj['$quickcheckq_param'] = $args['$quickcheckq_param'];
+        
+        $this->entityManager->persist($obj);
+        $this->entityManager->flush();
+        
+        $qId = $obj->getId();
 
         // Return the id of the newly created item to the calling process
-        return $args['id'];
-    }
+        return $qId;
+ }
 
     /**
      * delete an item
@@ -108,43 +153,38 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
         // if not then set an appropriate error message and return
         if ((!isset($id)) ||
                 (isset($id) && !is_numeric($id))) {
-            LogUtil::registerArgsError();
-            return false;
+            throw new \InvalidArgumentException(__('Invalid arguments received'));
         }
-
-        $item = modUtil::apiFunc('quickcheck', 'user', 'get', array('id' => $id));
+        // get item
+        $item = $this->entityManager->find('QuickcheckModule:QuickcheckExamEntity', $args['id']);
 
         if (!$item) {
-            LogUtil::registerError($this->__("There is no exam to delete."));
-            return false;
+            throw new \InvalidArgumentException(__('There is not exam to delete'));
         }
-
-        // Security check 
-        // In this case we had to wait until we could obtain the item
-        // name to complete the instance information so this is the first
-        // chance we get to do the check
-        if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_DELETE)) {
-            LogUtil::registerAuthidError();
-            return false;
+        
+        // Security check
+        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_DELETE)) {
+            throw new AccessDeniedException();
         }
-        if (!DBUtil::deleteObjectByID('quickcheck_exam', $args['id'])) {
-            return LogUtil::registerError($this->__("Deletion of the exam failed"));
-        }
-        // Let any hooks know that we have deleted an item.
-        pnModCallHooks('item', 'delete', $id, array('module' => 'quickcheck'));
-
+        // keep item to pass it to dispatcher later
+        $deletedItem = $item->toArray();
+        // Delete the exam
+        
+        $this->entityManager->remove($item);
+        $this->entityManager->flush();
+        
+        // Let other modules know that we have deleted a group.
+        $deleteEvent = new GenericEvent($deletedItem);
+        $this->getDispatcher()->dispatch('quickcheck.delete', $deleteEvent);
+        
         // Let the calling process know that we have finished successfully
         return true;
     }
 
     public function deletequestion($args) {
         // Security check
-        // In this case we had to wait until we could obtain the item
-        // name to complete the instance information so this is the first
-        // chance we get to do the check
-        if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_DELETE)) {
-            LogUtil::registerAuthidError();
-            return false;
+        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_DELETE)) {
+            throw new AccessDeniedException();
         }
 
         $id = $args['id'];
@@ -152,22 +192,22 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
         // if not then set an appropriate error message and return
         if ((!isset($id)) ||
                 (isset($id) && !is_numeric($id))) {
-            LogUtil::registerArgsError();
-            return false;
+           throw new \InvalidArgumentException(__('Invalid id received'));
         }
 
-        $item = modUtil::apiFunc('quickcheck', 'user', 'getquestion', array('id' => $id));
+        $item = $this->entityManager->find('QuickcheckModule:QuickcheckQuestionEntity', $id);
 
         if (!$item) {
-            LogUtil::registerError($this->__("That question does not exist and cannot be deleted"));
-            return false;
+            throw new \InvalidArgumentException(__('There is no question that matches that id to delete'));
         }
-
-
-        if (!DBUtil::deleteObjectByID('quickcheck_quest', $args['id'])) {
-            return LogUtil::registerError($this->__("Deletion of the question failed."));
-        }
-
+        
+        
+        // Delete the exam
+        $this->entityManager->remove($item);
+        $this->entityManager->flush();
+        
+        //we need to work through all the exams and remove that question from them.
+        $this->_removeQuestionFromExams($id);
         // Let the calling process know that we have finished successfully
         return true;
     }
@@ -186,25 +226,28 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
         // Argument check - make sure that all required arguments are present,
         // if not then set an appropriate error message and return
         if (!isset($args['name']) || !isset($args['id']) || !isset($args['questions'])) {
-            LogUtil::registerArgsError();
+            throw new \InvalidArgumentException(__('Name, id or question wrong in update.'));
+        }
+        
+        // get item
+        $item = $this->entityManager->find('QuickcheckModule:QuickcheckExamEntity', $args['id']);
+        if (!$item) {
             return false;
         }
 
-        // Security check - important to do this as early on as possible to 
-        // avoid potential security holes or just too much wasted processing
-        if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
-            LogUtil::registerAuthidError();
-            return false;
+        // Security check
+        if (!SecurityUtil::checkPermission('Quickcheck::', $args['id'] . '::', ACCESS_EDIT)) {
+            throw new AccessDeniedException();
         }
         //if the questions are array serialize it
         if (is_array($args['questions'])) {
             $args['questions'] = serialize($args['questions']);
         }
-
-        if (!DBUtil::updateObject($args, 'quickcheck_exam')) {
-            return LogUtil::registerError($this->__("Update of the exam failed."));
-        }
-
+        
+        // Update the item
+        $item->merge($args);
+        $this->entityManager->flush();
+        
         // Let the calling process know that we have finished successfully
         return true;
     }
@@ -223,31 +266,35 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
         // Argument check - make sure that all required arguments are present,
         // if not then set an appropriate error message and return
         //note that q_param is optional
-        if (!isset($args['q_type']) || !isset($args['id'])
-                || !isset($args['q_answer']) || !isset($args['q_text'])) {
-            LogUtil::registerArgsError();
+        if (!isset($args['$quickcheckq_type']) || !isset($args['id'])
+                || !isset($args['$quickcheckq_answer']) || !isset($args['$quickcheckq_text'])) {
+            throw new \InvalidArgumentException(__('question wrong in update update.'));
+        }
+
+        // get item
+        $item = $this->entityManager->find('QuickcheckModule:QuickcheckExamEntity', $args['id']);
+        if (!$item) {
             return false;
         }
 
-        // Security check - important to do this as early on as possible to
-        // avoid potential security holes or just too much wasted processing
-        if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
-            LogUtil::registerAuthidError();
-            return false;
+        // Security check
+        if (!SecurityUtil::checkPermission('Quickcheck::', '::' . $args['id'], ACCESS_EDIT)) {
+            throw new AccessDeniedException();
         }
 
         //if the questions are array serialize it
-        if (is_array($args['q_answer'])) {
-            $args['q_answer'] = serialize($args['q_answer']);
+        if (is_array($args['$quickcheckq_answer'])) {
+            $args['$quickcheckq_answer'] = serialize($args['$quickcheckq_answer']);
         }
         //if the questions are array serialize it
-        if (is_array($args['q_param'])) {
-            $args['q_param'] = serialize($args['q_param']);
+        if (is_array($args['quickcheckq_param'])) {
+            $args['quickcheckq_param'] = serialize($args['quickcheckq_param']);
         }
-
-        if (!DBUtil::updateObject($args, 'quickcheck_quest')) {
-            return LogUtil::registerError($this->__("Updating the question failed"));
-        }
+        
+        // Update the item
+        $item->merge($args);
+        $this->entityManager->flush();
+        
         // Let the calling process know that we have finished successfully
         return true;
     }
@@ -282,9 +329,9 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
 
     public function import($args) {
 
-        if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_ADMIN)) {
-            LogUtil::registerAuthidError();
-            return false;
+        // Security check
+        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_EDIT)) {
+            throw new AccessDeniedException();
         }
 
         $import_xml = $args['questions'];
@@ -349,14 +396,17 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
                 $do_update = ($item != false);
             }
             if ($do_update) {
-
-                if (!DBUtil::updateObject($q_data, 'quickcheck_quest')) {
-                    return LogUtil::registerError($this->__("insert of question failed"));
-                }
+                $this->updatequestion(array('id' => $q_data['id'],
+                                            'quickcheckq_text' => $$q_data['quickcheckq_text'],
+                                            'quickcheckq_answer' => $q_data['q_answer'],
+                                            'quickcheckq_expan' => $q_data['q_explan'],
+                                            'quickcheckq_param' => $q_data['q_param']));
             } else {
-                if (!DBUtil::insertObject($q_data, 'quickcheck_quest', 'id', true)) {
-                    return LogUtil::registerError($this->__("insert of question failed"));
-                }
+                $this->createquestion(array('quickcheckq_type' => $q_data['q_type'],
+                                            'quickcheckq_text' => $$q_data['quickcheckq_text'],
+                                            'quickcheckq_answer' => $q_data['q_answer'],
+                                            'quickcheckq_expan' => $q_data['q_explan'],
+                                            'quickcheckq_param' => $q_data['q_param']));
             }
             //void it out to prevent id's being reused.
             $q_data = array();
@@ -365,9 +415,9 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
     }
 
     public function export($args) {
-        if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_ADMIN)) {
-            LogUtil::registerAuthidError();
-            return false;
+        // Security check
+        if (!SecurityUtil::checkPermission('Quickcheck::', '::' . $args['id'], ACCESS_EDIT)) {
+            throw new AccessDeniedException();
         }
 
         //check your arguments
@@ -382,8 +432,7 @@ class Quickcheck_Api_Admin extends Zikula_AbstractApi {
             $questions = modUtil::apiFunc('quickcheck', 'user', 'getallquestions');
         } else {
             if (!isset($args['q_ids'])) {
-                LogUtil::registerArgsError();
-                return false;
+                throw new \InvalidArgumentException(__('No ids were sent to export.'));
             }
             $q_ids = $args['q_ids'];
             foreach ($q_ids as $question_id) {

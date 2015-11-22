@@ -63,7 +63,7 @@ class Quickcheck_Installer extends Zikula_AbstractInstaller {
         $rootcat = CategoryUtil::getCategoryByPath($regpath);
         if ($rootcat) {
             // create an entry in the categories registry
-            $registry = new PNCategoryRegistry();
+            $registry = new Categories_DBObject_Category();
             $registry->setDataField('modname', 'Quickcheck');
             $registry->setDataField('table', 'quickcheck_quest');
             $registry->setDataField('property', 'Main');

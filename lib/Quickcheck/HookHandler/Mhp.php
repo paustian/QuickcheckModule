@@ -85,14 +85,14 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler {
                 $this->view->assign('admin', 'yes');
             }
             // add this response to the event stack
-            $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'quickcheck_user_display.htm');
+            $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'quickcheck_user_display.tpl');
         } else {
             //only let admins see this.
             if ($is_admin) {
                 $ret_url = $hook->getUrl()->getUrl();
                 $this->view->assign('ret_url', $ret_url);
                 $this->view->assign('art_id', $id);
-                $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'quickcheck_admin_pickquestions.htm');
+                $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'quickcheck_admin_pickquestions.tpl');
             } else {
                 //just send back an empty response
                 $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, '');
