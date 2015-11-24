@@ -1,0 +1,3 @@
+quickcheckmodule:
+    resource: "@QuickcheckModule/Controller"
+    type:     annotation

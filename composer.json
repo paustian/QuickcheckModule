@@ -1,0 +1,23 @@
+{
+    "name": "paustian/quickcheck-module",
+    "description": "Module for creating quizzes that you can attach to other modules",
+    "type": "zikula-module",
+    "license": "LGPL-3.0+",
+    "authors": [
+        {
+            "name": "Timothy Paustian",
+            "homepage": "http://www.microbiologytext.com/"
+        }
+    ],
+    "autoload": {
+        "psr-0": { "Zikula\\Module\\QuickcheckModule\\": "" }
+    },
+    "require": {
+        "php": ">5.4.0"
+    },
+    "extra": {
+        "zikula": {
+            "class": "Zikula\\Module\\QuickcheckModule\\QuickcheckModule"
+        }
+    }
+}
