@@ -10,14 +10,14 @@
         }
     ],
     "autoload": {
-        "psr-0": { "Zikula\\Module\\QuickcheckModule\\": "" }
+        "psr-4": { "Paustian\\QuickcheckModule\\": "" }
     },
     "require": {
         "php": ">5.4.0"
     },
     "extra": {
         "zikula": {
-            "class": "Zikula\\Module\\QuickcheckModule\\QuickcheckModule"
+            "class": "Paustian\\QuickcheckModule\\PaustianQuickcheckModule"
         }
     }
 }

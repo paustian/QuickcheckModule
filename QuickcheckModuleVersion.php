@@ -16,22 +16,26 @@
  * @copyright    Copyright (C) 2009 by Timothy Paustian
  * @license      http://www.gnu.org/copyleft/gpl.html GNU General Public License
  */
-class Quickcheck_Version extends Zikula_AbstractVersion {
+
+namespace Paustian\QuickcheckModule;
+
+
+class QuickcheckModuleVersion extends \Zikula_AbstractVersion {
 
     public function getMetaData() {
 // The following information is used by the Modules module 
 // for display and upgrade purposes
         $meta['name'] = __('Quickcheck');
 // the version string must not exceed 10 characters!
-        $meta['version'] = '1.1.0';
+        $meta['version'] = '2.0.0';
         $meta['description'] = __('A hookable module for displaying quizzes or exams as part of other modules.');
         $meta['displayname'] = __('Quickcheck');
+        $meta['url'] = $this->__('quickcheck');
 
 // The following in formation is used by the credits module
 // to display the correct credits
-        $meta['core_min'] = '1.3.0'; // Fixed to 1.3.x range
-        $meta['core_max'] = '1.4.99'; // Fixed to 1.4.x range
-        $meta['capabilities'] = array(HookUtil::PROVIDER_CAPABLE => array('enabled' => true));
+        $meta['core_min'] = '1.4.0'; // Fixed to 1.3.x range
+        //$meta['capabilities'] = array(HookUtil::PROVIDER_CAPABLE => array('enabled' => true));
         $meta['author'] = 'Timothy Paustian';
         $meta['contact'] = 'http://inst.bact.wisc.edu';
 
@@ -41,14 +45,14 @@ class Quickcheck_Version extends Zikula_AbstractVersion {
         $meta['securityschema'] = array('exam::question' => 'Modulename::');
         return $meta;
     }
-
+/*
     protected function setupHookBundles() {
-        $bundle = new Zikula_HookManager_ProviderBundle($this->name, 'provider.quickcheck.ui_hooks.mhp', 'ui_hooks', __('Quickcheck Hook Handlers'));
+        bundle = new Zikula_HookManager_ProviderBundle($this->name, 'provider.quickcheck.ui_hooks.mhp', 'ui_hooks', __('Quickcheck Hook Handlers'));
         $bundle->addServiceHandler('display_view', 'Quickcheck_HookHandler_Mhp', 'ui_view', 'quickcheck.mhp');
         $bundle->addServiceHandler('process_delete', 'Quickcheck_HookHandler_Mhp', 'ui_delete', 'quickcheck.mhp');
         $this->registerHookProviderBundle($bundle);
     }
-
+    */
 }
 
 ?>

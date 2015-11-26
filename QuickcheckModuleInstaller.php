@@ -16,11 +16,19 @@
  * @subpackage   Quickcheck
  * @version      2.0
  * @author       Timothy Paustian
- * @copyright    Copyright (C) 2009 by Timothy Paustian
+ * @copyright    Copyright (C) 2015 by Timothy Paustian
  * @license      http://www.gnu.org/copyleft/gpl.html GNU General Public License
  */
-class Quickcheck_Installer extends Zikula_AbstractInstaller {
+namespace Paustian\QuickcheckModule;
 
+use DoctrineHelper;
+
+class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
+
+    public function setBundle(AbstractBundle $bundle){
+        $this->$bundle = $bundle;
+    }
+    
     /**
      * initialise the quickcheck module
      *
@@ -32,23 +40,25 @@ class Quickcheck_Installer extends Zikula_AbstractInstaller {
      * @return       bool       true on success, false otherwise
      */
     public function install() {
-        if (!DBUtil::createTable('quickcheck_exam')) {
-            LogUtil::registerError(__('Table creation failed @ create exam table'));
-            return false;
-        }
+        // create tables
+        $classes = array(
+            'Paustian\QuickcheckModule\Entity\QuickcheckExamEntity',
+            'Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity'
+        );
 
-        if (!DBUtil::createTable('quickcheck_quest')) {
-            LogUtil::registerError(__('Table creation failed @ create quest table'));
+        try {
+            DoctrineHelper::createSchema($this->entityManager, $classes);
+        } catch (\Exception $e) {
             return false;
         }
 
         //get ready for using categories
         // create our default category
-        if (!$this->_quickcheck_createdefaultcategory()) {
+        /*if (!$this->_quickcheck_createdefaultcategory()) {
             return LogUtil::registerError(__('Category creaction failed.'));
         }
         
-        HookUtil::registerProviderBundles($this->version->getHookProviderBundles());
+        HookUtil::registerProviderBundles($this->version->getHookProviderBundles());*/
         // Initialisation successful
         return true;
     }

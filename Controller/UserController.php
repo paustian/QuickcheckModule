@@ -20,7 +20,7 @@
  * @license      http://www.gnu.org/copyleft/gpl.html GNU General Public License
  */
 
-namespace Zikula\QuickcheckModule\Controller;
+namespace Paustian\QuickcheckModule\Controller;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use modules\Quickcheck\lib\Quickcheck\Entity\QuickcheckExamEntity;

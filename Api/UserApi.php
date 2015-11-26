@@ -19,7 +19,7 @@
  * @copyright    Copyright (C) 2009 by Timothy Paustian
  * @license      http://www.gnu.org/copyleft/gpl.html GNU General Public License
  */
-namespace Zikula\QuickcheckModule\Api;
+namespace Paustian\QuickcheckModule\Api;
 
 use Zikula\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Ziukla\QuickcheckModule\Entity\QuickcheckQuestionEntity;

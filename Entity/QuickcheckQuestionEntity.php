@@ -12,6 +12,7 @@
  * information regarding copyright and licensing.
  */
 
+namespace Paustian\QuickcheckModule\Entity;
 
 use Zikula\Core\Doctrine\EntityAccess;
 use Doctrine\ORM\Mapping as ORM;
