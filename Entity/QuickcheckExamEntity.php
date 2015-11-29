@@ -23,7 +23,7 @@ use Doctrine\ORM\Mapping as ORM;
  * We use annotations to define the entity mappings to database (see http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/basic-mapping.html).
  *
  * @ORM\Entity
- * @ORM\Table(name="quickcheck_quest")
+ * @ORM\Table(name="quickcheck_exam")
  */
 class QuickcheckExamEntity extends EntityAccess {
 
@@ -39,7 +39,7 @@ class QuickcheckExamEntity extends EntityAccess {
     /**
      * exam name
      *
-     * @ORM\Column(type="string", , length=255)
+     * @ORM\Column(type="string", length=255)
      */
     private $quickcheckname;
 

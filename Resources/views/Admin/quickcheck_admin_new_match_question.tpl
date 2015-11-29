@@ -1,5 +1,5 @@
 {*  $Id: quickcheck_admin_new.htm 19361 2006-07-03 14:57:57Z timpaustian $  *}
-{include file="quickcheck_admin_menu.htm"}
+{include file="Admin/quickcheck_admin_menu.tpl"}
 <div class="z-adminbox">
 <h3>{gt text="New Matching Question"}</h3>
 <p>{gt text="Create a new matching question. Put the matched text into the fact and matching concept dialogs. When the question is asked, they will be randomized."}</p>
@@ -8,7 +8,7 @@
       <input type="hidden" name="q_type" value="{$type}" />
       <input type="hidden" name="num_mc_choices" value="{$num_mc_choices}" />
       <input type="hidden" name="id" value="{$id}" />
-      <input type="hidden" name="authid" value="{insert name="generateauthkey" module="Quickcheck"}" />
+      <input type="hidden" name="csrftoken" value="{insert name='csrftoken'}" />         
      <p>{gt text="Text of Question"}: </p>
     <p><textarea name="q_text" id="q_text" wrap="soft" rows="3" cols="60">{$q_text}</textarea></p>
     <p>{gt text="Questions facts and matching concepts"}: </p>

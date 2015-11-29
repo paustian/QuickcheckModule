@@ -1,9 +1,9 @@
-{include file="quickcheck_admin_menu.htm"}
+{include file="Admin/quickcheck_admin_menu.tpl"}
 <h3>{gt text="Export Questions"}</h3>
 <p>{gt text="Select the questions to export. You can also select all the questions by clicking on export all checkbox."}</p>
 <form action="{modurl modname="quickcheck" type="admin" func="doexport"}" method="post"
       enctype="multipart/form-data">
-       <input type="hidden" name="authid" value="{insert name="generateauthkey" module="Quickcheck"}" />
+       <input type="hidden" name="csrftoken" value="{insert name='csrftoken'}" />         
       <ul id="treemenu2" class="treeview">
        {$questions}
          </ul>

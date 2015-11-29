@@ -1,9 +1,9 @@
 {*  $Id: quickcheck_admin_new.htm 19361 2006-07-03 14:57:57Z timpaustian $  *}
-{include file="quickcheck_admin_menu.htm"}
+{include file="Admin/quickcheck_admin_menu.tpl"}
 <div class="z-adminbox">
 <h3>{gt text="Pick an exam to edit"}</h3>
 <form action="{modurl modname="quickcheck" type="admin" func="modify2"}" method="post">
-      <input type="hidden" name="authid" value="{insert name="generateauthkey" module="Quickcheck"}" />
+      <input type="hidden" name="csrftoken" value="{insert name='csrftoken'}" />         
        <table>
         {section loop=$exams name=i}
         <tr>

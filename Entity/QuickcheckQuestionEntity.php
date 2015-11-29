@@ -40,7 +40,7 @@ class QuickcheckQuestionEntity extends EntityAccess
     /**
      * question type
      *
-     * @ORM\Column(type="integer", , length=20)
+     * @ORM\Column(type="integer", length=2)
      */
     private $quickcheckq_type;
     

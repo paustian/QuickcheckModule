@@ -1,5 +1,5 @@
 {*  $Id: quickcheck_admin_new.htm 19361 2006-07-03 14:57:57Z timpaustian $  *}
-{include file="quickcheck_admin_menu.htm"}
+{include file="Admin/quickcheck_admin_menu.tpl"}
 <div class="z-adminbox">
 <h3>{gt text="New True/False Question"}</h3>
 <p>{gt text="Write your new T/F question in the text box, choose whether it is true or false, and explain the correct answer"}</p>
@@ -8,7 +8,7 @@
       {if isset($id)}
       <input type="hidden" name="id" value="{$id}" />
     {/if}
-    <input type="hidden" name="authid" value="{insert name="generateauthkey" module="Quickcheck"}" />
+    <input type="hidden" name="csrftoken" value="{insert name='csrftoken'}" />         
 
            <p>{gt text="True/False Question"}: </p>
     <p>{gt text="Enter the question"}: </p>

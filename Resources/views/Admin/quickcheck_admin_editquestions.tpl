@@ -1,4 +1,4 @@
-{include file="quickcheck_admin_menu.htm"}
+{include file="Admin/quickcheck_admin_menu.tpl"}
 <div class="z-adminbox">
 <h3>{gt text="Edit or Delete Questions"}</h3>
 <p>{gt text="Select a question to edit or delete. You can also select a series of questions to delete, by clicking on the check box and then choosing the delete button"}</p>

@@ -1,10 +1,10 @@
 {*  quickcheck_admin_import.htm,v 1.1 2005/09/02 00:27:29 paustian Exp  *}
-{include file="quickcheck_admin_menu.htm"}
+{include file="Admin/quickcheck_admin_menu.tpl"}
 <div class="z-adminbox">
 <p>{gt text="Paste text to import in the area below and click on import. An example of correct text formatting is shown below the text area."}</p>
 
 <form class="form" action="{modurl modname="quickcheck" type="admin" func="doimport"}" method="post" enctype="application/x-www-form-urlencoded">
-<input type="hidden" name="authid" value="{insert name="generateauthkey" module="Quickcheck"}" />
+<input type="hidden" name="csrftoken" value="{insert name='csrftoken'}" />         
 <textarea name="quest_to_import" cols="120" rows="30">
 </textarea>
 <p><input name="submit" type="submit" value="{gt text="Import"}" /></p>

@@ -1,7 +1,7 @@
-{include file="quickcheck_admin_menu.htm"}
+{include file="Admin/quickcheck_admin_menu.tpl"}
 <h3>{gt text="Modify the exam"}</h3>
 <form action="{modurl modname="quickcheck" type="admin" func="update"}" method="post">
-     <input type="hidden" name="authid" value="{insert name="generateauthkey" module="Quickcheck"}" />
+     <input type="hidden" name="csrftoken" value="{insert name='csrftoken'}" />         
        <input type="hidden" name="exam_id" value="{$exam.id}" />
       <p>{gt text="Exam name"}: <input type="text" size="50" maxlength="255" name="name" value="{$exam.name}"> </p>
     <h3>{gt text="Exam questions"}</h3>

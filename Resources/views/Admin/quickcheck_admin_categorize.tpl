@@ -1,11 +1,11 @@
-{include file="quickcheck_admin_menu.htm"}
+{include file="Admin/quickcheck_admin_menu.tpl"}
 
 <div class="z-adminbox">
 <h3>{gt text="Assign categories to questions"}</h3>
 <p>{gt text="Select question(s) to categorize. Choose the category and then hit the categorize button."}</p>
 <form action="{modurl modname="quickcheck" type="admin" func="addtocategory"}" method="post"
       enctype="multipart/form-data">
-      <input type="hidden" name="authid" value="{insert name="generateauthkey" module="Quickcheck"}" />
+      <input type="hidden" name="csrftoken" value="{insert name='csrftoken'}" />         
        <ul id="treemenu2" class="treeview">
         {$questions}
        </ul>

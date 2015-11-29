@@ -1,5 +1,5 @@
 {*  $Id: quickcheck_admin_new.htm 19361 2006-07-03 14:57:57Z timpaustian $  *}
-{include file="quickcheck_admin_menu.htm"}
+{include file="Admin/quickcheck_admin_menu.tpl"}
 <h3>{pnml name="_QUICKCHECK_NEW_MANS_QUESTION"}</h3>
 <p>{pnml name="_QUICKCHECK_NEW_QUEST_DESC"}</p>
 {pnform}

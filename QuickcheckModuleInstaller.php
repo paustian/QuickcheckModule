@@ -42,13 +42,14 @@ class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
     public function install() {
         // create tables
         $classes = array(
-            'Paustian\QuickcheckModule\Entity\QuickcheckExamEntity',
-            'Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity'
+            'Paustian\\QuickcheckModule\\Entity\\QuickcheckExamEntity',
+            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionEntity'
         );
 
         try {
             DoctrineHelper::createSchema($this->entityManager, $classes);
         } catch (\Exception $e) {
+            //print_r($e);die;
             return false;
         }
 
@@ -108,7 +109,7 @@ class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
     }
 
     /**
-     * delete the Example module
+     * delete the Quickcheck module
      *
      * This function is only ever called once during the lifetime of a particular
      * module instance
@@ -118,14 +119,19 @@ class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
      * @return       bool       true on success, false otherwise
      */
     public function uninstall() {
-        if (!DBUtil::dropTable('quickcheck_exam')) {
+        $classes = array(
+            'Paustian\\QuickcheckModule\\Entity\\QuickcheckExamEntity',
+            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionEntity'
+        );
+        
+        try {
+            DoctrineHelper::dropSchema($this->entityManager, $classes);
+        } catch (\PDOException $e) {
+            $this->request->getSession()->getFlashBag()->add('error', $e->getMessage());
             return false;
         }
-        if (!DBUtil::dropTable('quickcheck_quest')) {
-            return false;
-        }
-
-        HookUtil::unregisterProviderBundles($this->version->getHookProviderBundles());
+        
+        // Deletion successful
         return true;
     }
 

@@ -1,5 +1,5 @@
 {*  $Id: quickcheck_admin_findunanswered.htm 16293 2010-07-04 11:23:32Z timpaustian $  *}
-{include file="quickcheck_admin_menu.htm"}
+{include file="Admin/quickcheck_admin_menu.tpl"}
 <form action="{modurl modname="quickcheck" type="admin" func="modifydeletequestions"}" method="post">
       <p>Total unanswered is: {$count}</p>
     <table border>

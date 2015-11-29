@@ -1,5 +1,5 @@
 {*  $Id: quickcheck_admin_new.htm 19361 2006-07-03 14:57:57Z timpaustian $  *}
-{include file="quickcheck_admin_menu.htm"}
+{include file="Admin/quickcheck_admin_menu.tpl"}
 <h3>{gt text="New True/False Question"}</h3>
 <p>{gt text="Write your new T/F question in the text box, choose whether it is true or false, and explain the correct answer"}</p>
 {pnform}

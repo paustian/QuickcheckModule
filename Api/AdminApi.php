@@ -19,16 +19,11 @@
  */
 namespace Paustian\QuickcheckModule\Api;
 
-use Zikula\QuickcheckModule\Entity\QuickcheckExamEntity;
-use Ziukla\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use SecurityUtil;
 
 class AdminApi extends \Zikula_AbstractApi {
-    
-    protected function postInitialize()
-    {
-        // In this controller we do not want caching.
-        $this->view->setCaching(Zikula_View::CACHE_DISABLED);
-    }
     /**
      * remove a deleted question from an exam
      * @param   the id of the question to delete
@@ -58,7 +53,7 @@ class AdminApi extends \Zikula_AbstractApi {
         return true;
     }
     /**
-     * create a new Example item
+     * create a new exam item
      * 
      * @param    $args['name']    name of the exam
      * @param    $args['questions']  an array of the questions ids to ask
@@ -126,11 +121,11 @@ class AdminApi extends \Zikula_AbstractApi {
         }
         
         $obj = new QuickcheckQuestionEntity;
-        $obj['quickcheckq_type'] = $args['quickcheckq_type'];
-        $obj['quickcheckq_text'] = $args['quickcheckq_text'];
-        $obj['$quickcheckq_answer'] = $args['$quickcheckq_answer'];
-        $obj['$quickcheckq_expan'] = $args['$quickcheckq_expan'];
-        $obj['$quickcheckq_param'] = $args['$quickcheckq_param'];
+        $obj->setQuickcheckq_type($args['q_type']);
+        $obj->setQuickcheckq_text($args['q_text']);
+        $obj->setQuickcheckq_answer($args['q_answer']);
+        $obj->setQuickcheckq_expan($args['q_explan']);
+        $obj->setQuickcheckq_param($args['q_param']);
         
         $this->entityManager->persist($obj);
         $this->entityManager->flush();
@@ -491,5 +486,4 @@ class AdminApi extends \Zikula_AbstractApi {
     }
 
 }
-
 ?>

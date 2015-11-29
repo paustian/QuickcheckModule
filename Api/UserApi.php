@@ -21,8 +21,8 @@
  */
 namespace Paustian\QuickcheckModule\Api;
 
-use Zikula\QuickcheckModule\Entity\QuickcheckExamEntity;
-use Ziukla\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 /**
  * get all strains in database items
  * 
