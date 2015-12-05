@@ -3,8 +3,7 @@
 <div class="z-adminbox">
 <h3>{gt text="New Matching Question"}</h3>
 <p>{gt text="Create a new matching question. Put the matched text into the fact and matching concept dialogs. When the question is asked, they will be randomized."}</p>
-<form action="{modurl modname="quickcheck" type="admin" func="createMatchQuestion"}" method="post"
-      enctype="multipart/form-data">
+<form action="{route name='paustianquicheckmodule_admin_creatematchquestion'}" method="post" enctype="multipart/form-data">
       <input type="hidden" name="q_type" value="{$type}" />
       <input type="hidden" name="num_mc_choices" value="{$num_mc_choices}" />
       <input type="hidden" name="id" value="{$id}" />
@@ -49,6 +48,6 @@
         </ul>
         {/nocache}
     </div>
-    {button src=button_ok.gif set=icons/small alt="_CREATE" title="_CREATE" value="create"} { gt text="Create Question"}
+    {button src=button_ok.gif set=icons/small alt="Create" title="Create" value="create"} {gt text="Create Question"}
 </form>
 </div>

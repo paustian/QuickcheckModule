@@ -71,7 +71,7 @@ class AdminController extends \Zikula_AbstractController {
     }
     
     /**
-     * @Route("/admin/newexam")
+     * @Route("/newexam")
      * 
      * * form to add new exam
      *
@@ -111,19 +111,19 @@ class AdminController extends \Zikula_AbstractController {
             case 'modify':
                 //pass this to modify2
                 //first get the exam id, we need this to call modify2 correctly
-                $exam = modUtil::apiFunc('quickcheck', 'user', 'get', array('art_id' => $art_id));
+                $exam = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'get', array('art_id' => $art_id));
                 $submit = 'edit_' . $exam['id'];
                 //now call the function
-                return ModUtil::func('quickcheck', 'admin', 'modify2', array('submit' => $submit));
+                return ModUtil::func('PaustianQuickcheckModule', 'admin', 'modify2', array('submit' => $submit));
                 break;
             case 'remove':
-                $exam = modUtil::apiFunc('quickcheck', 'user', 'get', array('art_id' => $art_id));
+                $exam = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'get', array('art_id' => $art_id));
                 $exam['art_id'] = -1; //no article attached
-                modUtil::apiFunc('quickcheck', 'admin', 'update', $exam);
+                modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'update', $exam);
                 return new RedirectResponse($ret_url);
                 break;
             case 'attach':
-                $exams = modUtil::apiFunc('quickcheck', 'user', 'getall');
+                $exams = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'getall');
                 //mark the questions that should be checked.
 
                 $render->assign('exams', $exams);
@@ -149,6 +149,9 @@ class AdminController extends \Zikula_AbstractController {
      */
     public function attachAction(Request $request) {
         $this->checkCsrfToken();
+        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
+            throw new AccessDeniedException();
+        }
         //get the values
         $ret_url = $request->request->get('ret_url',null);
         $art_id = $request->request->get('art_id',null);
@@ -168,16 +171,16 @@ class AdminController extends \Zikula_AbstractController {
             throw new AccessDeniedException();;
         }
         //get rid of the old exam if there is one.
-        $old_exam = modUtil::apiFunc('quickcheck', 'user', 'get', array('art_id' => $art_id));
+        $old_exam = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'get', array('art_id' => $art_id));
         if ($old_exam) {
             $old_exam['art_id'] = -1; //no article attached
-            modUtil::apiFunc('quickcheck', 'admin', 'update', $old_exam);
+            modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'update', $old_exam);
         }
         //modify the exam by grabbing it and then changing or adding the art_id
-        $exam = modUtil::apiFunc('quickcheck', 'user', 'get', array('id' => $exam));
+        $exam = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'get', array('id' => $exam));
         $exam['art_id'] = $art_id;
         //now update the exam
-        if (modUtil::apiFunc('quickcheck', 'admin', 'update', $exam)) {
+        if (modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'update', $exam)) {
             $request->getSession()->getFlashBag()->add('status', $this->__('The exam was attached.'));
         }
         //finally return to the page that called.
@@ -188,7 +191,7 @@ class AdminController extends \Zikula_AbstractController {
 
         //I am completely stumped on this one. For some reason, calling this funcion inserts a '1' into the
         //text that is returned. For the life of me I cannot find where it is.
-        $items = modUtil::apiFunc('quickcheck', 'user', 'getallquestions');
+        $items = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'getallquestions');
         if (!$items) {
             return false;
         }
@@ -254,7 +257,9 @@ class AdminController extends \Zikula_AbstractController {
      */
     public function createAction(Request $request) {
         $this->checkCsrfToken();
-        
+        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
+            throw new AccessDeniedException();
+        }
         $questions = $request->request->get('questions',null);
         $ret_url = $request->request->get('ret_url',null);
         $art_id = $request->request->get('art_id',null);
@@ -262,7 +267,7 @@ class AdminController extends \Zikula_AbstractController {
 
         
 
-        $items = modUtil::apiFunc('quickcheck', 'admin', 'create', array('quickcheckquestions' => $questions,
+        $items = modUtil::apiFunc('paustianquickcheckmodule', 'admin', 'create', array('quickcheckquestions' => $questions,
             'quickcheckart_id' => $art_id,
             'quickcheckname' => $name));
 
@@ -276,7 +281,7 @@ class AdminController extends \Zikula_AbstractController {
     }
 
     /**
-     * @Route("/admin/newtextquest
+     * @Route("/newtextquest")
      * form to add new text question
      *
      * Create a new quick_check question
@@ -321,7 +326,7 @@ class AdminController extends \Zikula_AbstractController {
     
      /**
      * 
-     * @Route("/admin/createtextquestion")
+     * @Route("/createtextquestion")
      * @Method("POST")
      * 
      * Create an text question.
@@ -342,13 +347,14 @@ class AdminController extends \Zikula_AbstractController {
   
     public function createTextQuestionAction(Request $request) {
        $this->checkCsrfToken();
-        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
+        
+       if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
         $button = $request->request->get('submit',null);
 
         if ($button == 'update') {
-            $data['q_type'] = 0;//text type question
+            $data['q_type'] = self::_QUICKCHECK_TEXT_TYPE;//text type question
             $id = $request->request->get('id',null);
             if (isset($id)) {
                 $data['id'] = $id;
@@ -394,28 +400,27 @@ class AdminController extends \Zikula_AbstractController {
 
     /**
      * 
-     * @Route("/admin/newmatchquestion")
+     * @Route("/newmatchquest")
      * 
      * form to add new matching question
      *
      * Create a new quick_check question
      *
      * @author       Timothy Paustian
-     * @return       The form for creating a new matching question
+     * @return       Response
      */
-    public function newMatchQuestAction($args) {
+    public function newMatchQuestAction($args=array()) {
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
-        $args['q_type'] = $this->_QUICKCHECK_MATCHING_TYPE;
+        $args['q_type'] = self::_QUICKCHECK_MATCHING_TYPE;
         $render = $this->_setup_MANSMATCH_form($args);
         // Return the output that has been generated by this function
-        return $render->fetch('Admin\quickcheck_admin_new_match_question.tpl');
+        return new Response($render->fetch('Admin\quickcheck_admin_new_match_question.tpl'));
     }
 
     /**
-     * 
-     * @Route("/admin/creatematchquestion")
+     * @Route("/creatematchquestion")
      * @Method("POST")
      * 
      * Create an text question.
@@ -432,7 +437,9 @@ class AdminController extends \Zikula_AbstractController {
     public function createMatchQuestionAction(Request $request) {
         
         $this->checkCsrfToken();
-        
+        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
+            throw new AccessDeniedException();
+        }
         $data['num_mc_choices'] = $request->request->get('num_mc_choices',null);
         $button = $request->request->get('submit',null);
 
@@ -449,33 +456,33 @@ class AdminController extends \Zikula_AbstractController {
                 $data['num_mc_choices']++;
 
                 //its faster not to call stuff through the usual zikula mechanism
-                return $this->newMatchQuest($data);
+                return $this->newMatchQuestAction($data);
                 break;
 
             case 'remove':
                 if ($data['num_mc_choices'] > 2) {
                     $data['num_mc_choices']--;
                 }
-                return $this->newMatchQuest($data);
+                return $this->newMatchQuestAction($data);
                 break;
 
             case 'create':
                 if (!$this->_validate_createMatchQuestion($data)) {
                     //if the form is not valid, send it back to the user
                     //A suitable status message is also displayed.
-                    return $this->newMatchQuest($data);
+                    return $this->newMatchQuestAction($data);
                 }
 //set the type of question
-                $data['q_type'] = $this->_QUICKCHECK_MATCHING_TYPE;
+                $data['q_type'] = self::_QUICKCHECK_MATCHING_TYPE;
 
                 //grab the various MC options
                 if ($data['id'] == '') {
-                    if (!modUtil::apiFunc('quickcheck', 'admin', 'createquestion', $data)) {
+                    if (!modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'createquestion', $data)) {
                         return LogUtil::registerError($this->__("Creation of the matching question failed."));
                     }
                     SessionUtil::setVar('statusmsg', 'The question was created.');
                 } else {
-                    if (!modUtil::apiFunc('quickcheck', 'admin', 'updatequestion', $data)) {
+                    if (!modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'updatequestion', $data)) {
                         return LogUtil::registerError($this->__("Update of the matching question failed."));
                     }
                     $request->getSession()->getFlashBag()->add('status', $this->__("The question was modified."));
@@ -518,6 +525,7 @@ class AdminController extends \Zikula_AbstractController {
     }
 
     /**
+     * @Route("/newtfquest")
      * form to add new TF question
      *
      * Create a new quick_check question
@@ -525,13 +533,13 @@ class AdminController extends \Zikula_AbstractController {
      * @author       Timothy Paustian
      * @return       The form for creating a new TF question
      */
-    public function newTFQuest($args) {
+    public function newTFQuestAction($args=array()) {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
-            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add questions."));
+            throw new AccessDeniedException();
         }
-        $render = zikula_View::getInstance('Quickcheck', false);
+        $render = $this->view;
         if (array_key_exists('q_text', $args)) {
             //if this is set, there is data to load into the form
             $render->assign('q_text', $args['q_text']);
@@ -561,16 +569,39 @@ class AdminController extends \Zikula_AbstractController {
         $catregistry = CategoryRegistryUtil::getRegisteredModuleCategories('Quickcheck', 'quickcheck_quest');
 
         $render->assign('catregistry', $catregistry);*/
-        return $render->fetch('Admin\quickcheck_admin_new_tf_question.tpl');
+        return new Response($render->fetch('Admin\quickcheck_admin_new_tf_question.tpl'));
     }
-
+    
+    
+     /**
+     * 
+     * @Route("/createtfquest")
+     * @Method("POST")
+     * 
+     * Create an text question.
+     * @param Request $request
+     * 
+     * Take input from modify2action. Parameters of the request are:
+     *  q_text - The text of the quesiton
+     *  q_answer - The answer to the question
+     *  q_explan - The explanation of the answer
+     *  q_param - The parameters for this question. These is the matching items
+     * 
+     * @return RedirectResponse
+     */
     public function createTFQuestAction(Request $request) {
-        $request->request->get('name', null);
+        
+        //security check
+        $this->checkCsrfToken();
+        
+        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
+            throw new AccessDeniedException();
+        }
         
         $button = $request->request->get('submit',null);
 
         if ($button == 'update') {
-            $data['q_type'] = $this->_QUICKCHECK_TF_TYPE;
+            $data['q_type'] = self::_QUICKCHECK_TF_TYPE;
             $id = $request->request->get('id',null);
             if (isset($id)) {
                 $data['id'] = $id;
@@ -583,6 +614,9 @@ class AdminController extends \Zikula_AbstractController {
                 $data['q_answer'] = 0;
             }
             $data['q_explan'] = $request->request->get('q_explan',null);
+            //not allowed to be null, but we don't use it for these
+            //just add a dummy value.
+            $data['q_param'] = '';
 
             $cat = $request->request->get('quickcheck_quest',null);
             $data['__CATEGORIES__'] = $cat['__CATEGORIES__'];
@@ -590,31 +624,33 @@ class AdminController extends \Zikula_AbstractController {
             if ($this->_validate_TFQuestion($data)) {
                 if (isset($id)) {
                     $data['id'] = $id;
-                    if (!ModUtil::apiFunc('Quickcheck', 'admin', 'updatequestion', $data)) {
-                        return LogUtil::registerError($this->__("Update of the TF quetsion failed."));
-                    }
+                    ModUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'updatequestion', $data);
                     //if we have gotten here, we were successful
                     $request->getSession()->getFlashBag()->add('status', $this->__('True/False question modified successfully.'));
                 } else {
-                    if (!ModUtil::apiFunc('Quickcheck', 'admin', 'createquestion', $data)) {
-                        return LogUtil::registerError($this->__("Creation of the TF question failed."));
-                    }
+                    ModUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'createquestion', $data);
                     //if we have gotten here, we were successful
                     $request->getSession()->getFlashBag()->add('status', $this->__('New True/False question created.'));
                 }
-
-                return new RedirectResponse(ModUtil::url('quickcheck', 'admin', 'view'));
+                $url = $this->get('router')->generate('paustianquickcheckmodule_admin_newtfquest', array(), RouterInterface::ABSOLUTE_URL);
+                return new RedirectResponse($url);
             } else {
                 //repeat the form but populate the fieles
                 return $this->newTFQuest($data);
             }
         }
         if ($args['commandName'] == 'cancel') {
-            return new RedirectResponse(ModUtil::url('quickcheck', 'admin', 'view'));
+            return new RedirectResponse($this->get('router')->generate('paustianquickcheckmodule_admin_index', array(), RouterInterface::ABSOLUTE_URL));
         }
         return true;
     }
 
+    /**
+     * _validate_TFQuestion. 
+     * Check a tf question and maks sure it validates before updating
+     * @param type $inData
+     * @return boolean
+     */
     private function _validate_TFQuestion($inData) {
         $is_ok = true;
         //Make sure none of the fields are empty
@@ -629,27 +665,45 @@ class AdminController extends \Zikula_AbstractController {
         return $is_ok;
     }
 
+    
     /**
-     * form to add new multiple choice question
-     *
-     * Create a new quick_check question
-     *
-     * @author       Timothy Paustian
-     * @return       The form for creating a new multiple choice question
+     * @Route("/newmcquestion")
+     * 
+     * Form to add a new multiple choice question
+     * @param array $args
+     * @return Response
      */
-    public function newMCQuest($args) {
-        $args['q_type'] = $this->_QUICKCHECK_MULTIPLECHOICE_TYPE;
+    public function newMCQuestAction($args=array()) {
+        if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_ADD)) {
+            throw new AccessDeniedException();
+        }
+        $args['q_type'] = self::_QUICKCHECK_MULTIPLECHOICE_TYPE;
         $render = $this->_setup_MANSMATCH_form($args);
         //TODO:This may not work, setting up a pointer to a function this way.
-        $render->assign('pointer', 'newMCQuest');
-        $render->assign('formURL', ModUtil::url('Quickcheck', 'admin', 'createMCQuestion'));
+        $render->assign('pointer', 'newMCQuestAction');
+        $url = $this->get('router')->generate('paustianquickcheckmodule_admin_createmcquestion', array(), RouterInterface::ABSOLUTE_URL);
+        $render->assign('formURL', $url);
         // Return the output that has been generated by this function
-        return $render->fetch('Admin\quickcheck_admin_new_mc_question.tpl');
+        return new Response($render->fetch('Admin\quickcheck_admin_new_mc_question.tpl'));
     }
 
+    /**
+     * @Route("/createmcquestion")
+     * @Method("POST")
+     * 
+     * createMCQuestionAction
+     * create a multiple choice question.
+     * 
+     * @param Request $request
+     * @return RedirectResponse
+     */
     public function createMCQuestionAction(Request $request) {
+         //security check
+        $this->checkCsrfToken();
+        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
+            throw new AccessDeniedException();
+        }
         //write this now to handle the form.
-        //save the <pnform> stuff.
         $data['num_mc_choices'] = $request->request->get('num_mc_choices',null);
         $button = $request->request->get('submit',null);
         $pointer = $request->request->get('pointer',null);
@@ -678,28 +732,25 @@ class AdminController extends \Zikula_AbstractController {
                 break;
 
             case 'create':
-                if (!$this->_validate_createMCQuestion($data)) {
+                if (!$this->_validate_createMCQuestion($data, $request)) {
                     //if the form is not valid, send it back to the user
                     //A suitable status message is also displayed.
                     return $this->$pointer($data);
                 }
                 //grab the various MC options
                 if ($data['id'] == '') {
-                    if (!modUtil::apiFunc('Quickcheck', 'admin', 'createquestion', $data)) {
-                        return LogUtil::registerError(__('Creating the question failed.'));
-                    }
-                    SessionUtil::setVar('statusmsg', 'The question was created');
+                    modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'createquestion', $data);
+                    $request->getSession()->getFlashBag()->add('status', $this->__('The question was created'));
                 } else {
-                    if (!modUtil::apiFunc('Quickcheck', 'admin', 'updatequestion', $data)) {
-                        return LogUtil::registerError(__('Updating the quesiton failed.'));
-                    }
-                    SessionUtil::setVar('statusmsg', 'The question was modified');
+                    modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'updatequestion', $data);
+                    $request->getSession()->getFlashBag()->add('status', $this->__('The question was modified'));
                 }
                 //if we have gotten here, we were successful
-                return new RedirectResponse(ModUtil::url('quickcheck', 'admin', 'newMCQuest'));
+                $url = $this->get('router')->generate('paustianquickcheckmodule_admin_newmcquest', array(), RouterInterface::ABSOLUTE_URL);
+                return new RedirectResponse($url);
                 break;
             case 'cancel':
-                return new RedirectResponse(ModUtil::url('quickcheck', 'admin', 'view'));
+                return new RedirectResponse($this->get('router')->generate('paustianquickcheckmodule_admin_index', array(), RouterInterface::ABSOLUTE_URL));
                 break;
         }
     }
@@ -714,7 +765,7 @@ class AdminController extends \Zikula_AbstractController {
      * @author       Timothy Paustian
      * @return       The form for creating a new multiple choice question
      */
-    private function _validate_createMCQuestion($inData) {
+    private function _validate_createMCQuestion($inData, Request $request) {
         $is_ok = true;
         //Make sure none of the fields are empty
         if (($inData['q_text'] == "") || $inData['q_explan'] == "") {
@@ -724,7 +775,7 @@ class AdminController extends \Zikula_AbstractController {
         $answer_percent = $inData['q_param'];
         $total_percent = 0;
         //add up all the percents, should total 100 for all question except text questions
-        if ($inData['q_type'] != $this->_QUICKCHECK_TEXT_TYPE) {
+        if ($inData['q_type'] != self::_QUICKCHECK_TEXT_TYPE) {
             foreach ($answer_percent as $percent) {
                 $total_percent += $percent;
             }
@@ -746,6 +797,8 @@ class AdminController extends \Zikula_AbstractController {
     }
 
     /**
+     * @Route ("newmansquest")
+     * @param   $args the 
      * form to add new multiple answer question
      *
      * Create a new quick_check question
@@ -753,32 +806,38 @@ class AdminController extends \Zikula_AbstractController {
      * @author       Timothy Paustian
      * @return       The form for creating a new multiple answe question
      */
-    public function newMANSQuest($args) {
+    public function newMANSQuestAction($args=array()) {
 
-        $args['q_type'] = $this->_QUICKCHECK_MULTIANSWER_TYPE;
+        if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_ADD)) {
+            throw new AccessDeniedException();
+        }
+        $args['q_type'] = self::_QUICKCHECK_MULTIANSWER_TYPE;
         $render = $this->_setup_MANSMATCH_form($args);
-        $render->assign('pointer', "newMANSQuest");
+        $render->assign('pointer', "newMANSQuestAction");
+        $render->assign('MAtype', true);
 
         // Return the output that has been generated by this function
-        return $render->fetch('Admin\quickcheck_admin_new_mc_question.tpl');
+        return new Response($render->fetch('Admin\quickcheck_admin_new_mc_question.tpl'));
     }
+    
+    /**
+     * 
+     * @param $args the data coming in for set up
+     * @return type
+     * @throws AccessDeniedException
+     */
 
-    function _setup_MANSMATCH_form($args) {
+    private function _setup_MANSMATCH_form($args) {
 
         if (!isset($args['num_mc_choices'])) {
-            $num_mc_choices = 4;
+            $num_mc_choices = 5;
         } else {
             $num_mc_choices = $args['num_mc_choices'];
-        }
-        // Security check - important to do this as early as possible to avoid
-        // potential security holes or just too much wasted processing
-        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
-            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add "));
         }
 
         // Create output object - this object will store all of our output so that
         // we can return it easily when required
-        $render = zikula_View::getInstance('Quickcheck', false);
+        $render = $this->view;
         //a test array for now
         $render->assign('num_mc_choices', $num_mc_choices);
         //assign this parameter, its always set.
@@ -824,12 +883,14 @@ class AdminController extends \Zikula_AbstractController {
     }
 
     /**
+     * @Route ("modify")
+     * 
      * modify an exam
      *
      * Set up a form to present all the exams and let the user choose
      * The one to modify
      */
-    public function modify() {
+    public function modifyAction() {
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
             return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add questions."));
         }
@@ -837,21 +898,34 @@ class AdminController extends \Zikula_AbstractController {
         //because that is easier to deal with.
         $render = zikula_View::getInstance('Quickcheck', false);
         //get the exams
-        $exams = modUtil::apiFunc('quickcheck', 'user', 'getall');
+        $exams = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'getall');
         $render->assign('exams', $exams);
         // Return the output that has been generated by this function
-        return $render->fetch('Admin\quickcheck_admin_modify.tpl');
+        return new Response($render->fetch('Admin\quickcheck_admin_modify.tpl'));
     }
 
-    public function modify2(Request $request) {
-
+    /**
+     * 
+     * modify2. The second phase of the modify form
+     * @Route ("modify2")
+     * @Method("POST")
+     * 
+     * @param Request $request
+     * @return RedirectResponse
+     * @throws AccessDeniedException
+     */
+    
+    public function modify2Action(Request $request) {
+         //security check
+        $this->checkCsrfToken();
+        
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
-            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add questions."));
+            throw new AccessDeniedException();
         }
 
         //Find out the button that was pressed
         $button = $request->request->get('submit',null);
-        $redirect_url = ModUtil::url('quickcheck', 'admin', 'modify');
+        $redirect_url = $this->get('router')->generate('paustianquickcheckmodule_admin_modify', array(), RouterInterface::ABSOLUTE_URL);
         //delete all the checked items
         if ($button === 'delete_exams') {
             if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_DELETE)) {
@@ -862,9 +936,7 @@ class AdminController extends \Zikula_AbstractController {
             if (!empty($questions)) {
                 //we have the list, now delete the questions
                 foreach ($questions as $item) {
-                    if (!modUtil::apiFunc('quickcheck', 'admin', 'delete', array('id' => $item))) {
-                        LogUtil::registerError(__('There was an error deleting the exam.'), null, $redirect_url);
-                    }
+                    modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'delete', array('id' => $item));
                 }
             }
             $request->getSession()->getFlashBag()->add('status', $this->__('The exams were deleted.'));
@@ -877,7 +949,7 @@ class AdminController extends \Zikula_AbstractController {
         //get the id the exam.
         $id = $string_data[1];
         if ($command == 'edit') {
-            $the_exam = modUtil::apiFunc('quickcheck', 'user', 'get', array('id' => $id));
+            $the_exam = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'get', array('id' => $id));
             $curr_quest_array = array();
             $other_array = array();
             //grab the current questions.
@@ -899,26 +971,34 @@ class AdminController extends \Zikula_AbstractController {
                 }
             }
 
-            $render = zikula_View::getInstance('Quickcheck', false);
+            $render = $this->view;
             $render->assign('exam', $the_exam);
             $render->assign('curr_questions', $curr_quest_array);
             $render->assign('other_questions', $other_array);
-            return $render->fetch('Admin\quickcheck_admin_modify2.tpl');
+            return new Response($render->fetch('Admin\quickcheck_admin_modify2.tpl'));
         }
         return new RedirectResponse($redirect_url);
     }
 
-    public function modifyquest($args) {
+    /**
+     * @Route("/modifyquest")
+     * 
+     * modifyquest - modify a question.
+     * 
+     * @param type $args
+     * @return type
+     */
+    public function modifyquestAction($args) {
 
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
-            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to add questions."));
+            throw new AccessDeniedException();
         }
 
-
-        $items = modUtil::apiFunc('quickcheck', 'user', 'getallquestions');
+        $items = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'getallquestions');
 
         if (!$items) {
-            return DataUtil::formatForDisplayHTML($this->__("That question does not exist"));
+            $request->getSession()->getFlashBag()->add('status', $this->__("There are no quesitons to modify"));
+            return RedirectResponse($this->get('router')->generate('paustianquickcheckmodule_admin_index', array(), RouterInterface::ABSOLUTE_URL));
         }
 
         // Create output object - this object will store all of our output so that
@@ -927,46 +1007,65 @@ class AdminController extends \Zikula_AbstractController {
         $render->assign('questions', $items);
         //prepare your variables as you see fit
         // Return the output that has been generated by this function
-        return $render->fetch('Admin\quickcheck_admin_modifyquest.tpl');
+        return new Response($render->fetch('Admin\quickcheck_admin_modifyquest.tpl'));
     }
+    
+    /**
+     * 
+     * modify2. The second phase of the modify form
+     * @Route ("modifyquest2")
+     * @Method("POST")
+     * 
+     * @param Request $request
+     * @return RedirectResponse
+     * @throws AccessDeniedException
+     */
+    
 
-    public function modifyquest2($args) {
+    public function modifyquest2Action(Request $request) {
 
-
+         //security check
+        $this->checkCsrfToken();
+        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_EDIT)) {
+            throw new AccessDeniedException();
+        }
+        
         $id = $request->request->get('id',null);
-        $redirect_url = ModUtil::url('quickcheck', 'admin', 'editquestions');
+        $redirect_url = $this->get('router')->generate('paustianquickcheckmodule_admin_editquestions', array(), RouterInterface::ABSOLUTE_URL);
 
         if (!isset($id)) {
-            LogUtil::registerArgsError($redirect_url);
+            $request->getSession()->getFlashBag()->add('status', $this->__("The id is not set in modidfyquest2"));
+            return RedirectResponse($this->get('router')->generate('paustianquickcheckmodule_admin_index', array(), RouterInterface::ABSOLUTE_URL));
         }
         //grab the question
-        $item = modUtil::apiFunc('quickcheck', 'user', 'getquestion', array('id' => $id));
+        $item = modUtil::apiFunc('PaustianQuickcheckmodule', 'user', 'getquestion', array('id' => $id));
 
         if (!$item) {
-            LogUtil::registerArgsError();
-            return false;
+            $request->getSession()->getFlashBag()->add('status', $this->__("A question with that id does not exist"));
+            return RedirectResponse($this->get('router')->generate('paustianquickcheckmodule_admin_index', array(), RouterInterface::ABSOLUTE_URL));
         }
 
         switch ($item['q_type']) {
-            case $this->_QUICKCHECK_TEXT_TYPE:
+            case self::_QUICKCHECK_TEXT_TYPE:
                 return $this->modifyTextQuest(array('item' => $item));
                 break;
-            case $this->_QUICKCHECK_MATCHING_TYPE:
+            case self::_QUICKCHECK_MATCHING_TYPE:
                 return $this->modifyMatchQuest(array('item' => $item));
                 break;
-            case $this->_QUICKCHECK_MULTIANSWER_TYPE:
+            case self::_QUICKCHECK_MULTIANSWER_TYPE:
                 return $this->modifyMANSQuest(array('item' => $item));
                 break;
-            case $this->_QUICKCHECK_MULTIPLECHOICE_TYPE:
+            case self::_QUICKCHECK_MULTIPLECHOICE_TYPE:
                 return $this->modifyMCQuest(array('item' => $item));
                 break;
-            case $this->_QUICKCHECK_TF_TYPE:
+            case self::_QUICKCHECK_TF_TYPE:
                 return $this->modifyTFQuest(array('item' => $item));
                 break;
         }
     }
 
     /**
+     * 
      * form to add modify a T/F question
      *
      * Create a new quick_check question
@@ -1062,17 +1161,24 @@ class AdminController extends \Zikula_AbstractController {
     }
 
     /**
+     * 
+     * @Route("/update")
+     * @Method POST
+     * 
      * Modify an exam
      *
      * This is a standard function that is called with the results of the
      * form supplied by quickcheck_admin_modify2() to update a current exam
      *
+     * @param Request $request
+     * @return RedirectResponse
+     * @throws AccessDeniedException
      */
-    public function update(Request $request) {
+    
+    public function updateAction(Request $request) {
         // Confirm authorisation code.
-        if (!SecurityUtil::confirmAuthKey()) {
-            return LogUtil::registerAuthidError(ModUtil::url('quickcheck', 'admin', 'main'));
-        }
+         //security check
+        $this->checkCsrfToken();
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -1090,24 +1196,30 @@ class AdminController extends \Zikula_AbstractController {
         } else {
             $total_questions = array();
         }
-        if (modUtil::apiFunc('quickcheck', 'admin', 'update', array('name' => $name, 'id' => $id, 'questions' => $total_questions))) {
+        if (modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'update', array('name' => $name, 'id' => $id, 'questions' => $total_questions))) {
             $request->getSession()->getFlashBag()->add('status', $this->__("The exam was updated."));
         }
-        return new RedirectResponse(ModUtil::url('quickcheck', 'admin', 'modify'));
+        return new RedirectResponse(ModUtil::url('PaustianQuickcheckModule', 'admin', 'modify'));
     }
 
     /**
+     * @Route("/editquestions")
+     * 
      * edit questions
      *
      *  This is the interface for modifying and deleting questions. I combined the
      *  two to make it more accessible to the user. The function displays a list of
      *  questions, and from there a user can edit or delete a question.
+     * 
+     * @return Response
+     * @throws AccessDeniedException
+     * 
      */
-    public function editquestions() {
+    public function editquestionsAction() {
         $questions = $this->_prep_question_list("yes");
         $render = zikula_View::getInstance('Quickcheck', false);
         $render->assign('questions', $questions);
-        return $render->fetch('Admin\quickcheck_admin_editquestions.tpl');
+        return new Response($render->fetch('Admin\quickcheck_admin_editquestions.tpl'));
     }
 
     private function _prep_question_list($buttons = "no") {
@@ -1126,17 +1238,25 @@ class AdminController extends \Zikula_AbstractController {
         $render->assign('questions', $questions);
         $render->assign('buttons', $buttons);
 
-        return $render->fetch('Admin\quickcheck_admin_qpart.tpl');
+        return new Response($render->fetch('Admin\quickcheck_admin_qpart.tpl'));
     }
 
-    public function modifydeletequestions() {
+    /**
+     * @Route("/modifydeletequesions")
+     * 
+     * presents a list of questions that you can then modify or delete.
+     * 
+     * @return RedirectResponse
+     * @throws AccessDeniedException
+     */
+    public function modifydeletequestionsAction() {
 
         //Find out the button that was pressed
         $button = $request->request->get('submit',null);
         if (!isset($button)) {
             $button = $request->request->get('plg4_update',null);
         }
-        $redirect_url = ModUtil::url('quickcheck', 'admin', 'editquestions');
+        $redirect_url = $this->get('router')->generate('paustianquickcheckmodule_admin_editquestions', array(), RouterInterface::ABSOLUTE_URL);
         //delete all the checked items
 
         if ($button === 'delete_checked') {
@@ -1149,21 +1269,22 @@ class AdminController extends \Zikula_AbstractController {
             if (!empty($questions)) {
                 //we have the list, now delete the questions
                 foreach ($questions as $item) {
-                    if (!modUtil::apiFunc('quickcheck', 'admin', 'deletequestion', array('id' => $item))) {
-                        LogUtil::registerError('Error Deleting Question', null, $redirect_url);
+                    if (!modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'deletequestion', array('id' => $item))) {
+                        $request->getSession()->getFlashBag()->add('status', $this->__("There was an error deleting the quesiton."));
+                        return RedirectResponse($this->get('router')->generate('paustianquickcheckmodule_admin_index', array(), RouterInterface::ABSOLUTE_URL));;
                     }
                 }
                 //if we get here, it worked.
                 $request->getSession()->getFlashBag()->add('status', $this->__("The choosen question(s) were deleted"));
             } else {
                 if ($delete_all == "on") {
-                    $questions = modUtil::apiFunc('quickcheck', 'user', 'getallquestions');
+                    $questions = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'getallquestions');
                     if (!$questions) {
-                        LogUtil::registerError('There are no questions to modify. Create some first.');
+                        $request->getSession()->getFlashBag()->add('status', $this->__('There are no questions to modify. Create some first.'));
                         return new RedirectResponse($redirect_url);
                     }
                     foreach ($questions as $q_item) {
-                        if (!modUtil::apiFunc('quickcheck', 'admin', 'deletequestion', array('id' => $q_item['id']))) {
+                        if (!modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'deletequestion', array('id' => $q_item['id']))) {
                             //if we have an error, bail, the error is already posted.
                             return new RedirectResponse($redirect_url);
                         }
@@ -1171,7 +1292,7 @@ class AdminController extends \Zikula_AbstractController {
                     //if we got here, all the question are deleted, we need to redirect somewhere else
                     //post a status message too.
                     $request->getSession()->getFlashBag()->add('status', $this->__("All questions were deleted"));
-                    return new RedirectResponse(ModUtil::url('quickcheck', 'admin', 'editquestions'));
+                    return new RedirectResponse(ModUtil::url('PaustianQuickcheckModule', 'admin', 'editquestions'));
                 }
             }
             return new RedirectResponse($redirect_url);
@@ -1200,49 +1321,33 @@ class AdminController extends \Zikula_AbstractController {
     }
 
 
-    
-
     /**
-     * Modify configuration
-     *
-     * There are no config variables to modify
-     */
-    public function modifyconfig() {
-        return true;
-    }
-
-    /**
-     * Update the configuration
-     *
-     * This is a standard function to update the configuration parameters of the
-     * module given the information passed back by the modification form
-     * Modify configuration
-     *
-     * @author       Timothy Paustian
-     *
-     */
-    public function updateconfig() {
-        return true;
-    }
-
-    /**
+     * 
+     * @Route("/manageexams")
+     * @Method("POST")
+     * 
+     * @param Request $request
+     * 
      * Manage exams
      *
      * This is the hook funciton that attaches/deletes/modifies an exam, with
      * questions, to another module. This is the interface that takes care of
      * those functions. What gets passed in, may be the id of the exam. If not
      * then we display an interface for choosing questions for the exam.
+     * 
+     * 
      */
-    public function manageexams($args) {
-        $art_id = $args['objectid'];
-        $ret_url = $args['extrainfo']['returnurl'];
-        $module = $args['extrainfo']['module'];
+    
+    public function manageexamsAction(Request $request) {
+        $art_id = $request->request->get('objectid', null);
+        $ret_url = $request->request->get('extrainfo', null);
+        $module = $request->request->get('extrainfo', null);
         $ret_text = "";
-        $exam = modUtil::apiFunc('quickcheck', 'user', 'get', array('art_id' => $art_id));
+        $exam = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'get', array('art_id' => $art_id));
 
         if ($exam) {
-            $ret_text = ModUtil::func('quickcheck', 'user', 'display', array('exam' => $exam, 'returnurl' => $ret_url));
-            $render = zikula_View::getInstance('Quickcheck', false);
+            $ret_text = ModUtil::func('PaustianQuickcheckModule', 'user', 'display', array('exam' => $exam, 'returnurl' => $ret_url));
+            $render = $this->view;
             $render->assign('hasexam', 1);
         }
         //no exam, display an interface to pick one, only if this is an admin
@@ -1251,72 +1356,73 @@ class AdminController extends \Zikula_AbstractController {
             //as each hooked page would then have the error message.
             return $ret_text;
         } else {
-            $ret_text .= "<hr />" . ModUtil::func('quickcheck', 'admin', 'pickquestions', array('returnurl' => $ret_url, 'art_id' => $art_id));
+            $ret_text .= "<hr />" . ModUtil::func('PaustianQuickcheckModule', 'admin', 'pickquestions', array('returnurl' => $ret_url, 'art_id' => $art_id));
         }
         return $ret_text;
     }
 
     /**
-     *  Pick questions
+     * @Route("/pickquestions")
+     * @Method("POST")
+     * 
+     * Pick questions
      *
      * Display an interface for picking questions. Really this will just be a button
      * that will lead to a page where you can add questions to an exam.
      *
+     * @param Request
+     * @return Response
      */
-    public function pickquestions($args) {
+    
+    public function pickquestionsAction(Request $request) {
+        // Confirm authorisation code.
+         //security check
+        $this->checkCsrfToken();
+        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_EDIT)) {
+            throw new AccessDeniedException();
+        }
 
-        $ret_url = $args['returnurl'];
-        $art_id = $args['art_id'];
-        $render = zikula_View::getInstance('Quickcheck', false);
+        $ret_url = $request->request->get('returnurl',null);
+        $art_id = $request->request->get('art_id', null);
+        $render = $this->view;
         $render->assign('ret_url', $ret_url);
         $render->assign('art_id', $art_id);
-        return $render->fetch('Admin\quickcheck_admin_pickquestions.tpl');
+        return new Response($render->fetch('Admin\quickcheck_admin_pickquestions.tpl'));
     }
-
-//a short function for cleaning up the array of exam questions
-    public function clean() {
-        $exams = modUtil::apiFunc('quickcheck', 'user', 'getall');
-        $null_array = array("");
-        foreach ($exams as $exam) {
-            $questions = unserialize($exam['questions']);
-            $questions = array_diff($questions, $null_array);
-            $exam['questions'] = serialize($questions);
-            modUtil::apiFunc('quickcheck', 'admin', 'update', $exam);
-        }
-        $request->getSession()->getFlashBag()->add('status', $this->__("It worked."));
-        return true;
-    }
-
-//The next thing I have to do is to catagorize all the questions. Write a routine that does it.
-//Write an admin function that allows the block categorization of all the questions. You check off
-//checkboxes and then click a categorize button which works through all the questions and
-//places them in the right category.
-    /*
-     * quickcheck_admin_categorize
-     *
-     * Display a list of questions with each having a checkbox. You choose a category and a checkboxe(s)
-     * and each question is then added to that category.
-     */
-
-    public function categorizeAction() {
+    
+    /**
+    * @Route("/categorize")
+    *
+    *
+    * Display a list of questions with each having a checkbox. You choose a category and a checkboxe(s)
+    * and each question is then added to that category.
+    * @return Response 
+    */
+    
+ public function categorizeAction() {
         $questions = $this->_prep_question_list();
         $render = zikula_View::getInstance('Quickcheck', false);
         $render->assign('questions', $questions);
-// load the categories system
-        /*if (!($class = Loader::loadClass('CategoryRegistryUtil'))) {
-            pn_exit(pnML('_UNABLETOLOADCLASS', array('s' => 'CategoryRegistryUtil')));
-        }
-        $catregistry = CategoryRegistryUtil::getRegisteredModuleCategories('Quickcheck', 'quickcheck_quest');
-        $render->assign('catregistry', $catregistry);*/
-
-        return $render->fetch('Admin\quickcheck_admin_categorize.tpl');
+        
+        return new Response($render->fetch('Admin\quickcheck_admin_categorize.tpl'));
     }
 
-    public function addtocategoryAction($args) {
+    
+    /**
+     * @Route("/addtocategory")
+     * @Method("POST")
+     * 
+     * Take the category that was recorded and  add it to the selected questions
+     * 
+     * @param Request $request
+     * @return RedirectResponse
+     * @throws AccessDeniedException
+     */
+    public function addtocategoryAction(Request $request) {
         // Confirm authorisation code.
-        if (!SecurityUtil::confirmAuthKey('quickcheck')) {
-            return LogUtil::registerAuthidError(ModUtil::url('quickcheck', 'admin', 'modify'));
-        }
+         //security check
+        $this->checkCsrfToken();
+        
         //you have to have edit access to do this
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
@@ -1327,78 +1433,79 @@ class AdminController extends \Zikula_AbstractController {
         //get the category
         $cat = $request->request->get('quickcheck_quest',null);
         foreach ($questions as $the_question) {
-            $item = modUtil::apiFunc('quickcheck', 'user', 'getquestion', array('id' => $the_question));
+            $item = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'getquestion', array('id' => $the_question));
             $item['__CATEGORIES__'] = $cat['__CATEGORIES__'];
 
-            if (!modUtil::apiFunc('quickcheck', 'admin', 'updatequestion', $item)) {
+            if (!modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'updatequestion', $item)) {
                 return LogUtil::registerError("Update in category failed.");
             }
         }
         //if we have gotten here, we were successful
         $request->getSession()->getFlashBag()->add('status', $this->__('Categories updated.'));
-        return new RedirectResponse(ModUtil::url('quickcheck', 'admin', 'categorize'));
+        return new RedirectResponse(ModUtil::url('PaustianQuickcheckModule', 'admin', 'categorize'));
     }
 
-    /*
+    /**
+     * @Route("/findunanswered")
+     * 
      * findunanswered
      *
      * This is a quick function to find all the unexplained questions in the module
      * It's really a hack and isn't something you should be calling, I am just using
      * it for clean up of some previous data. It will likely go away in a future release
      *
+     *  @return Response
+     *  @throws AccessDeniedException
      */
-
-    public function findunanswered() {
+    public function findunansweredAction() {
         //you have to have edit access to do this
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
 
-        $questions = modUtil::apiFunc('quickcheck', 'user', 'getallquestions', array('missing_explan' => true));
+        $questions = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'getallquestions', array('missing_explan' => true));
 
         $render = zikula_View::getInstance('Quickcheck', false);
         $render->assign('count', count($questions));
         $render->assign('questions', $questions);
-        return $render->fetch('Admin\quickcheck_admin_findunanswered.tpl');
+        return new Response($render->fetch('Admin/quickcheck_admin_findunanswered.tpl'));
     }
 
-    /**
-     * import questions as xml
-     *
-     * present the import interface
-     *
-     * 
-     * 
-     * @author      Tim Paustian
-     * 
-     * @return     the interface for the import
-     *
-     */
-    public function importquiz() {
-
+  /**
+   * @Route("/importquiz")
+   * 
+   * set up the interface to import an xml file of quiz questions.
+   * @return Response
+   * @throws AccessDeniedException
+   */
+    public function importquizAction() {
+        //you have to have edit access to do this
+        if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
+            throw new AccessDeniedException();
+        }
         $render = zikula_View::getInstance('Quickcheck');
-        return $render->fetch('Admin\quickcheck_admin_importquiz.tpl');
+        return new Response($render->fetch('Admin/quickcheck_admin_importquiz.tpl'));
     }
 
     /**
+     * @Route("/doimport")
+     * @Method("POST")
+     * 
      * import questions as xml
      *
      * Given a set of data in xml format, parse it and improt the questions. There
      * is a set format, with examples given in the template for the page
      *
      * @author      Tim Paustian
-     * @param      may contain the questions in xml format. This is so other functions can
-     *              call this.
-     * @return    put a status message up to say what happened and then returns
-     *              you to the import interface
+     * @param      Request
+     * @return    RedirectReponse
      *
      */
-    public function doimport($request) {
-        $ret_url = ModUtil::url('quickcheck', 'admin', 'importquiz');
-// Confirm authorisation code.
-        if (!SecurityUtil::confirmAuthKey('quickcheck')) {
-            return LogUtil::registerAuthidError($ret_url);
-        }
+    public function doimportAction(Request $request) {
+        $ret_url = $this->get('router')->generate('paustianquickcheckmodule_admin_importquiz', array(), RouterInterface::ABSOLUTE_URL);
+        // Confirm authorisation code.
+         //security check
+        $this->checkCsrfToken();
         //you have to have edit access to do this
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
@@ -1407,7 +1514,7 @@ class AdminController extends \Zikula_AbstractController {
         //get the questions
         $questions = $request->request->get('quest_to_import',null);
 
-        if (modUtil::apiFunc('quickcheck', 'admin', 'import', array('questions' => $questions))) {
+        if (modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'import', array('questions' => $questions))) {
             $request->getSession()->getFlashBag()->add('status', $this->__('Import of questions was successful.'));
             ;
         } else {
@@ -1416,24 +1523,40 @@ class AdminController extends \Zikula_AbstractController {
         return new RedirectResponse($ret_url);
     }
 
-    public function exportquiz() {
+    /**
+     * @Route("/exportquiz")
+     * 
+     * exort the chose quiz. First step. This displays the interface to export the questions
+     * @return Response
+     * @throws AccessDeniedException
+     */
+    public function exportquizAction() {
         
         //You need edit access to export questions
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
         $questions = $this->_prep_question_list("yes");
-        $render = zikula_View::getInstance('Quickcheck', false);
+        $render = $this->view;
         $render->assign('questions', $questions);
-        return $render->fetch('Admin\quickcheck_admin_exportquiz.tpl');
+        return new Response($render->fetch('Admin/quickcheck_admin_exportquiz.tpl'));
     }
-
-    public function doexport($args) {
-        $ret_url = ModUtil::url('quickcheck', 'admin', 'export');
+    
+    /**
+     * @Route("/doexport")
+     * @Method("POST")
+     * 
+     * Export the choosen questions into an xml file
+     * 
+     * @param Request $request
+     * @throws AccessDeniedException
+     */
+    
+    public function doexportAction(Request $request) {
+        $ret_url = $this->get('router')->generate('paustianquickcheckmodule_admin_export', array(), RouterInterface::ABSOLUTE_URL);
         // Confirm authorisation code.
-        if (!SecurityUtil::confirmAuthKey('quickcheck')) {
-            return LogUtil::registerAuthidError($ret_url);
-        }
+         //security check
+        $this->checkCsrfToken();
         //you have to have edit access to do this
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
@@ -1443,11 +1566,11 @@ class AdminController extends \Zikula_AbstractController {
         $export_all = $request->request->get('export_all',null);
         $q_ids = $request->request->get('questions',null);
 
-        $q_xml = modUtil::apiFunc('quickcheck', 'admin', 'export', array('export_all' => $export_all, 'q_ids' => $q_ids));
+        $q_xml = modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'export', array('export_all' => $export_all, 'q_ids' => $q_ids));
 
-        $render = zikula_View::getInstance('Quickcheck', false);
+        $render = $this->view;
         $render->assign('questions', $q_xml);
-        return $render->fetch('Admin\quickcheck_admin_doexport.tpl');
+        return new Response($render->fetch('Admin/quickcheck_admin_doexport.tpl'));
     }
 
 }
