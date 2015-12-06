@@ -23,6 +23,8 @@ namespace Paustian\QuickcheckModule\Api;
 
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use SecurityUtil;
+
 /**
  * get all strains in database items
  * 
@@ -43,7 +45,7 @@ class UserApi extends \Zikula_AbstractApi {
 
         // add select and from params
         $qb->select('u')
-                ->from('QuickcheckModule:QuickcheckExamsEntity', 'u');
+                ->from('QuickcheckModule:QuickcheckExamEntity', 'u');
 
         // add limit and offset
         $startnum = (!isset($args['startnum']) || !is_numeric($args['startnum'])) ? 0 : (int) $args['startnum'];

@@ -141,8 +141,8 @@ class UserController extends \Zikula_AbstractController {
         //a diff array to get rid of stuff we dont want
         $diff_array = array('num_questions[]' => '', 'total_quests' => '');
         $data = $request->request->get('catagory',null);
-        $total_quests = request->request->get('total_quests',null);
-        $num_quests = request->request->get('num_questions',null);
+        $total_quests = $request->request->get('total_quests',null);
+        $num_quests = $request->request->get('num_questions',null);
         //now create the quiz
         $quiz_questions = array(); //the array that will hold the questions
         //sort the question based upon their category id
@@ -190,32 +190,31 @@ class UserController extends \Zikula_AbstractController {
 
     /**
      * @Route("/display")
-     * display item
-     *
+     * 
      * This displays an quiz from the database, or it displays a quiz set up by 
      * the student for self study.
      * 
      * Date: October 3 2010
      * @author Timothy Paustian
-     * @param array $args['exam'] the exam that holds the questions
-     * @param string $args['ret_url'] the url to return to after the quiz is graded
-     * @return the text of the quiz.
+     * 
+     * @param Request the exam info that holds the questions* 
+     * @return Response
      *
      */
-    public function display($args) {
+    public function displayAction(Request $request) {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
-            return LogUtil::registerPermissionError();
+            throw AccessDeniedException();
         }
-        $exam = FormUtil::getPassedValue('exam', isset($args['exam']) ? $args['exam'] : null);
-        $return_url = FormUtil::getPassedValue('ret_url', isset($args['ret_url']) ? $args['ret_url'] : null);
+        $exam = $request->request->get('exam',null);
+        $return_url = $request->request->get('ret_url');
         $questions = array();
         //grab the questions
         foreach ($exam['questions'] as $quest) {
             $questions[] = modUtil::apiFunc('paustianquickcheckmodule', 'user', 'getquestion', array('id' => $quest));
         }
-        return $this->_display_quiz($questions, $return_url, $exam['name']);
+        return new Response($this->_display_quiz($questions, $return_url, $exam['name']));
     }
 
     /*
@@ -262,28 +261,30 @@ class UserController extends \Zikula_AbstractController {
     }
 
     /**
-     * gradequize
+     * @Route("gradequiz")
+     * @Method("POST")
+     * 
+     * gradequizAction
      *
      * Here we get the information back from the quiz. We take this, extract the question ids first
      * and then find the right answer to each question. Each question answer comes back as an array, corresponding to
      * the question id. We can then compare this to the correct answer for each type.
-     *
-     * @param $args -- nothing really.
+     * @param $request
      */
-    public function gradequiz($args) {
+    public function gradequizAction(Request $request) {
 
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
-            return LogUtil::registerPermissionError();
+            throw AccessDeniedException();
         }
-        $return_url = FormUtil::getPassedValue('ret_url', isset($args['ret_url']) ? $args['ret_url'] : null);
-        $q_ids = FormUtil::getPassedValue('q_ids', isset($args['q_ids']) ? $args['q_ids'] : null);
+        $return_url = $request->request->get('ret_url',null);
+        $q_ids = $request->request->get('q_ids', null);
         $q_ids = unserialize($q_ids);
 
         $score = 0;
         $display_questions = array();
 
         foreach ($q_ids as $q_id) {
-            $student_answer = FormUtil::getPassedValue($q_id, isset($args[$q_id]) ? $args[$q_id] : null);
+            $student_answer = $request->request->get($q_id,null);
             $question = modUtil::apiFunc('paustianquickcheckmodule', 'user', 'getquestion', array('id' => $q_id));
             $question['correct'] = false;
             if (!isset($student_answer)) {

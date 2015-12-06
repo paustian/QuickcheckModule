@@ -261,8 +261,8 @@ class AdminApi extends \Zikula_AbstractApi {
         // Argument check - make sure that all required arguments are present,
         // if not then set an appropriate error message and return
         //note that q_param is optional
-        if (!isset($args['$quickcheckq_type']) || !isset($args['id'])
-                || !isset($args['$quickcheckq_answer']) || !isset($args['$quickcheckq_text'])) {
+        if (!isset($args['q_type']) || !isset($args['id'])
+                || !isset($args['q_answer']) || !isset($args['$q_text'])) {
             throw new \InvalidArgumentException(__('question wrong in update update.'));
         }
 
@@ -341,19 +341,19 @@ class AdminApi extends \Zikula_AbstractApi {
             //now convert this into the correct number
             switch ($q_type[1]) {
                 case 'multichoice':
-                    $q_data['q_type'] = Quickcheck_Controller_Admin::_QUICKCHECK_MULTIPLECHOICE_TYPE;
+                    $q_data['q_type'] = \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE;
                     break;
                 case 'text':
-                    $q_data['q_type'] = Quickcheck_Controller_Admin_QUICKCHECK_TEXT_TYPE;
+                    $q_data['q_type'] = \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_TEXT_TYPE;
                     break;
                 case 'multianswer':
-                    $q_data['q_type'] = Quickcheck_Controller_Admin::_QUICKCHECK_MULTIANSWER_TYPE;
+                    $q_data['q_type'] = \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_MULTIANSWER_TYPE;
                     break;
                 case 'matching':
-                    $q_data['q_type'] = Quickcheck_Controller_Admin::_QUICKCHECK_MATCHING_TYPE;
+                    $q_data['q_type'] = \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_MATCHING_TYPE;
                     break;
                 case 'truefalse':
-                    $q_data['q_type'] = Quickcheck_Controller_Admin::_QUICKCHECK_TF_TYPE;
+                    $q_data['q_type'] = \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_TF_TYPE;
                     break;
                 default:
                     //if we get here there is an issue, throw an error
@@ -371,9 +371,9 @@ class AdminApi extends \Zikula_AbstractApi {
             preg_match("|<qparam>(.*?)</qparam>|", $q_item, $q_param);
             //get the id if it exists
             //we have to process multichoice, multianswer and matching because they are arrays
-            if (($q_data['q_type'] == Quickcheck_Controller_Admin::_QUICKCHECK_MULTIPLECHOICE_TYPE) ||
-                    ($q_data['q_type'] == Quickcheck_Controller_Admin::_QUICKCHECK_MULTIANSWER_TYPE) ||
-                    ($q_data['q_type'] == Quickcheck_Controller_Admin::_QUICKCHECK_MATCHING_TYPE)) {
+            if (($q_data['q_type'] == \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE) ||
+                    ($q_data['q_type'] == \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_MULTIANSWER_TYPE) ||
+                    ($q_data['q_type'] == \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_MATCHING_TYPE)) {
                 $q_data['q_answer'] = serialize(explode('|', $q_answer[1]));
                 $q_data['q_param'] = serialize(explode('|', $q_param[1]));
             } else {
@@ -391,17 +391,9 @@ class AdminApi extends \Zikula_AbstractApi {
                 $do_update = ($item != false);
             }
             if ($do_update) {
-                $this->updatequestion(array('id' => $q_data['id'],
-                                            'quickcheckq_text' => $$q_data['quickcheckq_text'],
-                                            'quickcheckq_answer' => $q_data['q_answer'],
-                                            'quickcheckq_expan' => $q_data['q_explan'],
-                                            'quickcheckq_param' => $q_data['q_param']));
+                $this->updatequestion($q_data);
             } else {
-                $this->createquestion(array('quickcheckq_type' => $q_data['q_type'],
-                                            'quickcheckq_text' => $$q_data['quickcheckq_text'],
-                                            'quickcheckq_answer' => $q_data['q_answer'],
-                                            'quickcheckq_expan' => $q_data['q_explan'],
-                                            'quickcheckq_param' => $q_data['q_param']));
+                $this->createquestion($q_data);
             }
             //void it out to prevent id's being reused.
             $q_data = array();
@@ -445,27 +437,27 @@ class AdminApi extends \Zikula_AbstractApi {
             $type = "";
             //write the type
             switch ($q_item['q_type']) {
-                case Quickcheck_Controller_Admin::_QUICKCHECK_TEXT_TYPE:
+                case \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_TEXT_TYPE:
                     $type = 'text';
                     $answer = $q_item['q_answer'];
                     $param = $q_item['q_param'];
                     break;
-                case Quickcheck_Controller_Admin::_QUICKCHECK_MULTIPLECHOICE_TYPE:
+                case \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE:
                     $type = 'multichoice';
                     $answer = implode('|', $q_item['q_answer']);
                     $param = implode('|', $q_item['q_param']);
                     break;
-                case Quickcheck_Controller_Admin::_QUICKCHECK_TF_TYPE:
+                case \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_TF_TYPE:
                     $type = 'truefalse';
                     $answer = $q_item['q_answer'];
                     $param = $q_item['q_param'];
                     break;
-                case Quickcheck_Controller_Admin::_QUICKCHECK_MATCHING_TYPE:
+                case \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_MATCHING_TYPE:
                     $type = 'matching';
                     $answer = implode('|', $q_item['q_answer']);
                     $param = implode('|', $q_item['q_param']);
                     break;
-                case Quickcheck_Controller_Admin::_QUICKCHECK_MULTIANSWER_TYPE:
+                case \Paustian\QuickcheckModule\Controller\AdminController::_QUICKCHECK_MULTIANSWER_TYPE:
                     $type = 'multianswer';
                     $answer = implode('|', $q_item['q_answer']);
                     $param = implode('|', $q_item['q_param']);

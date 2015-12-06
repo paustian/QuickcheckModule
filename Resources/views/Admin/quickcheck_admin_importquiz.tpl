@@ -3,7 +3,7 @@
 <div class="z-adminbox">
 <p>{gt text="Paste text to import in the area below and click on import. An example of correct text formatting is shown below the text area."}</p>
 
-<form class="form" action="{modurl modname="quickcheck" type="admin" func="doimport"}" method="post" enctype="application/x-www-form-urlencoded">
+<form class="form" action="{route name='paustianquickcheckmodule_admin_doimport'}" method="post" enctype="application/x-www-form-urlencoded">
 <input type="hidden" name="csrftoken" value="{insert name='csrftoken'}" />         
 <textarea name="quest_to_import" cols="120" rows="30">
 </textarea>
