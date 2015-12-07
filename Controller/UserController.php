@@ -32,6 +32,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotatio
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
 use ModUtil;
 use SecurityUtil;
+use Paustian\QuickcheckModule\Controller\AdminController;
 
 class UserController extends \Zikula_AbstractController {
 
@@ -291,20 +292,20 @@ class UserController extends \Zikula_AbstractController {
                 $student_answer = "";
             }
             switch ($question['q_type']) {
-                case Quickcheck_Controller_Admin::_QUICKCHECK_TEXT_TYPE:
+                case AdminController::_QUICKCHECK_TEXT_TYPE:
                     $score += 1;
                     $question['correct'] = true;
                     $question['ur_answer'] = $student_answer;
                     //we don't grade text types
                     break;
-                case Quickcheck_Controller_Admin::_QUICKCHECK_TF_TYPE:
+                case AdminController::_QUICKCHECK_TF_TYPE:
                     if ($student_answer == $question['q_answer']) {
                         $score += 1;
                         $question['correct'] = true;
                     }
                     $question['ur_answer'] = $student_answer;
                     break;
-                case Quickcheck_Controller_Admin::_QUICKCHECK_MATCHING_TYPE:
+                case AdminController::_QUICKCHECK_MATCHING_TYPE:
                     $correct_answer = $question['q_answer'];
 
                     if (is_array($student_answer)) {
@@ -334,8 +335,8 @@ class UserController extends \Zikula_AbstractController {
                         $score += $this_score;
                     }
                     break;
-                case Quickcheck_Controller_Admin::_QUICKCHECK_MULTIANSWER_TYPE:
-                case Quickcheck_Controller_Admin::_QUICKCHECK_MULTIPLECHOICE_TYPE:
+                case AdminController::_QUICKCHECK_MULTIANSWER_TYPE:
+                case AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE:
                     //the student answer containg the position of the values that
                     //they entered. Award points for correct answers. and subtract for incorrect answers
                     $total = 0;

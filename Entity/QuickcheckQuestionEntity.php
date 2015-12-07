@@ -15,6 +15,8 @@
 namespace Paustian\QuickcheckModule\Entity;
 
 use Zikula\Core\Doctrine\EntityAccess;
+use Doctrine\Common\Collections\ArrayCollection;
+use QuickcheckQuestionEntityCategory;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -25,9 +27,8 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity
  * @ORM\Table(name="quickcheck_quest")
  */
-class QuickcheckQuestionEntity extends EntityAccess
-{
-    
+class QuickcheckQuestionEntity extends EntityAccess {
+
     /**
      * question id
      *
@@ -36,42 +37,49 @@ class QuickcheckQuestionEntity extends EntityAccess
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-    
+
     /**
      * question type
      *
      * @ORM\Column(type="integer", length=2)
      */
     private $quickcheckq_type;
-    
+
     /**
      * question text
      * 
      * @ORM\Column(type="text")
      */
     private $quickcheckq_text;
-    
+
     /**
      * question answer
      * 
      * @ORM\Column(type="text")
      */
     private $quickcheckq_answer;
-    
+
     /**
      * question explanation
      * 
      * @ORM\Column(type="text")
      */
     private $quickcheckq_expan;
-    
+
     /**
      * question extra paramaters
      * 
      * @ORM\Column(type="text")
      */
     private $quickcheckq_param;
-    
+
+    /**
+     * @ORM\OneToMany(targetEntity="QuickcheckQuestionEntityCategory",
+     *                mappedBy="entity", cascade={"all"},
+     *                orphanRemoval=true, indexBy="categoryRegistryId")
+     */
+    private $categories;
+
     public function __construct() {
         $this->id = 0;
         $this->quickcheckq_type = 0;
@@ -79,9 +87,9 @@ class QuickcheckQuestionEntity extends EntityAccess
         $this->quickcheckq_answer = '';
         $this->quickcheckq_expan = '';
         $this->quickcheckq_param = '';
+        $this->categories = new Doctrine\Common\Collections\ArrayCollection();
     }
 
-    
     public function getId() {
         return $this->id;
     }
@@ -104,6 +112,10 @@ class QuickcheckQuestionEntity extends EntityAccess
 
     public function getQuickcheckq_param() {
         return $this->quickcheckq_param;
+    }
+    
+    public function getCategories(){
+        return $this->categories;
     }
 
     public function setId($id) {
@@ -129,4 +141,9 @@ class QuickcheckQuestionEntity extends EntityAccess
     public function setQuickcheckq_param($quickcheckq_param) {
         $this->quickcheckq_param = $quickcheckq_param;
     }
+    
+    public function setCategories($categories){
+        $this->categories = $categories;
+    }
+
 }

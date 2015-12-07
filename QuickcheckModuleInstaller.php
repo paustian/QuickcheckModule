@@ -19,16 +19,17 @@
  * @copyright    Copyright (C) 2015 by Timothy Paustian
  * @license      http://www.gnu.org/copyleft/gpl.html GNU General Public License
  */
+
 namespace Paustian\QuickcheckModule;
 
 use DoctrineHelper;
 
 class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
 
-    public function setBundle(AbstractBundle $bundle){
+    public function setBundle(AbstractBundle $bundle) {
         $this->$bundle = $bundle;
     }
-    
+
     /**
      * initialise the quickcheck module
      *
@@ -43,48 +44,44 @@ class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
         // create tables
         $classes = array(
             'Paustian\\QuickcheckModule\\Entity\\QuickcheckExamEntity',
-            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionEntity'
+            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionEntity',
+            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionEntityCategory'
         );
 
         try {
             DoctrineHelper::createSchema($this->entityManager, $classes);
         } catch (\Exception $e) {
-            //print_r($e);die;
+            print_r($e);
             return false;
         }
 
         //get ready for using categories
         // create our default category
-        /*if (!$this->_quickcheck_createdefaultcategory()) {
-            return LogUtil::registerError(__('Category creaction failed.'));
-        }
-        
-        HookUtil::registerProviderBundles($this->version->getHookProviderBundles());*/
+        $this->_quickcheck_createdefaultcategory();
+
+        //HookUtil::registerProviderBundles($this->version->getHookProviderBundles());*/
         // Initialisation successful
         return true;
     }
 
     private function _quickcheck_createdefaultcategory($regpath = '/__SYSTEM__/Modules/Global') {
-        // load necessary classes
-        Loader::loadClass('CategoryUtil');
-        Loader::loadClassFromModule('Categories', 'Category');
-        Loader::loadClassFromModule('Categories', 'CategoryRegistry');
 
         // get the category path for which we're going to insert our upgraded categories
         $rootcat = CategoryUtil::getCategoryByPath($regpath);
-        if ($rootcat) {
-            // create an entry in the categories registry
-            $registry = new Categories_DBObject_Category();
-            $registry->setDataField('modname', 'Quickcheck');
-            $registry->setDataField('table', 'quickcheck_quest');
-            $registry->setDataField('property', 'Main');
-            $registry->setDataField('category_id', $rootcat['id']);
-            $registry->insert();
-        } else {
-            return false;
-        }
+        CategoryRegistryUtil::insertEntry('QuickcheckModule', 'QuickcheckQuestionEntityCategory', 'Main', $rootcat['id']);
 
-        return true;
+
+        /* if ($rootcat) {
+          // create an entry in the categories registry
+          $registry = new Categories_DBObject_Category();
+          $registry->setDataField('modname', 'Quickcheck');
+          $registry->setDataField('table', 'quickcheck_quest');
+          $registry->setDataField('property', 'Main');
+          $registry->setDataField('category_id', $rootcat['id']);
+          $registry->insert();
+          } else {
+          return false;
+          } */
     }
 
     /**
@@ -99,11 +96,17 @@ class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
     public function upgrade($oldversion) {
         // Upgrade dependent on old version number
         switch ($oldversion) {
-            case 1.0:
-            //nothing to do for the older version
-            //structure is the same
+            case '1.1.0':
+            //the category stuff has to be updated.
+            //First create the new entity stuff.
+            $this->_quickcheck_createdefaultcategory();
+            //now shift it over.
+            $registry = CategoryRegistryUtil::getRegisteredModuleCategoriesIds('QuickcheckModule', 'QuickcheckQuestionEntityCategory');
+            foreach ($registry as $propname => $regId) {
+                $catId = CategoryRegistryUtil::getRegisteredModuleCategory('QuickcheckModule', 'QuickcheckQuestionEntityCategory', $propName);
+                CategoryRegistyUtil::updateEntry($regId, 'QuickcheckModule', 'QuickcheckQuestionEntityCategory', 'Main', $catId);
+            }
         }
-        
         // Update successful
         return true;
     }
@@ -121,16 +124,17 @@ class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
     public function uninstall() {
         $classes = array(
             'Paustian\\QuickcheckModule\\Entity\\QuickcheckExamEntity',
-            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionEntity'
+            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionEntity',
+            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionEntityCategory'
         );
-        
+
         try {
             DoctrineHelper::dropSchema($this->entityManager, $classes);
         } catch (\PDOException $e) {
             $this->request->getSession()->getFlashBag()->add('error', $e->getMessage());
             return false;
         }
-        
+
         // Deletion successful
         return true;
     }
