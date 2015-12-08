@@ -16,7 +16,7 @@ namespace Paustian\QuickcheckModule\Entity;
 
 use Zikula\Core\Doctrine\EntityAccess;
 use Doctrine\Common\Collections\ArrayCollection;
-use QuickcheckQuestionEntityCategory;
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory as QuickcheckCategoryRelation;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -74,9 +74,9 @@ class QuickcheckQuestionEntity extends EntityAccess {
     private $quickcheckq_param;
 
     /**
-     * @ORM\OneToMany(targetEntity="QuickcheckQuestionEntityCategory",
+     * @ORM\OneToMany(targetEntity="Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory",
      *                mappedBy="entity", cascade={"all"},
-     *                orphanRemoval=true, indexBy="categoryRegistryId")
+     *                orphanRemoval=true, fetch="EAGER")
      */
     private $categories;
 
@@ -114,8 +114,26 @@ class QuickcheckQuestionEntity extends EntityAccess {
         return $this->quickcheckq_param;
     }
     
+     /**
+     * Get page categories
+     *
+     * @return \Doctrine\Common\Collections\ArrayCollection
+     */
     public function getCategories(){
-        return $this->categories;
+        $categories = array();
+        /** @var \Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity $catRelation */
+        foreach ($this->categories as $catRelation) {
+            $registryId = $catRelation->getCategoryRegistryId();
+//            if (is_array($catRelation)) {
+                if (!isset($categories[$registryId])) {
+                    $categories[$registryId] = new ArrayCollection();
+                }
+                $categories[$registryId]->add($catRelation->getCategory());
+//            } else {
+//                $categories[$registryId] = $catRelation->getCategory();
+//            }
+        }
+        return $categories;
     }
 
     public function setId($id) {
@@ -142,8 +160,25 @@ class QuickcheckQuestionEntity extends EntityAccess {
         $this->quickcheckq_param = $quickcheckq_param;
     }
     
+     /**
+     * Set page categories
+     *
+     * @param $categories
+     */
+    
     public function setCategories($categories){
-        $this->categories = $categories;
+        $this->categories = new ArrayCollection();
+        foreach ($categories as $regId => $category) {
+            if ($category instanceof ArrayCollection) {
+                // a result of multiple select box
+                foreach ($category as $element) {
+                    $this->categories[] = new QuickcheckCategoryRelation($regId, $element, $this);
+                }
+            } else {
+                // a normal select box
+                $this->categories[] = new QuickcheckCategoryRelation($regId, $category, $this);
+            }
+        }
     }
 
 }
