@@ -41,3 +41,4 @@ class QuickcheckQuestionCategory extends AbstractEntityCategory
         $this->entity = $entity;
     }
 }
+

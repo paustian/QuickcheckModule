@@ -1,6 +1,5 @@
 {*  $Id: quickcheck_user_menu.htm 16293 2005-06-03 11:23:32Z timpaustian $  *}
 {insert name='getstatusmsg'}
-{adminheader}
 <div class="menu">
     <h2>{gt text="Quick check administration menu."}</h2>
     <table>
@@ -29,7 +28,8 @@
         </tr>
         <tr>
             <td><a href="{route name='paustianquickcheckmodule_admin_importquiz'}">{gt text="Import an xml file listing questions."}</a></td>
-            <td><a href="{route name='paustianquickcheckmodule_admin_exportquiz'}">{gt text="Export an xml file of questions."}</a></td>
+            <td><a href="{route name='paustianquickcheckmodule_admin_ex portquiz'}">{gt text="Export an xml file of questions."}</a></td>
         </tr>
     </table>
+        <a href="#" class="btn btn-success btn-lg"><i class="fa fa-pencil fa-lg"></i> Quickcheck</a>
 </div>

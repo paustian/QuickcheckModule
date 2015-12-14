@@ -42,7 +42,7 @@ class QuickcheckModuleVersion extends \Zikula_AbstractVersion {
 
 // This one adds the info to the DB, so that users can click on the 
 // headings in the permission module
-        $meta['securityschema'] = array('exam::question' => 'Modulename::');
+        $meta['securityschema'] = array('PaustianQuickcheckModule::'=>'exam::question' );
         return $meta;
     }
 /*

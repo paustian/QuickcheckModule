@@ -29,7 +29,8 @@ use SecurityUtil;
 use ModUtil;
 use Loader;
 use CategoryRegistryUtil;
-
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use Paustian\QuickcheckModule\Form\QuickcheckTFQuestion;
 /**
  * The various types of questions. We use defines to make the code
  * easier to read
@@ -40,7 +41,7 @@ use CategoryRegistryUtil;
  *
  * Administrative controllers for the quickcheck module
  */
-class AdminController extends \Zikula_AbstractController {
+class AdminController extends AbstractController {
 
     const _QUICKCHECK_TEXT_TYPE = 0;
     const _QUICKCHECK_MULTIPLECHOICE_TYPE = 1;
@@ -65,7 +66,7 @@ class AdminController extends \Zikula_AbstractController {
     public function indexAction() {
 
         // Return a page of menu items.
-        return new Response($this->view->fetch('Admin/quickcheck_admin_menu.tpl'));
+        return new Response($this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig'));
     }
 
     /**
@@ -527,15 +528,40 @@ class AdminController extends \Zikula_AbstractController {
      * Create a new quick_check question
      *
      * @author       Timothy Paustian
-     * @return       The form for creating a new TF question
+     *  
+     * @param Request $request
+     * @param QuickcheckQuestionEntity $question
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|Response
      */
-    public function newTFQuestAction($args = array()) {
+    public function newTFQuestAction(Request $request, QuickcheckQuestionEntity $question=null) {
+        
+        if (null === $question) {
+            $question = new QuickcheckQuestionEntity(); 
+        }
+        //I need to add the use declaration for this class. 
+        $form = $this->createForm(new QuickcheckTFQuestion(), $question);
+
+        $form->handleRequest($request);
+
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = $this->getDoctrine()->getManager();
+        if ($form->isValid()) {
+            $em->persist($question);
+            $em->flush();
+            $this->addFlash('status', __('Page saved!'));
+
+            return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_newTFQuest'));
+        }
+
+        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_tf_question.html.twig', array(
+            'form' => $form->createView(),
+        ));
+        /*
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
-        $render = $this->view;
         if (array_key_exists('q_text', $args)) {
             //if this is set, there is data to load into the form
             $render->assign('q_text', $args['q_text']);
@@ -557,15 +583,10 @@ class AdminController extends \Zikula_AbstractController {
                 }
             }
         }
-        // load the categories system
-        /* if (!($class = Loader::loadClass('CategoryRegistryUtil'))) {
-          pn_exit(pnML('_UNABLETOLOADCLASS', array('s' => 'CategoryRegistryUtil')));
-          }
-
-          $catregistry = CategoryRegistryUtil::getRegisteredModuleCategories('Quickcheck', 'quickcheck_quest');
-
-          $render->assign('catregistry', $catregistry); */
+        
         return new Response($render->fetch('Admin\quickcheck_admin_new_tf_question.tpl'));
+         * 
+         */
     }
 
     /**
@@ -1059,11 +1080,13 @@ class AdminController extends \Zikula_AbstractController {
      * form to add modify a T/F question
      *
      * Create a new quick_check question
+     * 
+     @param Request $request
      *
      * @author       Timothy Paustian
      * @return       The form for creating a new text question
      */
-    public function modifyTFQuest($args) {
+    public function modifyTFQuest($request) {
 
         $item = $request->request->get('item', null);
 
@@ -1205,10 +1228,14 @@ class AdminController extends \Zikula_AbstractController {
      * 
      */
     public function editquestionsAction() {
-        $questions = $this->_prep_question_list("yes");
-        $render = zikula_View::getInstance('Quickcheck', false);
-        $render->assign('questions', $questions);
-        return new Response($render->fetch('Admin\quickcheck_admin_editquestions.tpl'));
+        
+        /*$questions = $this->_prep_question_list("yes");
+        
+        $render->assign('questions', $questions);*/
+        
+        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_tf_question.html.twig', array(
+            'form' => $form->createView(),
+        ));
     }
 
     private function _prep_question_list($buttons = "no") {
@@ -1218,7 +1245,6 @@ class AdminController extends \Zikula_AbstractController {
             throw new AccessDeniedException();
         }
 
-        $render = zikula_View::getInstance('Quickcheck', false);
         $questions = $this->_build_questions_list();
 
         if (!$questions) {

@@ -3,10 +3,7 @@
 /**
  * quickcheck Module
  *
- * The quickcheck module is a module for entering microbial strain data into
- * a mysql database. The completed database can then be used to identify unknown
- * microbes. I also used this module as an example Zikula module to demonstrates
- * some of the frameworks functionality
+ * A module that you can hook to other modules and provide a quiz function
  *
  * Purpose of file:  Table information for quickcheck module --
  *                   This file contains all information on database
@@ -22,17 +19,25 @@
 
 namespace Paustian\QuickcheckModule;
 
-use DoctrineHelper;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use Zikula\Core\AbstractBundle;
+use Zikula\Core\ExtensionInstallerInterface;
+use DoctrineHelper;
+use HookUtil;
+use CategoryUtil;
+use CategoryRegistryUtil;
 
 class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
 
-    public function setBundle(AbstractBundle $bundle) {
-        $this->$bundle = $bundle;
-    }
-
+    private $entities = array(
+            'Paustian\QuickcheckModule\Entity\QuickcheckExamEntity',
+            'Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity',
+            'Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory'
+        );
+   
+    
     /**
      * initialise the quickcheck module
      *
@@ -45,24 +50,21 @@ class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
      */
     public function install() {
         // create tables
-        $classes = array(
-            'Paustian\\QuickcheckModule\\Entity\\QuickcheckExamEntity',
-            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionEntity',
-            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionCategory'
-        );
+        
 
         try {
-            DoctrineHelper::createSchema($this->entityManager, $classes);
+            DoctrineHelper::createSchema($this->entityManager, $this->entities);
         } catch (\Exception $e) {
-            print_r($e);
+            print($e->getMessage());
             return false;
         }
 
         //get ready for using categories
         // create our default category
         $this->_quickcheck_createdefaultcategory();
-
-        //HookUtil::registerProviderBundles($this->version->getHookProviderBundles());*/
+        
+        
+        //HookUtil::registerProviderBundles($this->version->getHookProviderBundles());
         // Initialisation successful
         return true;
     }
@@ -70,15 +72,15 @@ class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
     private function _quickcheck_createdefaultcategory($regpath = '/__SYSTEM__/Modules/Global') {
 
         // create category
-        CategoryUtil::createCategory('/__SYSTEM__/Modules', $this->bundle->getName(), null, $this->__('Quickcheck'), $this->__('Quizzes'));
+        CategoryUtil::createCategory('/__SYSTEM__/Modules', $this->__('PaustianQuickcheckModule'), null, $this->__('Quizzes'), $this->__('Quizzes'));
         // create subcategory
-        CategoryUtil::createCategory('/__SYSTEM__/Modules/PaustianQuickcheckModule', 'Chatper 1', null, $this->__('Chatper 1'), $this->__('Initial sub-category created on install'), array('color' => '#99ccff'));
-        CategoryUtil::createCategory('/__SYSTEM__/Modules/PaustianQuickcheckModule', 'Chapter 2', null, $this->__('Chatper 2'), $this->__('Initial sub-category created on install'), array('color' => '#cceecc'));
+        CategoryUtil::createCategory('/__SYSTEM__/Modules/PaustianQuickcheckModule', 'Chapter 2', null, $this->__('Chapter 2'), $this->__('Initial sub-category created on install'), array('color' => '#cceecc'));
+        CategoryUtil::createCategory('/__SYSTEM__/Modules/PaustianQuickcheckModule', 'Chapter 1', null, $this->__('Chapter 1'), $this->__('Initial sub-category created on install'), array('color' => '#99ccff'));
         // get the category path to insert Pages categories
         $rootcat = CategoryUtil::getCategoryByPath('/__SYSTEM__/Modules/PaustianQuickcheckModule');
         if ($rootcat) {
             // create an entry in the categories registry to the Main property
-            if (!CategoryRegistryUtil::insertEntry($this->bundle->getName(), 'QuickcheckQuestionEntity', 'Main', $rootcat['id'])) {
+            if (!CategoryRegistryUtil::insertEntry('PaustianQuickcheckModule', 'QuickcheckQuestionEntity', 'Main', $rootcat['id'])) {
                 throw new \Exception('Cannot insert Category Registry entry.');
             }
         } else {
@@ -104,10 +106,10 @@ class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
             //First create the new entity stuff.
             $this->_quickcheck_createdefaultcategory();
             //now shift it over.
-            $registry = CategoryRegistryUtil::getRegisteredModuleCategoriesIds('QuickcheckModule', 'QuickcheckQuestionCategory');
+            $registry = CategoryRegistryUtil::getRegisteredModuleCategoriesIds('PaustianQuickcheckModule', 'QuickcheckQuestionCategory');
             foreach ($registry as $propname => $regId) {
-                $catId = CategoryRegistryUtil::getRegisteredModuleCategory('QuickcheckModule', 'QuickcheckQuestionCategory', $propName);
-                CategoryRegistyUtil::updateEntry($regId, 'QuickcheckModule', 'QuickcheckQuestionCategory', 'Main', $catId);
+                $catId = CategoryRegistryUtil::getRegisteredModuleCategory('PaustianQuickcheckModule', 'QuickcheckQuestionCategory', $propName);
+                CategoryRegistyUtil::updateEntry($regId, 'PaustianQuickcheckModule', 'QuickcheckQuestionCategory', 'Main', $catId);
             }
         }
         // Update successful
@@ -125,16 +127,11 @@ class QuickcheckModuleInstaller extends \Zikula_AbstractInstaller {
      * @return       bool       true on success, false otherwise
      */
     public function uninstall() {
-        $classes = array(
-            'Paustian\\QuickcheckModule\\Entity\\QuickcheckExamEntity',
-            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionEntity',
-            'Paustian\\QuickcheckModule\\Entity\\QuickcheckQuestionCategory'
-        );
 
         try {
-            DoctrineHelper::dropSchema($this->entityManager, $classes);
+            DoctrineHelper::dropSchema($this->entityManager, $this->entities);
         } catch (\PDOException $e) {
-            $this->request->getSession()->getFlashBag()->add('error', $e->getMessage());
+            print($e->getMessage());
             return false;
         }
 

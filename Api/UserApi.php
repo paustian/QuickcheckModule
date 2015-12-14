@@ -187,14 +187,7 @@ class UserApi extends \Zikula_AbstractApi {
         if ($item === false) {
             return $item;
         }
-        $answer = @unserialize($item['q_answer']);
-        if ($answer !== false)
-            $item['q_answer'] = $answer;
-        $param = @unserialize($item['q_param']);
-        if ($param !== false)
-            $item['q_param'] = $param;
-        // Return the items
-
+        
         return $item;
     }
 

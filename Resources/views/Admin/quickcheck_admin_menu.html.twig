@@ -1,0 +1,33 @@
+{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
+<div class="menu">
+    <h2>{{ __('Quick check administration menu.') }}</h2>
+    <table>
+        <tr>
+           </tr>
+        <tr>
+            <td><a href="{{ path('paustianquickcheckmodule_admin_newtextquest') }}" class="fa">{{ __("New Text Question") }}</a></td>
+             <td><a href="{{ path('paustianquickcheckmodule_admin_modify') }}" class="fa">{{ __("Modify Exam") }}</a></td>
+
+        </tr>
+        <tr>
+            <td><a href="{{ path('paustianquickcheckmodule_admin_newtfquest') }}" class="fa">{{ __("New True/False Question") }}</a></td>
+            <td><a href="{{ path('paustianquickcheckmodule_admin_editquestions') }}" class="fa">{{ __("Modify Question") }}</a></td>
+        </tr>
+        <tr>
+            <td><a href="{{ path('paustianquickcheckmodule_admin_newmcquest') }}" class="fa">{{ __("New Multiple Choice Question") }}</a></td>
+            <td><a href="{{ path('paustianquickcheckmodule_admin_categorize') }}" class="fa">{{ __("Recatogorize questions") }}</a></td>
+        </tr>
+        <tr>
+            <td><a href="{{ path('paustianquickcheckmodule_admin_newmansquest') }}" class="fa">{{ __("New Mult-Answer Question") }}</a></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="{{ path('paustianquickcheckmodule_admin_newmatchquest')  }}" class="fa">{{ __("New Matching Question") }}</a></td>
+            <td><a href="{{ path('paustianquickcheckmodule_admin_findunanswered')  }}" class="fa">{{ __("Find Unexplained Questions") }}</a></td>
+        </tr>
+        <tr>
+            <td><a href="{{ path('paustianquickcheckmodule_admin_importquiz' ) }}" class="fa">{{ __("Import an xml file listing questions.") }}</a></td>
+            <td><a href="{{ path('paustianquickcheckmodule_admin_exportquiz') }}" class="fa">{{ __("Export an xml file of questions.") }}</a></td>
+        </tr>
+    </table>
+</div>
