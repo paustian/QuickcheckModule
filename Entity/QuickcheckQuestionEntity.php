@@ -15,6 +15,7 @@
 namespace Paustian\QuickcheckModule\Entity;
 
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Zikula\Core\Doctrine\EntityAccess;
 use Doctrine\Common\Collections\ArrayCollection;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory as QuickcheckCategoryRelation;
@@ -45,7 +46,6 @@ class QuickcheckQuestionEntity extends EntityAccess {
      * question type
      *
      * @ORM\Column(type="integer", length=2)
-     * @Assert\NotBlank()
      */
     private $quickcheckq_type;
 
@@ -53,7 +53,6 @@ class QuickcheckQuestionEntity extends EntityAccess {
      * question text
      * 
      * @ORM\Column(type="text")
-     * @Assert\NotBlank()
      */
     private $quickcheckq_text;
 
@@ -61,7 +60,6 @@ class QuickcheckQuestionEntity extends EntityAccess {
      * question answer
      * 
      * @ORM\Column(type="text")
-     * @Assert\NotBlank()
      */
     private $quickcheckq_answer;
 
@@ -69,7 +67,6 @@ class QuickcheckQuestionEntity extends EntityAccess {
      * question explanation
      * 
      * @ORM\Column(type="text")
-     * @Assert\NotBlank()
      */
     private $quickcheckq_expan;
 
@@ -114,7 +111,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
     }
 
     public function getQuickcheckqAnswer() {
-        if($this->_isserialized($this->quickcheckq_answer)){
+        if ($this->_isserialized($this->quickcheckq_answer)) {
             $return_answer = unserialize($this->quickcheckq_answer);
         } else {
             $return_answer = $this->quickcheckq_answer;
@@ -127,7 +124,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
     }
 
     public function getQuickcheckqParam() {
-        if($this->_isserialized($this->quickcheckq_param)){
+        if ($this->_isserialized($this->quickcheckq_param)) {
             $return_answer = unserialize($this->quickcheckq_param);
         } else {
             $return_answer = $this->quickcheckq_param;
@@ -172,7 +169,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
     public function setQuickcheckqAnswer($quickcheckq_answer) {
         //convert these to string before saving them
         if (is_array($quickcheckq_answer)) {
-            $quickcheckq_answer = serialize($quickcheckq_answer);
+            $quickcheckq_answer = mysql_real_escape_string(serialize($quickcheckq_answer));
         }
         $this->quickcheckq_answer = $quickcheckq_answer;
     }
@@ -184,8 +181,9 @@ class QuickcheckQuestionEntity extends EntityAccess {
     public function setQuickcheckqParam($quickcheckq_param) {
         //convert these to string before saving them
         if (is_array($quickcheckq_param)) {
-            $quickcheckq_param = serialize($quickcheckq_param);
+            $quickcheckq_param = mysql_real_escape_string(serialize($quickcheckq_param));
         }
+        //I need to somehow make this string sql safe.
         $this->quickcheckq_param = $quickcheckq_param;
     }
 
@@ -207,6 +205,87 @@ class QuickcheckQuestionEntity extends EntityAccess {
                 $this->categories[] = new QuickcheckCategoryRelation($regId, $category, $this);
             }
         }
+    }
+
+    /**
+     * @Assert\Callback
+     * 
+     */
+    public function validate(ExecutionContextInterface $context) {
+
+        //Check to make sure the question has an answer
+        if ($this->getQuickcheckqText() == "") {
+            $context->buildViolation(__('The question text cannot be empty'))
+                    ->atPath('quickcheckq_text')
+                    ->addViolation();
+        }
+        //Check to make sure there is an explanation
+        if ($this->getQuickcheckqExpan() == "") {
+            $context->buildViolation(__('The question explanation cannot be empty'))
+                    ->atPath('quickcheckq_expan')
+                    ->addViolation();
+        }
+        //Grab the answer for analysis.
+        $answer = $this->getQuickcheckqAnswer();
+        $answerData = array();
+        switch ($this->getQuickcheckqType()) {
+            case AdminController::_QUICKCHECK_TEXT_TYPE:
+            case AdminController::_QUICKCHECK_TF_TYPE:
+                if ($answer == "") {
+                    $context->buildViolation(__('The answer to the question cannot be empty'))
+                            ->atPath('quickcheckq_answer')
+                            ->addViolation();
+                }
+                break;
+            case AdminController::_QUICKCHECK_MATCHING_TYPE:
+                preg_match_all('|(.*?)\|(.*)|', $answer, $answerData);
+                if(empty($answerData[1]) || empty($answer[2])){
+                    $context->buildViolation(__('The answer to the question cannot be empty'))
+                            ->atPath('quickcheckq_answer')
+                            ->addViolation();
+                }
+                $this->setQuickcheckqAnswer($answerData[1]);
+                $this->setQuickcheckqParam($answerData[2]);
+                break;
+            case AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE:
+                preg_match_all('|(.*?)\|([0-9]{1,3})|', $answer, $answerData);
+                $this->setQuickcheckqAnswer($answerData[1]);
+                $this->setQuickcheckqParam($answerData[2]);
+                $answer_percent = $answerData[2];
+                $total_percent = 0;
+                $hasOneAnswer = false;
+                foreach ($answer_percent as $percent) {
+                    //check to make sure there is one and only one answer set at 100 percent
+                    //note that if there are two set at 100, the total percent will be over 100
+                    $hasOneAnswer = ($hasOneAnswer ? $hasOneAnswer : ($percent == 100));
+                    $total_percent += $percent;
+                }
+                if ($total_percent != 100 || !$hasOneAnswer) {
+                    //It has to add to 100% if not, there is an error
+                    $context->buildViolation(__('Your answer must have one response that is set to 100% and the others set to 0%'))
+                            ->atPath('quickcheckq_answer')
+                            ->addViolation();
+                }
+                break;
+            case AdminController::_QUICKCHECK_MULTIANSWER_TYPE:
+                preg_match_all('|(.*?)\|([0-9]{1,3})|', $answer, $answerData);
+                $this->setQuickcheckqAnswer($answerData[1]);
+                $this->setQuickcheckqParam($answerData[2]);
+                $answer_percent = $answerData[2];
+                $total_percent = 0;
+                foreach ($answer_percent as $percent) {
+                    $total_percent += $percent;
+                }
+                if ($total_percent != 100) {
+                    //It has to add to 100% if not, there is an error
+                    $context->buildViolation(__('Your answer does not add up to 100%'))
+                            ->atPath('quickcheckq_answer')
+                            ->addViolation();
+                }
+                break;
+        }
+
+        //I need to add other validations for the other fields.
     }
 
 }

@@ -31,5 +31,4 @@
             <td><a href="{route name='paustianquickcheckmodule_admin_ex portquiz'}">{gt text="Export an xml file of questions."}</a></td>
         </tr>
     </table>
-        <a href="#" class="btn btn-success btn-lg"><i class="fa fa-pencil fa-lg"></i> Quickcheck</a>
 </div>

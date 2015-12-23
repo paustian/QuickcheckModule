@@ -112,22 +112,17 @@ class AdminApi extends \Zikula_AbstractApi {
         if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
-        //if the questions are array serialize it
-        if (is_array($args['q_answer'])) {
-            $args['q_answer'] = serialize($args['q_answer']);
-        }
-        //if the questions are array serialize it
-        if (is_array($args['q_param'])) {
-            $args['q_param'] = serialize($args['q_param']);
-        }
+        
         
         $obj = new QuickcheckQuestionEntity;
-        $obj->setQuickcheckq_type($args['q_type']);
-        $obj->setQuickcheckq_text($args['q_text']);
-        $obj->setQuickcheckq_answer($args['q_answer']);
-        $obj->setQuickcheckq_expan($args['q_explan']);
-        $obj->setQuickcheckq_param($args['q_param']);
-        
+        $obj->setQuickcheckqType($args['q_type']);
+        $obj->setQuickcheckqText($args['q_text']);
+        $obj->setQuickcheckqAnswer($args['q_answer']);
+        $obj->setQuickcheckqExpan($args['q_explan']);
+        $obj->setQuickcheckqParam($args['q_param']);
+        $params = array('modname' => 'PaustianQuickcheckModule', 'id' => $args['__CATEGORIES__']);
+        $catEntity = $this->entityManager->getRepository('ZikulaCategoriesModule:CategoryRegistryEntity')->findOneBy($params);
+        $obj->setcategories($catEntity);
         $this->entityManager->persist($obj);
         $this->entityManager->flush();
         

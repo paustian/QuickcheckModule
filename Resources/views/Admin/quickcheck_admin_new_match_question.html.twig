@@ -1,0 +1,31 @@
+{% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
+{% include 'PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig' %}
+ {{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
+<div class="container-fluid">
+    <div class="row">
+        <h3>
+            <span class="fa fa-edit"></span>
+            {{ __("New Matching Question") }}
+        </h3>
+        <p>{{ __("Write your new Matching question in the text box. Write the answers in the textbox. One choice per line, followed by a | charcter.
+After the | put the matching answer on the same line. Finally explain the correct answer in the explanation box.") }}</p>
+        {{ showflashes() }}
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+        <fieldset>
+            <legend>{{ __('Multiple-Choice Question') }}</legend>
+            {{ form_row(form.quickcheckq_text, {'attr': {'class': 'qc_question'}}) }}
+            {{ form_row(form.quickcheckq_answer, {'attr': {'class': 'qc_answer'}}) }}
+            {{ form_row(form.quickcheckq_expan, {'attr': {'class': 'qc_question'}}) }}
+            {{ form_row(form.categories) }}
+        </fieldset>
+        <div class="form-group">
+            <div class="col-lg-offset-3 col-lg-9">
+                {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
+                {{ form_widget(form.cancel, {'attr': {'class': 'btn btn-success'}}) }}
+            </div>
+        </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

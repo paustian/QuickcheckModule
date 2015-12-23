@@ -28,3 +28,11 @@ td.quiz-table{
     padding-left: 2px;
     padding-right: 2px;
 }
+
+textarea.qc_answer{
+    height: 120px;
+}
+
+textarea.qc_question{
+    height:75px;
+}
