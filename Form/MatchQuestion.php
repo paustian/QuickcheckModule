@@ -14,39 +14,34 @@ use Symfony\Component\Form\FormEvents;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 use Paustian\QuickcheckModule\Controller\AdminController;
 /**
- * Description of QuiccheckTFQuestion
- * Set up the elements for a TF form.
+ * Description of MatchQuestion
+ * Set up the elements for a matching question form.
  *
  * @author paustian
  * 
  */
-class QuickcheckTFQuestion extends AbstractType {
+class MatchQuestion extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
             ->add('quickcheckq_text', 'textarea', array('label' => __('Question'), 'required' => true))
+            ->add('quickcheckq_answer', 'textarea', array('label' => __('Answer'), 'required' => true))
             ->add('quickcheckq_expan', 'textarea', array('label' => __('Explanation'), 'required' => true))
             ->add('save', 'submit', array('label' => 'Create Question'));
         $builder->add('cancel', 'button', array('label' => __('Cancel')));
-        $builder->add('quickcheckq_answer', 'choice', array(
-                'choices' => array('True' => 'yes', 'False' => 'no'),
-                'required' => true, 
-                'label' => __('Answer'),
-                'choices_as_values' => true,
-                'expanded' => true,
-                'multiple' => false ));
-        $builder->add('quickcheckq_type', 'hidden', array('data' => AdminController::_QUICKCHECK_TF_TYPE));
+        
+        $builder->add('quickcheckq_type', 'hidden', array('data' => AdminController::_QUICKCHECK_MATCHING_TYPE));
 
         $entityCategoryRegistries = \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity', 'id');
         $builder->add('categories', 'choice', array('placeholder' => 'Choose an option'));
         foreach ($entityCategoryRegistries as $registryId => $parentCategoryId) {
-            $builder->add('categories', new CategoryType($registryId, $parentCategoryId));
+            $builder->add('categories', new CategoryType($registryId, $parentCategoryId), array('multiple' => true));
         }
     }
 
     public function getName()
     {
-        return 'paustianquickcheckmodule_tfquesiton';
+        return 'paustianquickcheckmodule_matchquesiton';
     }
 
     /**

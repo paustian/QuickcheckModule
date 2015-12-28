@@ -188,7 +188,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
     }
 
     /**
-     * Set page categories
+     * Set question categories
      *
      * @param $categories
      */
@@ -197,12 +197,14 @@ class QuickcheckQuestionEntity extends EntityAccess {
         foreach ($categories as $regId => $category) {
             if ($category instanceof ArrayCollection) {
                 // a result of multiple select box
+                //We need to delete any entries in the table.
                 foreach ($category as $element) {
                     $this->categories[] = new QuickcheckCategoryRelation($regId, $element, $this);
                 }
             } else {
                 // a normal select box
-                $this->categories[] = new QuickcheckCategoryRelation($regId, $category, $this);
+                $catItem = array_shift($category);
+                $this->categories[] = new QuickcheckCategoryRelation($regId, $catItem, $this);
             }
         }
     }

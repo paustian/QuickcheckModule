@@ -20,27 +20,28 @@ use Paustian\QuickcheckModule\Controller\AdminController;
  * @author paustian
  * 
  */
-class QuickcheckTextQuestion extends AbstractType {
+class MCQuestion extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
             ->add('quickcheckq_text', 'textarea', array('label' => __('Question'), 'required' => true))
-            ->add('quickcheckq_expan', 'textarea', array('label' => __('Explanation'), 'required' => true))
             ->add('quickcheckq_answer', 'textarea', array('label' => __('Answer'), 'required' => true))
+            ->add('quickcheckq_expan', 'textarea', array('label' => __('Explanation'), 'required' => true))
             ->add('save', 'submit', array('label' => 'Create Question'));
         $builder->add('cancel', 'button', array('label' => __('Cancel')));
-        $builder->add('quickcheckq_type', 'hidden', array('data' => AdminController::_QUICKCHECK_TEXT_TYPE));
+        
+        $builder->add('quickcheckq_type', 'hidden', array('data' => AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE));
 
         $entityCategoryRegistries = \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity', 'id');
         $builder->add('categories', 'choice', array('placeholder' => 'Choose an option'));
         foreach ($entityCategoryRegistries as $registryId => $parentCategoryId) {
-            $builder->add('categories', new CategoryType($registryId, $parentCategoryId));
+            $builder->add('categories', new CategoryType($registryId, $parentCategoryId), array('multiple' => true));
         }
     }
 
     public function getName()
     {
-        return 'paustianquickcheckmodule_textquesiton';
+        return 'paustianquickcheckmodule_mcquesiton';
     }
 
     /**

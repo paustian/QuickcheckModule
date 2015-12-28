@@ -13,6 +13,7 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 use Paustian\QuickcheckModule\Controller\AdminController;
+
 /**
  * Description of QuiccheckTFQuestion
  * Set up the elements for a TF form.
@@ -20,28 +21,35 @@ use Paustian\QuickcheckModule\Controller\AdminController;
  * @author paustian
  * 
  */
-class QuickcheckMCQuestion extends AbstractType {
-    public function buildForm(FormBuilderInterface $builder, array $options)
-    {
-        $builder
-            ->add('quickcheckq_text', 'textarea', array('label' => __('Question'), 'required' => true))
-            ->add('quickcheckq_answer', 'textarea', array('label' => __('Answer'), 'required' => true))
-            ->add('quickcheckq_expan', 'textarea', array('label' => __('Explanation'), 'required' => true))
-            ->add('save', 'submit', array('label' => 'Create Question'));
-        $builder->add('cancel', 'button', array('label' => __('Cancel')));
-        
-        $builder->add('quickcheckq_type', 'hidden', array('data' => AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE));
+class TFQuestion extends AbstractType {
 
+    public function buildForm(FormBuilderInterface $builder, array $options) {
+        $builder
+                ->add('quickcheckq_text', 'textarea', array('label' => __('Question'), 'required' => true))
+                ->add('quickcheckq_expan', 'textarea', array('label' => __('Explanation'), 'required' => true))
+                ->add('save', 'submit', array('label' => 'Create Question'));
+        $builder->add('cancel', 'button', array('label' => __('Cancel')));
+        $builder->add('quickcheckq_answer', 'choice', array(
+            'choices' => array('True' => 'yes', 'False' => 'no'),
+            'required' => true,
+            'label' => __('Answer'),
+            'choices_as_values' => true,
+            'expanded' => true,
+            'multiple' => false));
+        $builder->add('quickcheckq_type', 'hidden', array('data' => AdminController::_QUICKCHECK_TF_TYPE));
+        $id = $options['data']['id'];
+        if (isset($id)) {
+            $builder->add('id', 'hidden', array('data' => $id));
+        }
         $entityCategoryRegistries = \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity', 'id');
         $builder->add('categories', 'choice', array('placeholder' => 'Choose an option'));
         foreach ($entityCategoryRegistries as $registryId => $parentCategoryId) {
-            $builder->add('categories', new CategoryType($registryId, $parentCategoryId));
+            $builder->add('categories', new CategoryType($registryId, $parentCategoryId), array('multiple' => true));
         }
     }
 
-    public function getName()
-    {
-        return 'paustianquickcheckmodule_mcquesiton';
+    public function getName() {
+        return 'paustianquickcheckmodule_tfquesiton';
     }
 
     /**
@@ -50,10 +58,10 @@ class QuickcheckMCQuestion extends AbstractType {
      *
      * @param OptionsResolverInterface $resolver
      */
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
-    {
+    public function setDefaultOptions(OptionsResolverInterface $resolver) {
         $resolver->setDefaults(array(
             'data_class' => 'Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity',
         ));
     }
+
 }

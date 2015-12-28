@@ -135,8 +135,8 @@ class UserApi extends \Zikula_AbstractApi {
         if (isset($args['missing_explan']) && $args['missing_explan']) {
             //create a where clause to get only empty explanations
             $qb->select('u')
-                ->from('QuickcheckQuestionEntity', 'u')
-                ->where('(u.quickcheckq_expan = ?1 OR quickcheckq_expan = ?2) AND (u.quickcheckq_type = ?3 OR u.quickcheckq_type = ?4)')
+                ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
+               ->where('(u.quickcheckq_expan = ?1 OR quickcheckq_expan = ?2) AND (u.quickcheckq_type = ?3 OR u.quickcheckq_type = ?4)')
                 ->setParameters(array(1 => 'NULL',
                                 2 => '',
                                 3 => 4,
@@ -146,7 +146,7 @@ class UserApi extends \Zikula_AbstractApi {
         } else {
             // add select and from params
             $qb->select('u')
-                    ->from('QuickcheckQuestionEntity', 'u');
+                    ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
         }
 
         // convert querybuilder instance into a Query object
@@ -154,19 +154,6 @@ class UserApi extends \Zikula_AbstractApi {
 
         // execute query
         $items = $query->getResult();
-        //we need to unserialize all question params and answers.
-        $item_count = count($items);
-        for ($i = 0; $i < $item_count; $i++) {
-            $answer = @unserialize($items[$i]['q_answer']);
-            if ($answer !== false) {
-                $items[$i]['q_answer'] = $answer;
-            }
-
-            $param = @unserialize($items[$i]['q_param']);
-            if ($param !== false) {
-                $items[$i]['q_param'] = $param;
-            }
-        }
 
         // Return the items
         return $items;
@@ -183,7 +170,7 @@ class UserApi extends \Zikula_AbstractApi {
             throw new \InvalidArgumentException(__('id wrong in getquestion'));
         }
 
-        $item = $this->entityManager->find('QuickcheckModule:QuickcheckQuestionEntity', $args['id']);
+        $item = $this->entityManager->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $args['id']);
         if ($item === false) {
             return $item;
         }

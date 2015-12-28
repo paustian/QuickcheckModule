@@ -20,7 +20,7 @@ use Paustian\QuickcheckModule\Controller\AdminController;
  * @author paustian
  * 
  */
-class QuickcheckMAnsQuestion extends AbstractType {
+class MAnsQuestion extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -35,7 +35,7 @@ class QuickcheckMAnsQuestion extends AbstractType {
         $entityCategoryRegistries = \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity', 'id');
         $builder->add('categories', 'choice', array('placeholder' => 'Choose an option'));
         foreach ($entityCategoryRegistries as $registryId => $parentCategoryId) {
-            $builder->add('categories', new CategoryType($registryId, $parentCategoryId));
+            $builder->add('categories', new CategoryType($registryId, $parentCategoryId), array('multiple' => true));
         }
     }
 
