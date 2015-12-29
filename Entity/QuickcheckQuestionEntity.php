@@ -84,10 +84,6 @@ class QuickcheckQuestionEntity extends EntityAccess {
      */
     private $categories;
 
-    private function _isserialized($data) {
-        return (is_string($data) && preg_match("#^((N;)|((a|O|s):[0-9]+:.*[;}])|((b|i|d):[0-9.E-]+;))$#um", $data));
-    }
-
     public function __construct() {
         $this->id = 0;
         $this->quickcheckq_type = 0;
@@ -111,12 +107,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
     }
 
     public function getQuickcheckqAnswer() {
-        if ($this->_isserialized($this->quickcheckq_answer)) {
-            $return_answer = unserialize($this->quickcheckq_answer);
-        } else {
-            $return_answer = $this->quickcheckq_answer;
-        }
-        return $return_answer;
+        return $this->quickcheckq_answer;
     }
 
     public function getQuickcheckqExpan() {
@@ -124,12 +115,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
     }
 
     public function getQuickcheckqParam() {
-        if ($this->_isserialized($this->quickcheckq_param)) {
-            $return_answer = unserialize($this->quickcheckq_param);
-        } else {
-            $return_answer = $this->quickcheckq_param;
-        }
-        return $return_answer;
+        return $this->quickcheckq_param;
     }
 
     /**
@@ -167,10 +153,6 @@ class QuickcheckQuestionEntity extends EntityAccess {
     }
 
     public function setQuickcheckqAnswer($quickcheckq_answer) {
-        //convert these to string before saving them
-        if (is_array($quickcheckq_answer)) {
-            $quickcheckq_answer = mysql_real_escape_string(serialize($quickcheckq_answer));
-        }
         $this->quickcheckq_answer = $quickcheckq_answer;
     }
 
@@ -179,10 +161,6 @@ class QuickcheckQuestionEntity extends EntityAccess {
     }
 
     public function setQuickcheckqParam($quickcheckq_param) {
-        //convert these to string before saving them
-        if (is_array($quickcheckq_param)) {
-            $quickcheckq_param = mysql_real_escape_string(serialize($quickcheckq_param));
-        }
         //I need to somehow make this string sql safe.
         $this->quickcheckq_param = $quickcheckq_param;
     }
@@ -193,8 +171,8 @@ class QuickcheckQuestionEntity extends EntityAccess {
      * @param $categories
      */
     public function setCategories($categories) {
-        $this->categories = new ArrayCollection();
         foreach ($categories as $regId => $category) {
+            $this->categories = new ArrayCollection();
             if ($category instanceof ArrayCollection) {
                 // a result of multiple select box
                 //We need to delete any entries in the table.
@@ -233,26 +211,15 @@ class QuickcheckQuestionEntity extends EntityAccess {
         switch ($this->getQuickcheckqType()) {
             case AdminController::_QUICKCHECK_TEXT_TYPE:
             case AdminController::_QUICKCHECK_TF_TYPE:
+            case AdminController::_QUICKCHECK_MATCHING_TYPE:
                 if ($answer == "") {
                     $context->buildViolation(__('The answer to the question cannot be empty'))
                             ->atPath('quickcheckq_answer')
                             ->addViolation();
                 }
                 break;
-            case AdminController::_QUICKCHECK_MATCHING_TYPE:
-                preg_match_all('|(.*?)\|(.*)|', $answer, $answerData);
-                if(empty($answerData[1]) || empty($answer[2])){
-                    $context->buildViolation(__('The answer to the question cannot be empty'))
-                            ->atPath('quickcheckq_answer')
-                            ->addViolation();
-                }
-                $this->setQuickcheckqAnswer($answerData[1]);
-                $this->setQuickcheckqParam($answerData[2]);
-                break;
             case AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE:
                 preg_match_all('|(.*?)\|([0-9]{1,3})|', $answer, $answerData);
-                $this->setQuickcheckqAnswer($answerData[1]);
-                $this->setQuickcheckqParam($answerData[2]);
                 $answer_percent = $answerData[2];
                 $total_percent = 0;
                 $hasOneAnswer = false;
@@ -271,8 +238,6 @@ class QuickcheckQuestionEntity extends EntityAccess {
                 break;
             case AdminController::_QUICKCHECK_MULTIANSWER_TYPE:
                 preg_match_all('|(.*?)\|([0-9]{1,3})|', $answer, $answerData);
-                $this->setQuickcheckqAnswer($answerData[1]);
-                $this->setQuickcheckqParam($answerData[2]);
                 $answer_percent = $answerData[2];
                 $total_percent = 0;
                 foreach ($answer_percent as $percent) {

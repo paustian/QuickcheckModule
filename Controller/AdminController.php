@@ -30,11 +30,13 @@ use ModUtil;
 use Loader;
 use CategoryRegistryUtil;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory;
 use Paustian\QuickcheckModule\Form\TFQuestion;
 use Paustian\QuickcheckModule\Form\TextQuestion;
 use Paustian\QuickcheckModule\Form\MCQuestion;
 use Paustian\QuickcheckModule\Form\MAnsQuestion;
 use Paustian\QuickcheckModule\Form\MatchQuestion;
+use Paustian\QuickcheckModule\Form\ImportText;
 
 /**
  * The various types of questions. We use defines to make the code
@@ -231,6 +233,54 @@ class AdminController extends AbstractController {
     }
 
     /**
+     *  _flushCategoryRefs()
+     * 
+     * @param $qId - The id of the question to get rid of.
+     * 
+     */
+    private function _flushCategoryRefs($em, $qId) {
+        $qb = $em->createQueryBuilder();
+
+        //First see if there is anything to delete.
+        $qb->select('u');
+        $qb->from('PaustianQuickcheckModule:QuickcheckQuestionCategory', 'u');
+        $qb->where('u.entity = :ent');
+        $qb->setParameter('ent', $qId);
+        $query = $qb->getQuery();
+        // execute query
+        $items = $query->getResult();
+        //the objects exists, so delete it now.
+        foreach ($items as $item) {
+            $em->remove($item);
+            $em->flush($item);
+        }
+    }
+
+    /**
+     * _persistQustion save a question to the databse, set the announcement and then save.
+     * 
+     * @param type $question the question entity to save to the database
+     * @param type $doMerge whether this is a merge (edit) or persist (new)
+     * @param type $flashText the text to put in the flash area
+     * @param type $redirect what url to redirect to
+     * 
+     * @return Response
+     */
+    private function _persistQuestion($question, $doMerge, $flashText, $redirect) {
+        $em = $this->getDoctrine()->getManager();
+        if ($doMerge) {
+            $this->_flushCategoryRefs($em, $question['id']);
+            $em->merge($question);
+        } else {
+            $em->persist($question);
+        }
+        $em->flush();
+
+        $this->addFlash('status', $flashText);
+        return $redirect;
+    }
+
+    /**
      * 
      * @Route("/create")
      * @Method("POST")
@@ -304,18 +354,9 @@ class AdminController extends AbstractController {
 
         $form->handleRequest($request);
 
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
-            if ($doMerge) {
-                $em->merge($question);
-            } else {
-                $em->persist($question);
-            }
-            $em->flush();
-            $this->addFlash('status', __('New text question saved!'));
-
-            return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittextquest'));
+            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittextquest'));
+            return $this->_persistQuestion($question, $doMerge, __('Text question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_text_question.html.twig', array(
@@ -352,15 +393,8 @@ class AdminController extends AbstractController {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
-            if ($doMerge) {
-                $em->merge($question);
-            } else {
-                $em->persist($question);
-            }
-            $em->flush();
-            $this->addFlash('status', __('Matching Question saved!'));
-            $url = $this->generateUrl('paustianquickcheckmodule_admin_editmatchquest');
-            return $this->redirect($url);
+            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmatchquest'));
+            return $this->_persistQuestion($question, $doMerge, __('Matching question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_match_question.html.twig', array(
@@ -387,6 +421,7 @@ class AdminController extends AbstractController {
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
+        $em = $this->getDoctrine()->getManager();
         if (null === $question) {
             $question = new QuickcheckQuestionEntity();
         } else {
@@ -398,17 +433,9 @@ class AdminController extends AbstractController {
         $form->handleRequest($request);
 
         /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
-            if ($doMerge) {
-                $em->merge($question);
-            } else {
-                $em->persist($question);
-            }
-            $em->flush();
-            $this->addFlash('status', __('Question saved!'));
-
-            return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittfquest'));
+            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittfquest'));
+            return $this->_persistQuestion($question, $doMerge, __('True/False question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_tf_question.html.twig', array(
@@ -447,15 +474,8 @@ class AdminController extends AbstractController {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
-            if ($doMerge) {
-                $em->merge($question);
-            } else {
-                $em->persist($question);
-            }
-            $em->flush();
-            $this->addFlash('status', __('Multiple-Choice Question saved!'));
-            $url = $this->generateUrl('paustianquickcheckmodule_admin_editmcquest');
-            return $this->redirect($url);
+            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmcquest'));
+            return $this->_persistQuestion($question, $doMerge, __('Multiple-Choice  question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_mc_question.html.twig', array(
@@ -494,15 +514,8 @@ class AdminController extends AbstractController {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
-            if ($doMerge) {
-                $em->merge($question);
-            } else {
-                $em->persist($question);
-            }
-            $em->flush();
-            $this->addFlash('status', __('Multiple-Answer Question saved!'));
-            $url = $this->generateUrl('paustianquickcheckmodule_admin_editmansquest');
-            return $this->redirect($url);
+            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmansquest'));
+            return $this->_persistQuestion($question, $doMerge, __('Multiple-Answer question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_mans_question.html.twig', array(
@@ -755,86 +768,6 @@ class AdminController extends AbstractController {
     }
 
     /**
-     * @Route("/modifydeletequesions")
-     * 
-     * presents a list of questions that you can then modify or delete.
-     * 
-     * @return RedirectResponse
-     * @throws AccessDeniedException
-     */
-    public function modifydeletequestionsAction() {
-
-        //Find out the button that was pressed
-        $button = $request->request->get('submit', null);
-        if (!isset($button)) {
-            $button = $request->request->get('plg4_update', null);
-        }
-        $redirect_url = $this->get('router')->generate('paustianquickcheckmodule_admin_editquestions', array(), RouterInterface::ABSOLUTE_URL);
-        //delete all the checked items
-
-        if ($button === 'delete_checked') {
-            if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_DELETE)) {
-                throw new AccessDeniedException();
-            }
-            $questions = $request->request->get('questions', null);
-            $delete_all = $request->request->get('delete_all', null);
-            //check to make sure we have something
-            if (!empty($questions)) {
-                //we have the list, now delete the questions
-                foreach ($questions as $item) {
-                    if (!modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'deletequestion', array('id' => $item))) {
-                        $request->getSession()->getFlashBag()->add('status', $this->__("There was an error deleting the quesiton."));
-                        return RedirectResponse($this->get('router')->generate('paustianquickcheckmodule_admin_index', array(), RouterInterface::ABSOLUTE_URL));
-                        ;
-                    }
-                }
-                //if we get here, it worked.
-                $request->getSession()->getFlashBag()->add('status', $this->__("The choosen question(s) were deleted"));
-            } else {
-                if ($delete_all == "on") {
-                    $questions = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'getallquestions');
-                    if (!$questions) {
-                        $request->getSession()->getFlashBag()->add('status', $this->__('There are no questions to modify. Create some first.'));
-                        return new RedirectResponse($redirect_url);
-                    }
-                    foreach ($questions as $q_item) {
-                        if (!modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'deletequestion', array('id' => $q_item['id']))) {
-                            //if we have an error, bail, the error is already posted.
-                            return new RedirectResponse($redirect_url);
-                        }
-                    }
-                    //if we got here, all the question are deleted, we need to redirect somewhere else
-                    //post a status message too.
-                    $request->getSession()->getFlashBag()->add('status', $this->__("All questions were deleted"));
-                    return new RedirectResponse(ModUtil::url('PaustianQuickcheckModule', 'admin', 'editquestions'));
-                }
-            }
-            return new RedirectResponse($redirect_url);
-        }
-        if ($button === 'modify_checked') {
-            if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
-                throw new AccessDeniedException();
-            }
-            //I have bad data in the MC, MAtching etc. questions Reimport I guess
-            $questions = $request->request->get('questions', null);
-            $id = $questions[0];
-            return $this->modifyquest2(array('id' => $id));
-        }
-        //parse the button if we get to this point
-        $button_parts = explode('_', $button);
-        if ($button_parts[0] == "modify") {
-            if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
-                throw new AccessDeniedException();
-            }
-            //we want to edit the question identified. This is coming from find unanswered.
-            //the second part of the phrase is the id of the button
-            return $this->modifyquest2(array('id' => $button_parts[1]));
-        }
-
-        return new RedirectResponse($redirect_url);
-    }
-
-    /**
      * 
      * @Route("/manageexams")
      * @Method("POST")
@@ -980,6 +913,81 @@ class AdminController extends AbstractController {
         return new Response($render->fetch('Admin/quickcheck_admin_findunanswered.tpl'));
     }
 
+   /**
+    * 
+    * @param type $xmlQuestionText - the xml text to parse
+    * @param type $category - the categories to assign it.
+    * 
+    */
+    private function __parseImportedQuizXML($xmlQuestionText, $category) {
+        $pattern = "|<question>(.*?)</question>|s";
+        //split all the questions into a match array
+        preg_match_all($pattern, $xmlQuestionText, $matches);
+        //grab the manager for saving the data.
+        $em = $this->getDoctrine()->getManager();
+        foreach ($matches[1] as $q_item) {
+            $question = new QuickcheckQuestionEntity();
+            //grab the type
+            preg_match("|<qtype>(.*?)</qtype>|", $q_item, $q_type);
+            //now convert this into the correct number
+            switch ($q_type[1]) {
+                case 'multichoice':
+                    $question->setQuickcheckqType(self::_QUICKCHECK_MULTIPLECHOICE_TYPE);
+                    break;
+                case 'text':
+                    $question->setQuickcheckqType(self::_QUICKCHECK_TEXT_TYPE);
+                    break;
+                case 'multianswer':
+                    $question->setQuickcheckqType(self::_QUICKCHECK_MULTIANSWER_TYPE);
+                    break;
+                case 'matching':
+                    $question->setQuickcheckqType(self::_QUICKCHECK_MATCHING_TYPE);
+                    break;
+                case 'truefalse':
+                    $question->setQuickcheckqType(self::_QUICKCHECK_TF_TYPE);
+                    break;
+                default:
+                    //if we get here there is an issue, throw an error
+                    $this->throwNotFound($this->__('Unrecognized question type, was your qtype empty in the xml file?'));
+                    break;
+            }
+            //grab the text of the questsion
+            $preg_match = preg_match("|<qtext>(.*?)</qtext>|", $q_item, $q_text);
+            $question->setQuickcheckqText($q_text[1]);
+            //grab the explanation
+            preg_match("|<qexplanation>(.*?)</qexplanation>|", $q_item, $q_explan);
+            $question->setQuickcheckqExpan($q_explan[1]);
+
+            //grab the answer
+            preg_match("|<qanswer>(.*?)</qanswer>|", $q_item, $q_answer);
+            preg_match("|<qparam>(.*?)</qparam>|", $q_item, $q_param);
+            //backwards compatibility we need to parse these out and put them back together
+            $answer='';
+            
+            if ($q_param[1] != '') {
+                $q_param = explode('|', $q_param[1]);
+                $q_answer = explode('|', $q_answer[1]);
+                foreach ($q_param as $index => $param) {
+                    $answer .= $q_answer[$index] . "|" . $param . "\n";
+                }
+            } else {
+                $answer = $q_answer[1];
+                if(strcmp($q_type[1], 'truefalse')== 0){
+                    if(strcmp($answer, 'False') == 0){
+                        $answer = 'no';
+                    }
+                    if(strcmp($answer,'True') == 0){
+                        $answer = 'yes';
+                    }
+                }
+            }
+            $question->setQuickcheckqAnswer($answer);
+            $question->setCategories($category);
+            $em->persist($question);
+        }
+        $em->flush();
+    }
+
     /**
      * @Route("/importquiz")
      * 
@@ -987,12 +995,30 @@ class AdminController extends AbstractController {
      * @return Response
      * @throws AccessDeniedException
      */
-    public function importquizAction() {
+    public function importquizAction(Request $request) {
         //you have to have edit access to do this
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
-        return new Response($this->view->fetch('Admin/quickcheck_admin_importquiz.tpl'));
+
+        $form = $this->createForm(new ImportText());
+
+        $form->handleRequest($request);
+
+        if ($form->isValid()) {
+            $xmlQuestionText = $form->get('importText')->getData();
+            $category = $form->get('categories')->getData();
+            //take the xml that is imported, and parse it into an array
+            //That array should have filled out a new question entity which it shoudl return
+            $questions = $this->__parseImportedQuizXML($xmlQuestionText, $category);
+            $this->addFlash('status', __("Questions imported."));
+            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_importquiz'));
+            return $response;
+        }
+
+        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_import.html.twig', array(
+                    'form' => $form->createView(),
+        ));
     }
 
     /**
@@ -1011,15 +1037,15 @@ class AdminController extends AbstractController {
      */
     public function doimportAction(Request $request) {
         $ret_url = $this->get('router')->generate('paustianquickcheckmodule_admin_importquiz', array(), RouterInterface::ABSOLUTE_URL);
-        // Confirm authorisation code.
-        //security check
+// Confirm authorisation code.
+//security check
         $this->checkCsrfToken();
-        //you have to have edit access to do this
+//you have to have edit access to do this
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
 
-        //get the questions
+//get the questions
         $questions = $request->request->get('quest_to_import', null);
 
         if (modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'import', array('questions' => $questions))) {
@@ -1040,7 +1066,7 @@ class AdminController extends AbstractController {
      */
     public function exportquizAction() {
 
-        //You need edit access to export questions
+//You need edit access to export questions
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -1061,15 +1087,15 @@ class AdminController extends AbstractController {
      */
     public function doexportAction(Request $request) {
         $ret_url = $this->get('router')->generate('paustianquickcheckmodule_admin_export', array(), RouterInterface::ABSOLUTE_URL);
-        // Confirm authorisation code.
-        //security check
+// Confirm authorisation code.
+//security check
         $this->checkCsrfToken();
-        //you have to have edit access to do this
+//you have to have edit access to do this
         if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
 
-        //get the questions
+//get the questions
         $export_all = $request->request->get('export_all', null);
         $q_ids = $request->request->get('questions', null);
 

@@ -1,5 +1,6 @@
 {% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
 {% include 'PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig' %}
+{{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
 <div class="container-fluid">
     <div class="row">
         <h3>
@@ -12,9 +13,9 @@
         {{ form_errors(form) }}
         <fieldset>
             <legend>{{ __('T/F Question') }}</legend>
-            {{ form_row(form.quickcheckq_text) }}
-            {{ form_row(form.quickcheckq_answer) }}
-            {{ form_row(form.quickcheckq_expan) }}
+            {{ form_row(form.quickcheckq_text, {'attr': {'class': 'qc_question'}}) }}
+            {{ form_row(form.quickcheckq_answer, {'attr': {'class': 'qc_answer'}}) }}
+            {{ form_row(form.quickcheckq_expan, {'attr': {'class': 'qc_question'}}) }}
             {{ form_row(form.categories) }}
         </fieldset>
         <div class="form-group">

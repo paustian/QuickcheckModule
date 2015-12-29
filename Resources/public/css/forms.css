@@ -36,3 +36,7 @@ textarea.qc_answer{
 textarea.qc_question{
     height:75px;
 }
+
+textarea.qc_importtext{
+    height: 480px;
+}
