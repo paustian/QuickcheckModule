@@ -14,7 +14,6 @@
 
 namespace Paustian\QuickcheckModule\Entity;
 
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Zikula\Core\Doctrine\EntityAccess;
 use Doctrine\Common\Collections\ArrayCollection;

@@ -1,7 +1,7 @@
 {{ pageAddAsset('javascript', zasset('jquery-ui/jquery-ui.js')) }}
 {{ pageAddAsset('stylesheet', asset('jquery-ui/themes/base/jquery-ui.min.css')) }}
 
-<!-- I struggled for hours trying to get the accordian interface to work. Only after realizing it was not including the jquery-ui.js did it fix -->
+{# I struggled for hours trying to get the accordian interface to work. Only after realizing it was not including the jquery-ui.js did it fix #}
 <h3>{{ __('Questions') }}</h3>
 <div id="QuestionList">
     {% for category, question in questions %}
@@ -11,7 +11,11 @@
                 {% if buttons == 'radio' %}
                     <p>{{ item.id }}. <input type="radio" name="questions" value="{{ item.id }}"> {{ item.text }}</p>   
                     {% else %}
-                    <p>{{ item.id }}. <input type="checkbox" name="questions" value="{{ item.id }}"> {{ item.text }}</p> 
+                        {% if item.ck %}
+                        <p>{{ item.id }}. <input type="checkbox" name="questions[]" value="{{ item.id }}" checked> {{ item.text }}</p> 
+                        {% else %}
+                        <p>{{ item.id }}. <input type="checkbox" name="questions[]" value="{{ item.id }}"> {{ item.text }}</p> 
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
         </div>

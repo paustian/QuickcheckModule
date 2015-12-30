@@ -16,6 +16,7 @@ namespace Paustian\QuickcheckModule\Entity;
 
 use Zikula\Core\Doctrine\EntityAccess;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Quickcheck entity class.
@@ -38,15 +39,16 @@ class QuickcheckExamEntity extends EntityAccess {
 
     /**
      * exam name
-     *
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank()
+     * 
      */
     private $quickcheckname;
 
     /**
      * question list
      * 
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="array")
      */
     private $quickcheckquestions;
 
@@ -55,7 +57,7 @@ class QuickcheckExamEntity extends EntityAccess {
      *
      * @ORM\Column(type="integer", length=20)
      */
-    private $quickcheckart_id;
+    private $quickcheckrefid;
 
     public function getId() {
         return $this->id;
@@ -69,7 +71,7 @@ class QuickcheckExamEntity extends EntityAccess {
         return $this->quickcheckquestions;
     }
 
-    public function getQuickcheckart_id() {
+    public function getQuickcheckrefid() {
         return $this->quickcheckart_id;
     }
 
@@ -85,8 +87,8 @@ class QuickcheckExamEntity extends EntityAccess {
         $this->quickcheckquestions = $quickcheckquestions;
     }
 
-    public function setQuickcheckart_id($quickcheckart_id) {
-        $this->quickcheckart_id = $quickcheckart_id;
+    public function setQuickcheckrefid($quickcheckrefid) {
+        $this->quickcheckrefid = $quickcheckrefid;
     }
 
 }
