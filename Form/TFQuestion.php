@@ -25,18 +25,18 @@ class TFQuestion extends AbstractType {
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $builder
-                ->add('quickcheckq_text', 'textarea', array('label' => __('Question'), 'required' => true))
-                ->add('quickcheckq_expan', 'textarea', array('label' => __('Explanation'), 'required' => true))
-                ->add('save', 'submit', array('label' => 'Create Question'));
+                ->add('quickcheckqtext', 'textarea', array('label' => __('Question'), 'required' => true))
+                ->add('quickcheckqexpan', 'textarea', array('label' => __('Explanation'), 'required' => true))
+                ->add('save', 'submit', array('label' => 'Save Question'));
         $builder->add('cancel', 'button', array('label' => __('Cancel')));
-        $builder->add('quickcheckq_answer', 'choice', array(
+        $builder->add('quickcheckqanswer', 'choice', array(
             'choices' => array('True' => 'yes', 'False' => 'no'),
             'required' => true,
             'label' => __('Answer'),
             'choices_as_values' => true,
             'expanded' => true,
             'multiple' => false));
-        $builder->add('quickcheckq_type', 'hidden', array('data' => AdminController::_QUICKCHECK_TF_TYPE));
+        $builder->add('quickcheckqtype', 'hidden', array('data' => AdminController::_QUICKCHECK_TF_TYPE));
         $id = $options['data']['id'];
         if (isset($id)) {
             $builder->add('id', 'hidden', array('data' => $id));

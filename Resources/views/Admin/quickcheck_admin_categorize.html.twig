@@ -1,21 +1,21 @@
 {% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
-{{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
 {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
 <div class="container-fluid">
     <div class="row">
         <h3>
             <span class="fa fa-edit"></span>
-            {{ __("New Text Question") }}
+            {{ __("Categorize Questions") }}
         </h3>
-        <p>{{ __("Write your new text question in the text box, provide a model answer, and explain the correct answer") }}</p>
+        <p>{{ __("Pick the questions that you would like and then pick the categories you want.") }}</p>
         {{ showflashes() }}
         {{ form_start(form) }}
         {{ form_errors(form) }}
         <fieldset>
-            <legend>{{ __('Text Question') }}</legend>
-            {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
-            {{ form_row(form.quickcheckqanswer, {'attr': {'class': 'qc_answer'}}) }}
-            {{ form_row(form.quickcheckqexpan, {'attr': {'class': 'qc_question'}}) }}
+            <legend>{{ __('Questions') }}</legend>
+            {{ questions|raw }}
+        </fieldset>
+        <fieldset>
+            <legend>{{ __('Categories') }}</legend>
             {{ form_row(form.categories) }}
         </fieldset>
         <div class="form-group">
@@ -26,5 +26,5 @@
         </div>
         {{ form_end(form) }}
     </div>
-</div>
+    </div>
 {{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

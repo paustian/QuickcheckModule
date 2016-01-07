@@ -1,6 +1,6 @@
 {% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
-{% include 'PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig' %}
-<div class="container-fluid">
+
+{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }} <div class="container-fluid">
     
     <div class="row">
         <h3>

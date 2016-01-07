@@ -4,7 +4,6 @@ namespace Paustian\QuickcheckModule\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Paustian\QuickcheckModule\Controller\AdminController;
 /**
  * Description of ExamForm
  * Set up the elements for a Exam form.
@@ -15,10 +14,9 @@ use Paustian\QuickcheckModule\Controller\AdminController;
 class ExamForm extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $questions = $options['questions'];
         $builder
             ->add('quickcheckname', 'text', array('label' => __('Exam Name'), 'required' => true))
-            ->add('save', 'submit', array('label' => 'Create Exam'))
+            ->add('save', 'submit', array('label' => 'Save Exam'))
             ->add('cancel', 'button', array('label' => __('Cancel')));
         
     }

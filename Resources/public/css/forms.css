@@ -40,3 +40,13 @@ textarea.qc_question{
 textarea.qc_importtext{
     height: 480px;
 }
+
+ol.upper-alpha {list-style-type: upper-alpha;}
+
+#sortable24, #sortable_a { 
+         list-style-type: none; margin: 0; padding: 0;
+         width: 49%; float:left }
+li.matching { 
+        margins: 10px 10px 10px 10px; 
+        font-size: 17px; height: 25px;
+        border: 1px solid black; }

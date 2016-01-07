@@ -1,6 +1,6 @@
 {% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
-{% include 'PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig' %}
 {{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
+{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
 <div class="container-fluid">
     <div class="row">
         <h3>
@@ -14,9 +14,9 @@ After the | put the percent correct for that anwer. One of the answers should be
         {{ form_errors(form) }}
         <fieldset>
             <legend>{{ __('Multiple-Choice Question') }}</legend>
-            {{ form_row(form.quickcheckq_text, {'attr': {'class': 'qc_question'}}) }}
-            {{ form_row(form.quickcheckq_answer, {'attr': {'class': 'qc_answer'}}) }}
-            {{ form_row(form.quickcheckq_expan, {'attr': {'class': 'qc_question'}}) }}
+            {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
+            {{ form_row(form.quickcheckqanswer, {'attr': {'class': 'qc_answer'}}) }}
+            {{ form_row(form.quickcheckqexpan, {'attr': {'class': 'qc_question'}}) }}
             {{ form_row(form.categories) }}
         </fieldset>
         <div class="form-group">

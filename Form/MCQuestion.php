@@ -24,13 +24,13 @@ class MCQuestion extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('quickcheckq_text', 'textarea', array('label' => __('Question'), 'required' => true))
-            ->add('quickcheckq_answer', 'textarea', array('label' => __('Answer'), 'required' => true))
-            ->add('quickcheckq_expan', 'textarea', array('label' => __('Explanation'), 'required' => true))
-            ->add('save', 'submit', array('label' => 'Create Question'));
+            ->add('quickcheckqtext', 'textarea', array('label' => __('Question'), 'required' => true))
+            ->add('quickcheckqanswer', 'textarea', array('label' => __('Answer'), 'required' => true))
+            ->add('quickcheckqexpan', 'textarea', array('label' => __('Explanation'), 'required' => true))
+            ->add('save', 'submit', array('label' => 'Save Question'));
         $builder->add('cancel', 'button', array('label' => __('Cancel')));
         
-        $builder->add('quickcheckq_type', 'hidden', array('data' => AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE));
+        $builder->add('quickcheckqtype', 'hidden', array('data' => AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE));
 
         $entityCategoryRegistries = \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity', 'id');
         $builder->add('categories', 'choice', array('placeholder' => 'Choose an option'));

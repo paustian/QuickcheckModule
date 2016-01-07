@@ -1,0 +1,37 @@
+{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
+<div class="container-fluid">
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>{{ __('Question') }}</th>
+            <th> {{ __('Actions') }} </th></tr>
+    </thead>
+    <tbody>
+        {% for item in questions %}
+            {% set qtype = item.quickcheckqtype %}
+            <tr>
+                <td>{{ item.quickcheckqtext }}</td>
+                <td class="actions">
+                    {% if qtype == 0 %}
+                       <a href="{{ path('paustianquickcheckmodule_admin_edittextquest') }}/{{ item.id }}" class="fa fa-pencil"></a>
+                    {% endif %} 
+                    {% if qtype == 1 %}
+                            <a href="{{ path('paustianquickcheckmodule_admin_editmcquest') }}/{{ item.id }}" class="fa fa-pencil"></a>
+                    {% endif %}
+                    {% if qtype == 2 %}
+                            <a href="{{ path('paustianquickcheckmodule_admin_edittfquest') }}/{{ item.id }}" class="fa fa-pencil"></a>
+                    {% endif %}
+                    {% if qtype == 3 %}
+                            <a href="{{ path('paustianquickcheckmodule_admin_editmatchquest') }}/{{ item.id }}" class="fa fa-pencil"></a>
+                    {% endif %}
+                    {% if qtype == 4 %}
+                            <a href="{{ path('paustianquickcheckmodule_admin_editmansquest') }}/{{ item.id }}" class="fa fa-pencil"></a>
+                    {% endif %}
+                    <a href="{{ path('paustianquickcheckmodule_admin_deletequestion') }}/{{ item.id }}" onclick="return confirm('Are you sure you want to delete this question?')" class="fa fa-trash-o"></a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

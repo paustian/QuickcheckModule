@@ -20,6 +20,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory as QuickcheckCategoryRelation;
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Quickcheck entity class.
@@ -46,35 +47,35 @@ class QuickcheckQuestionEntity extends EntityAccess {
      *
      * @ORM\Column(type="integer", length=2)
      */
-    private $quickcheckq_type;
+    private $quickcheckqtype;
 
     /**
      * question text
      * 
      * @ORM\Column(type="text")
      */
-    private $quickcheckq_text;
+    private $quickcheckqtext;
 
     /**
      * question answer
      * 
      * @ORM\Column(type="text")
      */
-    private $quickcheckq_answer;
+    private $quickcheckqanswer;
 
     /**
      * question explanation
      * 
      * @ORM\Column(type="text")
      */
-    private $quickcheckq_expan;
+    private $quickcheckqexpan;
 
     /**
      * question extra paramaters
      * 
      * @ORM\Column(type="text")
      */
-    private $quickcheckq_param;
+    private $quickcheckqparam;
 
     /**
      * @ORM\OneToMany(targetEntity="Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory",
@@ -85,11 +86,11 @@ class QuickcheckQuestionEntity extends EntityAccess {
 
     public function __construct() {
         $this->id = 0;
-        $this->quickcheckq_type = 0;
-        $this->quickcheckq_text = '';
-        $this->quickcheckq_answer = '';
-        $this->quickcheckq_expan = '';
-        $this->quickcheckq_param = '';
+        $this->quickcheckqtype = 0;
+        $this->quickcheckqtext = '';
+        $this->quickcheckqanswer = '';
+        $this->quickcheckqexpan = '';
+        $this->quickcheckqparam = '';
         $this->categories = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
@@ -98,23 +99,23 @@ class QuickcheckQuestionEntity extends EntityAccess {
     }
 
     public function getQuickcheckqType() {
-        return $this->quickcheckq_type;
+        return $this->quickcheckqtype;
     }
 
     public function getQuickcheckqText() {
-        return $this->quickcheckq_text;
+        return $this->quickcheckqtext;
     }
 
     public function getQuickcheckqAnswer() {
-        return $this->quickcheckq_answer;
+        return $this->quickcheckqanswer;
     }
 
     public function getQuickcheckqExpan() {
-        return $this->quickcheckq_expan;
+        return $this->quickcheckqexpan;
     }
 
     public function getQuickcheckqParam() {
-        return $this->quickcheckq_param;
+        return $this->quickcheckqparam;
     }
 
     /**
@@ -143,25 +144,25 @@ class QuickcheckQuestionEntity extends EntityAccess {
         $this->id = $id;
     }
 
-    public function setQuickcheckqType($quickcheckq_type) {
-        $this->quickcheckq_type = $quickcheckq_type;
+    public function setQuickcheckqType($quickcheckqtype) {
+        $this->quickcheckqtype = $quickcheckqtype;
     }
 
-    public function setQuickcheckqText($quickcheckq_text) {
-        $this->quickcheckq_text = $quickcheckq_text;
+    public function setQuickcheckqText($quickcheckqtext) {
+        $this->quickcheckqtext = $quickcheckqtext;
     }
 
-    public function setQuickcheckqAnswer($quickcheckq_answer) {
-        $this->quickcheckq_answer = $quickcheckq_answer;
+    public function setQuickcheckqAnswer($quickcheckqanswer) {
+        $this->quickcheckqanswer = $quickcheckqanswer;
     }
 
-    public function setQuickcheckqExpan($quickcheckq_expan) {
-        $this->quickcheckq_expan = $quickcheckq_expan;
+    public function setQuickcheckqExpan($quickcheckqexpan) {
+        $this->quickcheckqexpan = $quickcheckqexpan;
     }
 
-    public function setQuickcheckqParam($quickcheckq_param) {
+    public function setQuickcheckqParam($quickcheckqparam) {
         //I need to somehow make this string sql safe.
-        $this->quickcheckq_param = $quickcheckq_param;
+        $this->quickcheckqparam = $quickcheckqparam;
     }
 
     /**
@@ -195,13 +196,13 @@ class QuickcheckQuestionEntity extends EntityAccess {
         //Check to make sure the question has an answer
         if ($this->getQuickcheckqText() == "") {
             $context->buildViolation(__('The question text cannot be empty'))
-                    ->atPath('quickcheckq_text')
+                    ->atPath('quickcheckqtext')
                     ->addViolation();
         }
         //Check to make sure there is an explanation
         if ($this->getQuickcheckqExpan() == "") {
             $context->buildViolation(__('The question explanation cannot be empty'))
-                    ->atPath('quickcheckq_expan')
+                    ->atPath('quickcheckqexpan')
                     ->addViolation();
         }
         //Grab the answer for analysis.
@@ -213,7 +214,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
             case AdminController::_QUICKCHECK_MATCHING_TYPE:
                 if ($answer == "") {
                     $context->buildViolation(__('The answer to the question cannot be empty'))
-                            ->atPath('quickcheckq_answer')
+                            ->atPath('quickcheckqanswer')
                             ->addViolation();
                 }
                 break;
@@ -231,7 +232,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
                 if ($total_percent != 100 || !$hasOneAnswer) {
                     //It has to add to 100% if not, there is an error
                     $context->buildViolation(__('Your answer must have one response that is set to 100% and the others set to 0%'))
-                            ->atPath('quickcheckq_answer')
+                            ->atPath('quickcheckqanswer')
                             ->addViolation();
                 }
                 break;
@@ -245,7 +246,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
                 if ($total_percent != 100) {
                     //It has to add to 100% if not, there is an error
                     $context->buildViolation(__('Your answer does not add up to 100%'))
-                            ->atPath('quickcheckq_answer')
+                            ->atPath('quickcheckqanswer')
                             ->addViolation();
                 }
                 break;
