@@ -185,15 +185,14 @@ class AdminController extends AbstractController {
         $this->addFlash('status', _('Question Deleted.'));
         return $response;
     }
-    
+
     /**
      * remove a deleted question from an exam
      * @param  $id the id of the question to delete
      * @param  $em the entity manager   
      * @return true if successful
      */
-    
-    private function _removeQuestionFromExams($em, $id){
+    private function _removeQuestionFromExams($em, $id) {
         $qb = $em->createQueryBuilder();
         // add select and from params
         $qb->select('u')
@@ -207,7 +206,7 @@ class AdminController extends AbstractController {
             $q_index = array_search($id, $questions);
             //we have to be careful here and use boolean operators
             //$q_index can be 0
-            if($q_index === FALSE){
+            if ($q_index === FALSE) {
                 continue;
             }
             //if we got here, the quesiton is part of the array
@@ -320,7 +319,7 @@ class AdminController extends AbstractController {
 
         // add select and from params
         $qb->select('u')
-               ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
+                ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
         // convert querybuilder instance into a Query object
         $query = $qb->getQuery();
         // execute query
@@ -328,7 +327,7 @@ class AdminController extends AbstractController {
         if (!$items) {
             return false;
         }
-        
+
         $questions = array();
         $doCkList = isset($ckList);
 
@@ -523,6 +522,7 @@ class AdminController extends AbstractController {
             throw new AccessDeniedException();
         }
         $em = $this->getDoctrine()->getManager();
+        $doMerge = false;
         if (null === $question) {
             $question = new QuickcheckQuestionEntity();
         } else {
@@ -800,7 +800,7 @@ class AdminController extends AbstractController {
             $questPick = $request->get('questions');
             $categories = $form->get('categories')->getData();
             $this->_persistQuestionList($questPick, $categories);
-            $this->addFlash('status', _('Questions recategorized.'));
+            $this->addFlash('status', __('Questions recategorized.'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
@@ -1006,14 +1006,19 @@ class AdminController extends AbstractController {
         $form->handleRequest($request);
 
         if ($form->isValid()) {
-            $questPick = $request->get('questions');
+            //I need to impement the export all button.
+            $questPick = null;
+            $button = $form->get('export');
+            //, then we need to get the array of checkboxes
+            if ($button->isClicked()) {
+                $questPick = $request->get('questions');
+            }
             $questionItems = $this->_prepExportText($questPick);
             $response = $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_doexport.html.twig', ['questions' => $questionItems]);
             return $response;
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_export.html.twig', 
-            ['form' => $form->createView(), 'questions' => $questions]);
+        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_export.html.twig', ['form' => $form->createView(), 'questions' => $questions]);
     }
 
     /**
@@ -1021,13 +1026,24 @@ class AdminController extends AbstractController {
      * 
      * @param type $qIds
      */
-    private function _prepExportText($qIds) {
+    private function _prepExportText($qIds = null) {
         $questions = array();
         $em = $this->getDoctrine()->getManager();
-        foreach ($qIds as $id) {
-            $questions[] = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
+        //if this is null, we want all the questions
+        if ($qIds == null) {
+            //get them all
+            $qb = $em->createQueryBuilder();
+            // add select and from params
+            $qb->select('u')
+                ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
+            $query = $qb->getQuery();
+            // execute query
+            $questions = $query->getResult();
+        } else {
+            foreach ($qIds as $id) {
+                $questions[] = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
+            }
         }
         return $questions;
     }
-
 }

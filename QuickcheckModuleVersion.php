@@ -19,6 +19,8 @@
 
 namespace Paustian\QuickcheckModule;
 
+use Zikula\Component\HookDispatcher\ProviderBundle;
+
 
 class QuickcheckModuleVersion extends \Zikula_AbstractVersion {
 
@@ -45,14 +47,16 @@ class QuickcheckModuleVersion extends \Zikula_AbstractVersion {
         $meta['securityschema'] = array('PaustianQuickcheckModule::'=>'exam::question' );
         return $meta;
     }
-/*
+    
     protected function setupHookBundles() {
-        bundle = new Zikula_HookManager_ProviderBundle($this->name, 'provider.quickcheck.ui_hooks.mhp', 'ui_hooks', __('Quickcheck Hook Handlers'));
-        $bundle->addServiceHandler('display_view', 'Quickcheck_HookHandler_Mhp', 'ui_view', 'quickcheck.mhp');
-        $bundle->addServiceHandler('process_delete', 'Quickcheck_HookHandler_Mhp', 'ui_delete', 'quickcheck.mhp');
+        $class = "Paustian\\Module\\QuickCheckModule\\HookHandler\\QuickcheckHookHandler";
+        $service = "paustian_quickcheck_module.hook_handler.quickcheck";
+
+        $bundle = new ProviderBundle($this->name, 'provider.paustianquickcheckmodule.ui_hooks.quickcheck', 'ui_hooks', $this->__('Quickcheck Hook Handlers'));
+        $bundle->addServiceHandler('display_view', $class, 'ui_view', $service);
+        $bundle->addServiceHandler('process_delete', $class, 'ui_delete', $service);
         $this->registerHookProviderBundle($bundle);
     }
-    */
 }
 
 ?>

@@ -15,7 +15,7 @@ class ExportForm extends AbstractType {
     {
         $builder
             ->add('export', 'submit', array('label' => 'Export'))
-            ->add('exportall', 'button', array('label' => __('Export All')));
+            ->add('exportall', 'submit', array('label' => __('Export All')));
     }
 
     public function getName()

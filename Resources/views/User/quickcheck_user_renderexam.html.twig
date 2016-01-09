@@ -12,7 +12,7 @@
         <input type="hidden" name="q_ids" value="{{ q_ids }}" />
 
         {% for question in questions %}
-            <p>{{ loop.index }}. {{ question.quickcheckqtext }}</p>
+            <p>{{ loop.index }}. {{ question.quickcheckqtext|raw }}</p>
             {% if question.quickcheckqtype == 0 %} {# text #}
                 <p><textarea cols="60" rows="5" name="{{ question.id }}"></textarea>
                 {% endif %}    
@@ -21,7 +21,7 @@
                 <ol class="upper-alpha">
                     {% set answers = question.quickcheckqanswer %}
                     {% for answer in answers %}
-                        <li><input type="radio" name="{{ question.id }}" value="{{ question.quickcheckqparam[loop.index0] }}_{{ loop.index0 }}"> {{ answer }}</li>
+                        <li><input type="radio" name="{{ question.id }}" value="{{ question.quickcheckqparam[loop.index0] }}_{{ loop.index0 }}"> {{ answer|raw }}</li>
                         {% endfor %}
                 </ol>
             {% endif %}
@@ -34,14 +34,14 @@
                 {% set answers = question.quickcheckqanswer %}
                 <ul id="sortable_a">
                     {% for answer in answers %}
-                        <li class="matching">{{ answer }}</li>
+                        <li class="matching">{{ answer|raw }}</li>
                         {% endfor %}
                 </ul>
                 {% set params = question.quickcheckqparam[0] %}
                 {% set position = question.quickcheckqparam[1] %}
-                <ul id="sortable{{question.id}}">
+                <ul id="sortable_a">
                     {% for match in params %}
-                        <li class="matching" id="item_{{ position[loop.index0] }}">  <span class="fa fa-arrows-v"></span>{{ match }}</li>
+                        <li class="matching" id="item_{{ position[loop.index0] }}">  <span class="fa fa-arrows-v"></span>  {{ match|raw }}</li>
                         {% endfor %}
                 </ul>
                 <br />
@@ -50,7 +50,7 @@
                 <ol class="upper-alpha">
                     {% set answers = question.quickcheckqanswer %}
                     {% for answer in answers %}
-                        <li><input type="checkbox" name="{{ question.id }}[]" value="{{ question.quickcheckqparam[loop.index0] }}_{{ loop.index0 }}"> {{ answer }}</li>
+                        <li><input type="checkbox" name="{{ question.id }}[]" value="{{ question.quickcheckqparam[loop.index0] }}_{{ loop.index0 }}"> {{ answer|raw }}</li>
                         {% endfor %}
                 </ol>
             {% endif %}

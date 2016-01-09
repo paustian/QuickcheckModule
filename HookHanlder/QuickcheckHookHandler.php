@@ -1,33 +1,16 @@
 <?php
 
+namespace Paustian\Quickcheck\HookHandler;
+
+use Zikula\Core\Hook\DisplayHook;
 /**
- * Copyright 2009 Zikula Foundation.
- *
- * This work is contributed to the Zikula Foundation under one or more
- * Contributor Agreements and licensed to You under the following license:
+ * Copyright 2015 Timothy Paustian
  *
  * @license MIT
  *
- * Please see the NOTICE file distributed with this source code for further
- * information regarding copyright and licensing.
  */
-class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler {
+class Quickcheck_HookHandler extends AbstractHookHandler {
 
-    /**
-     * Zikula_View instance
-     *
-     * @var Zikula_View
-     */
-    private $view;
-
-    /**
-     * Post constructor hook.
-     *
-     * @return void
-     */
-    public function setup() {
-        $this->view = Zikula_View::getInstance("Quickcheck");
-    }
 
     /**
      * Display hook for view.
@@ -40,16 +23,17 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler {
      *
      * @return void
      */
-    public function ui_view(Zikula_DisplayHook $hook) {
+    public function ui_view(DisplayHook $hook) {
         // Security check
         if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_OVERVIEW)) {
             return;
         }
         $is_admin = SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_ADMIN);
         //get the id of the caller
-        $id = $hook->getId();
+        //$id = $hook->getId();
         //look for it in our exam database
-        $exam = modUtil::apiFunc('quickcheck', 'user', 'get', array('art_id' => $id));
+        $qb = $this->entityManager->getQueryBuilder();
+        /*$exam = modUtil::apiFunc('quickcheck', 'user', 'get', array('art_id' => $id));
         $response = '';
         if ($exam) {
             //we have an exam associated with the id of the caller
@@ -97,8 +81,8 @@ class Quickcheck_HookHandler_Mhp extends Zikula_Hook_AbstractHandler {
                 //just send back an empty response
                 $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, '');
             }
-        }
-        $hook->setResponse($response);
+        }*/
+        $this->uiResponse($hook, '');
     }
 
     /**

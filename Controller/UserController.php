@@ -191,7 +191,7 @@ class UserController extends AbstractController {
         foreach ($num_quests as $catid => $number_of_questions) {
             if (!is_numeric($number_of_questions) || ($number_of_questions < 0)) {
                 $request->getSession()->getFlashBag()->add('error', $this->__('You need to pick the number of questions.'));
-                return new RedirctResponse($ret_url);
+                return new RedirectResponse($ret_url);
             }
             if ($number_of_questions > 0) {
                 //grab the random keys from the array of questions
@@ -318,7 +318,7 @@ class UserController extends AbstractController {
      * @return the text of the quiz.
      */
 
-    private function _render_quiz($questions, $exam_name, $return_url = '', $notice = null) {
+    private function _render_quiz($questions, $exam_name = "Practice Exam", $return_url = '', $notice = null) {
 //we need to walk questions array and find all the matching questions and randomize the answers
         $total = count($questions);
         $q_ids = array();
@@ -368,27 +368,27 @@ class UserController extends AbstractController {
         $score = 0;
         $display_questions = array();
         $student_answers = array();
+        $correct_answers = array();
         $em = $this->getDoctrine()->getManager();
-        $correct = false;
-        $ur_answer = "";
+        $ur_answer = '';
+       
         foreach ($q_ids as $q_id) {
             $student_answer = $request->request->get($q_id, null);
             $question = $em->find('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', $q_id);
-
+            //we need to unpack the question so that we can display it.
+            $this->_unpackQuestion($question, false);
             if (!isset($student_answer)) {
                 $student_answer = "";
             }
             switch ($question['quickcheckqtype']) {
                 case AdminController::_QUICKCHECK_TEXT_TYPE:
                     $score += 1;
-                    $correct = true;
                     $ur_answer = $student_answer;
                     //we don't grade text types
                     break;
                 case AdminController::_QUICKCHECK_TF_TYPE:
-                    if ($student_answer == $question->getQuickcheckqAnswer()) {
+                    if ($student_answer == $question->getQuickcheckqanswer()) {
                         $score += 1;
-                        $correct = true;
                     }
                     $ur_answer = $student_answer;
                     break;
@@ -396,32 +396,50 @@ class UserController extends AbstractController {
                     //I set this up so that if all the matches are correct
                     //the order returned will be in order.
                     $student_order = $request->request->get('order_' . $q_id);
-                    parse_str($student_order, &$matches);
+                    parse_str($student_order, $matches);
+                    //the parse string breaks it down into each item that is in there (which we named 'item')
+                    $match_answers = $matches['item'];
                     //walk the arrays comapring each value. I cannot use a php array
                     //function because position is important
                     $match_right = 0;
-                    $size = count($matches);
+                    $size = count($match_answers);
                     for ($i = 0; $i < $size; $i++) {
-                        if ($matches[$i] == $i) {
+                        if ($match_answers[$i] == $i) {
                             $match_right++;
                         }
                     }
                     $this_score = $match_right / $size;
                     if ($this_score >= 1) {
-                        $question['correct'] = true;
+                        $this_score = 1;
                     }
                     $score += $this_score;
+                    $ur_answer = $match_answers;
                     break;
                 case AdminController::_QUICKCHECK_MULTIANSWER_TYPE:
                     //the student answer containg the position of the values that
                     //they entered. Award points for correct answers.
                     $total = 0;
+                    $ur_answer = array();
+                    //fill an array the size of the answers with -1
+                    $array_size = count($question->getQuickcheckqanswer());
+                    $num_that_should = 0;
+                    $marked_answers = array_fill(0, $array_size, -1);
                     if (is_array($student_answer)) {
                         foreach ($student_answer as $checked_item) {
                             $mc_answers = explode('_', $checked_item);
                             //you get points added if this is a correct mark
                             $total += $mc_answers[0];
-                            $ur_answer[] = $mc_answers[1];
+                            if($mc_answers[0] > 0){
+                                $num_that_should++;
+                            }
+                            //mark this position as one that was checked.
+                            $marked_answers[$mc_answers[1]] = (int)$mc_answers[1];
+                        }
+                        $ur_answer = $marked_answers;
+                        //substract 
+                        $deduction = (count($student_answer) - $num_that_should) * (100/$array_size);
+                        if($deduction > 0){
+                            $total -= $deduction;
                         }
                         $score += $total / 100;
                     }
@@ -432,22 +450,21 @@ class UserController extends AbstractController {
                     $ur_answer = $mc_answers[1];
                     break;
             }
-//save the questions in an array for display.
-            $display_questions[$q_id] = $question;
-            $student_answers[$q_id]['uranswer'] = $ur_answer;
+            //save the questions in an array for display.
+            $display_questions[] = $question;
+            $student_answers[] = $ur_answer;
+            //reset these answers
+            $ur_answer = '';
         }
+        $percent = $score/count($q_ids) * 100;
+        $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
 
-//score is calculated, now I need to display it with the questions.
-        /* $render = $this->view;
-          $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
-          $render->assign('letters', $letters);
-          $render->assign('questions', $display_questions);
-          $num_quest = count($display_questions);
-          $score_percent = 100 * ($score / $num_quest);
-          $render->assign('score', $score);
-          $render->assign('score_percent', $score_percent);
-          $render->assign('num_quest', $num_quest);
-          return $render->fetch('User\quickcheck_admin_gradequiz.tpl'); */
+        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_gradeexam.html.twig', [
+                    'questions' => $display_questions,
+                    'score' => $score,
+                    'percent' => $percent,
+                    'letters' => $letters,
+                    'student_answers' => $student_answers]));
     }
 
 }
