@@ -9,7 +9,7 @@ use Zikula\Core\Hook\DisplayHook;
  * @license MIT
  *
  */
-class Quickcheck_HookHandler extends AbstractHookHandler {
+class QuickcheckHookHandler extends AbstractHookHandler {
 
 
     /**
@@ -23,7 +23,7 @@ class Quickcheck_HookHandler extends AbstractHookHandler {
      *
      * @return void
      */
-    public function ui_view(DisplayHook $hook) {
+    public function display_view(DisplayHook $hook) {
         // Security check
         if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_OVERVIEW)) {
             return;
@@ -86,25 +86,6 @@ class Quickcheck_HookHandler extends AbstractHookHandler {
     }
 
     /**
-     * Display hook for edit views.
-     *
-     * Subject is the object being created/edited that we're attaching to.
-     * args[id] Is the ID of the subject.
-     * args[caller] the module who notified of this event.
-     *
-     * @param Zikula_Hook $hook
-     *
-     * @return void
-     */
-    public function ui_edit(Zikula_DisplayHook $hook) {
-        //I am thinking we really don't have a response to editing something
-        //we only want to deal with it if it is deleted.
-        // add this response to the event stack
-        $response = new Zikula_Response_DisplayHook('provider.Quickcheck.ui_hooks.mhp', $this->view, 'Quickcheck_hook_mhp_ui_edit.tpl');
-        $hook->setResponse($response);
-    }
-
-    /**
      * Display hook for delete views.
      *
      * Subject is the object being created/edited that we're attaching to.
@@ -115,7 +96,7 @@ class Quickcheck_HookHandler extends AbstractHookHandler {
      *
      * @return void
      */
-    public function ui_delete(Zikula_DisplayHook $hook) {
+    public function process_delete(Zikula_DisplayHook $hook) {
         // Security check
         if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_DELETE)) {
             return;

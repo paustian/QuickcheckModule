@@ -140,6 +140,7 @@ class QuickcheckModuleInstaller implements ExtensionInstallerInterface, Containe
      */
     public function uninstall() {
 
+        $this->entityManager = $this->container->get('doctrine.entitymanager');
         try {
             DoctrineHelper::dropSchema($this->entityManager, $this->entities);
         } catch (\PDOException $e) {
