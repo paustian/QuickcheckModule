@@ -32,14 +32,14 @@
             {% if question.quickcheckqtype == 3 %} {# matching #}
                 <input name="order_{{ question.id }}" id="order_{{ question.id }}" type="hidden" />
                 {% set answers = question.quickcheckqanswer %}
-                <ul id="sortable_a">
+                <ul class="sortable_a">
                     {% for answer in answers %}
                         <li class="matching">{{ answer|raw }}</li>
                         {% endfor %}
                 </ul>
                 {% set params = question.quickcheckqparam[0] %}
                 {% set position = question.quickcheckqparam[1] %}
-                <ul id="sortable_a">
+                <ul class="sortable_a" id="sortable{{ question.id }}">
                     {% for match in params %}
                         <li class="matching" id="item_{{ position[loop.index0] }}">  <span class="fa fa-arrows-v"></span>  {{ match|raw }}</li>
                         {% endfor %}

@@ -20,10 +20,10 @@
 namespace Paustian\QuickcheckModule;
 
 use Zikula\Component\HookDispatcher\ProviderBundle;
-
+use HookUtil;
 
 class QuickcheckModuleVersion extends \Zikula_AbstractVersion {
-
+    const QCPROVIDER_UIAREANAME = 'provider.paustianquickcheckmodule.ui_hooks.quickcheck';
     public function getMetaData() {
 // The following information is used by the Modules module 
 // for display and upgrade purposes
@@ -37,10 +37,9 @@ class QuickcheckModuleVersion extends \Zikula_AbstractVersion {
 // The following in formation is used by the credits module
 // to display the correct credits
         $meta['core_min'] = '1.4.0'; // Fixed to 1.3.x range
-        //$meta['capabilities'] = array(HookUtil::PROVIDER_CAPABLE => array('enabled' => true));
+        $meta['capabilities'] = array(HookUtil::PROVIDER_CAPABLE => array('enabled' => true));
         $meta['author'] = 'Timothy Paustian';
         $meta['contact'] = 'http://inst.bact.wisc.edu';
-
 
 // This one adds the info to the DB, so that users can click on the 
 // headings in the permission module
@@ -50,10 +49,10 @@ class QuickcheckModuleVersion extends \Zikula_AbstractVersion {
     
     protected function setupHookBundles() {
         
-        $class = "Paustian\\Module\\QuickCheckModule\\HookHandler\\HookHandler";
+        $class = "Paustian\\QuickcheckModule\\HookHandler\\HookHandler";
         $service = "paustian_quickcheck_module.hook_handler.quickcheck";
 
-        $bundle = new ProviderBundle($this->name, 'provider.paustianquickcheckmodule.ui_hooks.quickcheck', 'ui_hooks', __('Quickcheck Hook Handlers'));
+        $bundle = new ProviderBundle($this->name, self::QCPROVIDER_UIAREANAME, 'ui_hooks', __('Quickcheck Hook Handlers'));
         $bundle->addServiceHandler('display_view', $class, 'display_view', $service);
         $bundle->addServiceHandler('process_delete', $class, 'process_delete', $service);
         $this->registerHookProviderBundle($bundle);

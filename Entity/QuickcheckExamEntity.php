@@ -49,6 +49,7 @@ class QuickcheckExamEntity extends EntityAccess {
      * question list
      * 
      * @ORM\Column(type="array")
+     * 
      */
     private $quickcheckquestions;
 

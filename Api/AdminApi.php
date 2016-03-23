@@ -74,7 +74,10 @@ class AdminApi extends \Zikula_AbstractApi {
                 'text' => $this->__('Recategorize questions'));
         $submenulinks2[] = array(
                 'url' => $this->get('router')->generate('paustianquickcheckmodule_admin_findunanswered'),
-                'text' => $this->__('Find unexplained questions')); 
+                'text' => $this->__('Find unexplained questions'));
+        $submenulinks2[] = array(
+                'url' => $this->get('router')->generate('paustianquickcheckmodule_admin_upgradeoldquestions'),
+                'text' => $this->__('Update old questions'));
         $links[] = array(
                 'url' => $this->get('router')->generate('paustianquickcheckmodule_admin_importquiz'),
                 'text' => $this->__('Question Processing'), 

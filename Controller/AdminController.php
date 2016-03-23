@@ -70,7 +70,7 @@ class AdminController extends AbstractController {
      * @Route("")
      * 
      */
-    public function indexAction() {
+    public function indexAction(Request $request) {
 
         // Return a page of menu items.
         return new Response($this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig'));
@@ -1035,7 +1035,7 @@ class AdminController extends AbstractController {
             $qb = $em->createQueryBuilder();
             // add select and from params
             $qb->select('u')
-                ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
+                    ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
             $query = $qb->getQuery();
             // execute query
             $questions = $query->getResult();
@@ -1046,4 +1046,64 @@ class AdminController extends AbstractController {
         }
         return $questions;
     }
+
+    /**
+     * @Route("/upgradeoldquestions")
+     * 
+     * export the chosen questions. First step. This displays the interface to export the questions
+     * @return Response
+     * @throws AccessDeniedException
+     */
+    public function upgradeoldquestionsAction() {
+        //walk through all the questions and get rid of serialized data.
+        //get the questions
+        $em = $this->getDoctrine()->getManager();
+        //get them all
+        $qb = $em->createQueryBuilder();
+        // add select and from params
+        $qb->select('u')
+                ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
+        $query = $qb->getQuery();
+        // execute query
+        $questions = $query->getResult();
+        foreach ($questions as $question) {
+            $type = $question->getQuickcheckqType();
+            if (($type == AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE) ||
+                    ($type == AdminController::_QUICKCHECK_MULTIANSWER_TYPE) ||
+                    ($type == AdminController::_QUICKCHECK_MATCHING_TYPE)) {
+                try {
+                    $potAnswer = $question->getQuickcheckqAnswer();
+                    $potParam = $question->getQuickcheckqParam();
+                    //if param is empty, then we don't need to do anything.
+                    if($potParam == '')
+                        continue;
+                    $answers = unserialize($potAnswer);
+                    $params = unserialize($potParam );
+                } catch(\Exception $e) {
+                    continue;
+                }
+                $newAnswer = '';
+                $array_size = count($answers);
+                for($i = 0; $i < $array_size; $i++) {
+                    $newAnswer .= "$answers[$i]|$params[$i]\n";
+                }
+                $question->setQuickcheckqParam('');
+                $question->setQuickcheckqAnswer($newAnswer);
+                $em->merge($question);
+            }
+            if($type == AdminController::_QUICKCHECK_TF_TYPE){
+                $answer = $question->getQuickcheckqAnswer();
+                if($answer === '0'){
+                    $question->setQuickcheckqAnswer('no');
+                } else if($answer === '1'){
+                    $question->setQuickcheckqAnswer('yes');
+                }
+            }
+        }
+        $em->flush();
+        $this->addFlash('status', __("Questions updated."));
+        $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
+        return $response;
+    }
+
 }

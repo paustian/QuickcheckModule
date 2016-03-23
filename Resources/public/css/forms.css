@@ -48,7 +48,7 @@ textarea.qc_importtext{
 
 ol.upper-alpha {list-style-type: upper-alpha;}
 
-#sortable_a { 
+ul.sortable_a { 
          list-style-type: none; 
          margin: 0;
          padding: 0;

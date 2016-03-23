@@ -9,7 +9,7 @@
  *                   This file contains all information on database
  *                   tables for the module
  *
- * @package      None
+ * @package      Paustian
  * @subpackage   Quickcheck
  * @version      2.0
  * @author       Timothy Paustian
@@ -59,7 +59,7 @@ class QuickcheckModuleInstaller implements ExtensionInstallerInterface, Containe
      */
     public function install() {
         // create tables
-            $this->entityManager = $this->container->get('doctrine.entitymanager');
+        $this->entityManager = $this->container->get('doctrine.entitymanager');
         
         try {
             DoctrineHelper::createSchema($this->entityManager, $this->entities);
@@ -118,7 +118,7 @@ class QuickcheckModuleInstaller implements ExtensionInstallerInterface, Containe
             //First create the new entity stuff.
             $this->_quickcheck_createdefaultcategory();
             //now shift it over.
-            $registry = CategoryRegistryUtil::getRegisteredModuleCategoriesIds('PaustianQuickcheckModule', 'QuickcheckQuestionCategory');
+            $registry = CategoryRegistryUtil::getRegisteredModuleCategoriesIds('Quickcheck', 'quickcheck_quest');
             foreach ($registry as $propname => $regId) {
                 $catId = CategoryRegistryUtil::getRegisteredModuleCategory('PaustianQuickcheckModule', 'QuickcheckQuestionCategory', $propName);
                 CategoryRegistyUtil::updateEntry($regId, 'PaustianQuickcheckModule', 'QuickcheckQuestionCategory', 'Main', $catId);

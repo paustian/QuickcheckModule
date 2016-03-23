@@ -36,6 +36,7 @@ use SecurityUtil;
 use CategoryUtil;
 use DataUtil;
 use Paustian\QuickcheckModule\Controller\AdminController;
+use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 
 class UserController extends AbstractController {
 
@@ -54,7 +55,7 @@ class UserController extends AbstractController {
     public function indexAction() {
         //securtiy check first
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
-            return LogUtil::registerPermissionError();
+            throw new AccessDeniedException();
         }
 
         list($properties, $propertiesdata) = $this->_getCategories();
@@ -278,32 +279,46 @@ class UserController extends AbstractController {
     }
 
     /**
-     * @Route("/display")
+     * @Route("/display/{exam}")
      * 
      * This displays an quiz from the database, or it displays a quiz set up by 
      * the student for self study.
      * 
-     * Date: October 3 2010
+     * Date: November 3 2015
      * @author Timothy Paustian
      * 
      * @param Request the exam info that holds the questions* 
      * @return Response
      *
      */
-    public function displayAction(Request $request) {
+    public function displayAction(Request $request, QuickcheckExamEntity $exam = null) {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
             throw AccessDeniedException();
         }
-        $exam = $request->request->get('exam', null);
-        $return_url = $request->request->get('ret_url');
         $questions = array();
-        //grab the questions
-        foreach ($exam['questions'] as $quest) {
-            $questions[] = modUtil::apiFunc('paustianquickcheckmodule', 'user', 'getquestion', array('id' => $quest));
+        $examQuestions = array();
+        $examName = "";
+        $return_url = "";
+        if ($exam !== null) {
+            $examQuestions = $exam->getQuickcheckquestions();
+            $examName = $exam->getQuickcheckname();
+        } else {
+            $examData = $request->request->get('exam', null);
+            $examQuestions = $examData['questions'];
+            $examName = $exam['name'];
+            $return_url = $request->request->get('ret_url');
         }
-        return new Response($this->_display_quiz($questions, $exam['name'], $return_url));
+        //grab the questions
+        $em = $this->getDoctrine()->getManager();
+        foreach ($examQuestions as $quest) {
+            $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $quest);
+            $questions[] = $this->_unpackQuestion($question);
+        }
+        
+
+        return new Response($this->_render_quiz($questions, $examName, $return_url));
     }
 
     /*
@@ -342,7 +357,7 @@ class UserController extends AbstractController {
                     'q_ids' => $sq_ids,
                     'questions' => $questions,
                     'notice' => $notice,
-                    'ret_url' => $return_url,
+                    'return_url' => $return_url,
                     'exam_name' => $exam_name]));
     }
 
@@ -371,7 +386,7 @@ class UserController extends AbstractController {
         $correct_answers = array();
         $em = $this->getDoctrine()->getManager();
         $ur_answer = '';
-       
+
         foreach ($q_ids as $q_id) {
             $student_answer = $request->request->get($q_id, null);
             $question = $em->find('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', $q_id);
@@ -429,16 +444,16 @@ class UserController extends AbstractController {
                             $mc_answers = explode('_', $checked_item);
                             //you get points added if this is a correct mark
                             $total += $mc_answers[0];
-                            if($mc_answers[0] > 0){
+                            if ($mc_answers[0] > 0) {
                                 $num_that_should++;
                             }
                             //mark this position as one that was checked.
-                            $marked_answers[$mc_answers[1]] = (int)$mc_answers[1];
+                            $marked_answers[$mc_answers[1]] = (int) $mc_answers[1];
                         }
                         $ur_answer = $marked_answers;
                         //substract 
-                        $deduction = (count($student_answer) - $num_that_should) * (100/$array_size);
-                        if($deduction > 0){
+                        $deduction = (count($student_answer) - $num_that_should) * (100 / $array_size);
+                        if ($deduction > 0) {
                             $total -= $deduction;
                         }
                         $score += $total / 100;
@@ -456,7 +471,7 @@ class UserController extends AbstractController {
             //reset these answers
             $ur_answer = '';
         }
-        $percent = $score/count($q_ids) * 100;
+        $percent = $score / count($q_ids) * 100;
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
 
         return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_gradeexam.html.twig', [
