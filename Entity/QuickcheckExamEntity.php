@@ -23,7 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * We use annotations to define the entity mappings to database (see http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/basic-mapping.html).
  *
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Paustian\QuickcheckModule\Entity\Repository\QuickcheckExamRepository")
  * @ORM\Table(name="quickcheck_exam")
  */
 class QuickcheckExamEntity extends EntityAccess {
@@ -73,7 +73,7 @@ class QuickcheckExamEntity extends EntityAccess {
     }
 
     public function getQuickcheckrefid() {
-        return $this->quickcheckart_id;
+        return $this->quickcheckref_id;
     }
 
     public function setId($id) {

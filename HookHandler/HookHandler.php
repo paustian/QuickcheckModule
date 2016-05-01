@@ -51,42 +51,27 @@ class HookHandler extends AbstractHookListener {
      */
     public function display_view(DisplayHook $hook) {
         // Security check
-        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_OVERVIEW)) {
+        /*if (!$this->view->hasPermission('Quickcheck::', '::', ACCESS_OVERVIEW)) {
             return;
-        }
+        }*/
         $is_admin = SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_ADMIN);
         $return_url = $hook->getUrl();
         $id = $hook->getId();
         
-        //get the id of the caller and see if an exam matches it.
-        //I need a way of grabbing the entity manager.
-        $qb = $this->em->createQueryBuilder();
+        $examObj = ModUtil::apiFunc('PaustianQuickcheckModule', 'user', 'get_exam', ['article' => $id]);
         
-        // add select and from params
-        $qb->select('u')
-                ->from('PaustianQuickcheckModule:QuickcheckExamEntity', 'u')
-                ->where($qb->expr()->eq('u.quickcheckrefid', '?1'))
-                ->setParameter(1, $id);
         
-        $query = $qb->getQuery();
-
-        // execute query
-        $exam = $query->getResult();
-        $response = false;
-        if(null != $exam){
-            //display the exam.
-            $repsonse = ModUtil::func('PaustianQuickcheckModule', 'user', 'display');
-        } else {
+        if(null === $examObj){
             $qb2 = $this->em->createQueryBuilder();
         
             // add select and from params
             $qb2->select('u')
-                ->from('PaustianQuickcheckModule:QuickcheckExamEntity', 'u.id', 'u.quickcheckname');
+                ->from('PaustianQuickcheckModule:QuickcheckExamEntity', 'u', 'u.quickcheckname');
             $query2 = $qb2->getQuery();
             $exams = $query2->getResult();
             $this->view->assign('exams', $exams);
-            $this->view->assing('art_id', $id);
-            $this->view->assing('return_url', $return_url);
+            $this->view->assign('art_id', $id);
+            $this->view->assign('return_url', $return_url);
         
             $response = new DisplayHookResponse(QuickcheckModuleVersion::QCPROVIDER_UIAREANAME, $this->view, 'Hook/quickcheck_user_hook.tpl');
         }
@@ -106,7 +91,7 @@ class HookHandler extends AbstractHookListener {
      */
     public function process_delete(DisplayHook $hook) {
         // Security check
-        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_DELETE)) {
+        if (!$this->hasPermission('Quickcheck::', '::', ACCESS_DELETE)) {
             return;
         }
         $id = $hook->getId();

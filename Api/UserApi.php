@@ -22,8 +22,7 @@
 namespace Paustian\QuickcheckModule\Api;
 
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
-use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
-use SecurityUtil;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * get all strains in database items
@@ -31,10 +30,7 @@ use SecurityUtil;
  * @return   array   array of items, or false on failure
  */
 class UserApi extends \Zikula_AbstractApi {
-    
-    public function displayHookInterface(){
-        
-    }
+     
 }
 
 ?>

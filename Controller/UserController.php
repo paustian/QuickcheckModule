@@ -54,7 +54,7 @@ class UserController extends AbstractController {
      */
     public function indexAction() {
         //securtiy check first
-        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
+        if (!$this->hasPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
             throw new AccessDeniedException();
         }
 
@@ -166,10 +166,9 @@ class UserController extends AbstractController {
      */
     public function createExamAction(Request $request) {
         //you have to have edit access to do this
-        if (!SecurityUtil::checkPermission('quickcheck::', "::", ACCESS_OVERVIEW)) {
+        if (!$this->hasPermission('quickcheck::', "::", ACCESS_OVERVIEW)) {
             throw new AccessDeniedException();
         }
-
 
         $ret_url = $this->get('router')->generate('paustianquickcheckmodule_user_index', array(), RouterInterface::ABSOLUTE_URL);
 
@@ -189,6 +188,8 @@ class UserController extends AbstractController {
         $bin_questions = $this->_binQuestionCategories($questions);
         $quiz_questions = array(); //the array that will hold the questions
         $random_questions = array(); //the random questions from a category
+        $examRepo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
+        
         foreach ($num_quests as $catid => $number_of_questions) {
             if (!is_numeric($number_of_questions) || ($number_of_questions < 0)) {
                 $request->getSession()->getFlashBag()->add('error', $this->__('You need to pick the number of questions.'));
@@ -198,12 +199,12 @@ class UserController extends AbstractController {
                 //grab the random keys from the array of questions
                 $random_questions = array_rand($bin_questions[$catid], $number_of_questions);
                 if ($number_of_questions == 1) {
-                    $the_question = $this->_unpackQuestion($bin_questions[$catid][$random_questions]);
+                    $the_question = $examRepo->unpackQuestion($bin_questions[$catid][$random_questions]);
                     $quiz_questions[] = $the_question;
                 } else {
                     //now fill our array with these questions
                     foreach ($random_questions as $qIndex) {
-                        $the_question = $this->_unpackQuestion($bin_questions[$catid][$qIndex]);
+                        $the_question = $examRepo->unpackQuestion($bin_questions[$catid][$qIndex]);
                         $quiz_questions[] = $the_question;
                     }
                 }
@@ -211,7 +212,20 @@ class UserController extends AbstractController {
         }
         //shuffle the array to randomize the order in which they get asked.
         shuffle($quiz_questions);
-        return $this->_render_quiz($quiz_questions, __('Practice Questions'), $ret_url);
+        //build the sq_id array. This is used to grade the quesitons
+        $sq_ids = array();       
+        foreach($quiz_questions as $question){
+            $sq_ids[] = $question->getId();
+        }
+        //I need to change this so that it sends back it's own response. What this entails is just getting the data that it
+        //needs and then sending it back.
+        $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
+        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
+                    'q_ids' => $sq_ids,
+                    'questions' => $questions,
+                    'return_url' => $return_url,
+                    'exam_name' => __('Practice Exam')]));
+        
     }
 
     /**
@@ -232,35 +246,6 @@ class UserController extends AbstractController {
         return $binned_questions;
     }
 
-    private function _unpackQuestion($in_question, $shuffle = true) {
-        $type = $in_question->getQuickcheckqType();
-        //We need to unpack this a bit to prepare it for display
-        //We parse out the correct answer and put those in the param variable of the class
-        if (($type == Admincontroller::_QUICKCHECK_MULTIPLECHOICE_TYPE) ||
-                ($type == Admincontroller::_QUICKCHECK_MATCHING_TYPE) ||
-                ($type == Admincontroller::_QUICKCHECK_MULTIANSWER_TYPE)) {
-            $qAnswer = $in_question->getQuickcheckqAnswer();
-            preg_match_all("|(.*)\|(.*)|", $qAnswer, $matches);
-            $in_question->setQuickcheckqAnswer($matches[1]);
-            if (($type == Admincontroller::_QUICKCHECK_MATCHING_TYPE) && $shuffle) {
-                $param = array();
-                $orig_array = $matches[2];
-                $shuff_array = array_keys($matches[2]);
-                shuffle($shuff_array);
-                foreach ($shuff_array as $item) {
-                    //The array item
-                    $param[0][] = $orig_array[$item];
-                    //It's original position.
-                    $param[1][] = $item;
-                }
-                $in_question->setQuickcheckqParam($param);
-            } else {
-                $in_question->setQuickcheckqParam($matches[2]);
-            }
-        }
-
-        return $in_question;
-    }
 
     private function _fetch_cat_questions($in_questions, $in_cat_id) {
         $ret_questions = array();
@@ -270,8 +255,8 @@ class UserController extends AbstractController {
                 $started = true;
                 $ret_questions[] = $question;
             } else if ($started) {
-//we can break out of the loop now because we have collected all
-//the questions (they are sorted)
+            //we can break out of the loop now because we have collected all
+            //the questions (they are sorted)
                 break;
             }
         }
@@ -291,68 +276,33 @@ class UserController extends AbstractController {
      * @return Response
      *
      */
-    public function displayAction(Request $request, QuickcheckExamEntity $exam = null) {
+    public function displayAction(Request $request, QuickcheckExamEntity $exam = null, $return_url="") {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
-        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
+        if (!$this->hasPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
             throw AccessDeniedException();
         }
-        $questions = array();
+        
         $examQuestions = array();
         $examName = "";
-        $return_url = "";
         if ($exam !== null) {
             $examQuestions = $exam->getQuickcheckquestions();
             $examName = $exam->getQuickcheckname();
         } else {
             $examData = $request->request->get('exam', null);
+            if(!isset($examData)){
+                return null;
+            }
             $examQuestions = $examData['questions'];
             $examName = $exam['name'];
             $return_url = $request->request->get('ret_url');
         }
-        //grab the questions
-        $em = $this->getDoctrine()->getManager();
-        foreach ($examQuestions as $quest) {
-            $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $quest);
-            $questions[] = $this->_unpackQuestion($question);
-        }
+        $sq_ids = array();
+        $letters = array();
+        $questions = array();
         
-
-        return new Response($this->_render_quiz($questions, $examName, $return_url));
-    }
-
-    /*
-     * _render_quiz
-     *
-     * A private function that displays the quiz
-     * Date: October 3 2010
-     * @author Timothy Paustian
-     * @param array $questions the questions to render
-     * @param string $return_url the return url to go back to once the quiz is graded.
-     * @param a text item for feedback to the quiz taker.
-     * @return the text of the quiz.
-     */
-
-    private function _render_quiz($questions, $exam_name = "Practice Exam", $return_url = '', $notice = null) {
-//we need to walk questions array and find all the matching questions and randomize the answers
-        $total = count($questions);
-        $q_ids = array();
-        for ($i = 0; $i < $total; $i++) {
-            $item = $questions[$i];
-            $q_ids[] = $item['id'];
-            if ($item['q_type'] == 3) {
-//matching question, add a new parameter
-                $ran_array = $item['q_answer'];
-                shuffle($ran_array);
-                $item['ran_array'] = $ran_array;
-                $questions[$i] = $item;
-            }
-        }
-
-
-        $sq_ids = DataUtil::formatForDisplay(serialize($q_ids));
-        $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
-
+        $this->render_quiz($examQuestions, $questions, $sq_ids, $letters);
+        
         return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                     'q_ids' => $sq_ids,
                     'questions' => $questions,
@@ -360,6 +310,8 @@ class UserController extends AbstractController {
                     'return_url' => $return_url,
                     'exam_name' => $exam_name]));
     }
+    
+    
 
     /**
      * @Route("/gradeexam")
@@ -374,7 +326,7 @@ class UserController extends AbstractController {
      */
     public function gradeexamAction(Request $request) {
 
-        if (!SecurityUtil::checkPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
+        if (!$this->hasPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
             throw AccessDeniedException();
         }
         $return_url = $request->request->get('ret_url', null);
@@ -385,13 +337,14 @@ class UserController extends AbstractController {
         $student_answers = array();
         $correct_answers = array();
         $em = $this->getDoctrine()->getManager();
+        $examRepo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
         $ur_answer = '';
 
         foreach ($q_ids as $q_id) {
             $student_answer = $request->request->get($q_id, null);
             $question = $em->find('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', $q_id);
             //we need to unpack the question so that we can display it.
-            $this->_unpackQuestion($question, false);
+            $examRepo->unpackQuestion($question, false);
             if (!isset($student_answer)) {
                 $student_answer = "";
             }

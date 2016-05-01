@@ -10,7 +10,7 @@
     <p>{{ __("Answer the questions below and then hit the Grade Exam button") }}</p>
     <form action="{{ path('paustianquickcheckmodule_user_gradeexam') }}" method="post" enctype="application/x-www-form-urlencoded">
         <input type="hidden" name="q_ids" value="{{ q_ids }}" />
-
+        <input type="hidden" name="return_url" value="{{ return_url }}" />
         {% for question in questions %}
             <p>{{ loop.index }}. {{ question.quickcheckqtext|raw }}</p>
             {% if question.quickcheckqtype == 0 %} {# text #}
