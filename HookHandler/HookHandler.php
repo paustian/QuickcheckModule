@@ -2,9 +2,11 @@
 
 namespace Paustian\QuickcheckModule\HookHandler;
 
-use Zikula\Core\Hook\DisplayHook;
-use Zikula\Core\Hook\DisplayHookResponse;
-use Zikula\Core\Hook\AbstractHookListener;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
+use Zikula\Bundle\HookBundle\Hook\AbstractHookListener;
+use Zikula\Bundle\HookBundle\Hook\DisplayHook;
+use Zikula\Bundle\HookBundle\Hook\DisplayHookResponse;
 use SecurityUtil;
 use ServiceUtil;
 use Paustian\QuickcheckModule\QuickcheckModuleVersion;
@@ -21,22 +23,28 @@ use ModUtil;
 class HookHandler extends AbstractHookListener {
 
 
-    /**
-     * Zikula_View instance
-     * @var Zikula_View
+     /**
+     * @var EntityManagerInterface
      */
-    public $view;
-    
+    protected $entityManager;
+
     /**
-     * Zikula entity manager instance
-     * @var \Doctrine\ORM\EntityManager
+     * @var RequestStack
      */
-    public $em;
+    protected $requestStack;
+
+    /**
+     * @var EngineInterface
+     */
+    protected $renderEngine;
     
-    public function setup() {
-        $this->view = Zikula_View::getInstance("PaustianQuickcheckModule", Zikula_View::CACHE_DISABLED);
-        $this->em =  ServiceUtil::get('doctrine.entitymanager');
+    public function __construct(EntityManagerInterface $entityManager, RequestStack $requestStack, EngineInterface $renderEngine)
+    {
+        $this->entityManager = $entityManager;
+        $this->requestStack = $requestStack;
+        $this->renderEngine = $renderEngine;
     }
+    
     
     /**
      * Display hook for view.
@@ -61,21 +69,22 @@ class HookHandler extends AbstractHookListener {
         $examObj = ModUtil::apiFunc('PaustianQuickcheckModule', 'user', 'get_exam', ['article' => $id]);
         
         
-        if(null === $examObj){
-            $qb2 = $this->em->createQueryBuilder();
+        if(false === $examObj){
+            $qb2 = $this->entityManager->createQueryBuilder();
         
             // add select and from params
             $qb2->select('u')
                 ->from('PaustianQuickcheckModule:QuickcheckExamEntity', 'u', 'u.quickcheckname');
             $query2 = $qb2->getQuery();
             $exams = $query2->getResult();
-            $this->view->assign('exams', $exams);
-            $this->view->assign('art_id', $id);
-            $this->view->assign('return_url', $return_url);
-        
-            $response = new DisplayHookResponse(QuickcheckModuleVersion::QCPROVIDER_UIAREANAME, $this->view, 'Hook/quickcheck_user_hook.tpl');
-        }
-        $hook->setResponse($response);
+            //Now just use the renderEngine to renger a twig template and send it as a string back as a response.
+
+            $content = $this->renderEngine->render('PaustianQuickcheckModule:Hook:quickcheck.addquiz.html.twig', [
+            'exams' => $exams]);
+            
+            $response = new DisplayHookResponse(QuickcheckModuleVersion::QCPROVIDER_UIAREANAME, $content);
+            $hook->setResponse($response);
+        } 
     }
 
     /**
