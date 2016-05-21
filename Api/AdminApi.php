@@ -41,6 +41,9 @@ class AdminApi extends \Zikula_AbstractApi {
         //The quesiton editing menu
         $submenulinks = array();
         $submenulinks[] = array(
+                'url' => $this->get('router')->generate('paustianquickcheckmodule_admin_editquestions'),
+                'text' => $this->__('Modify Questions'));
+        $submenulinks[] = array(
                 'url' => $this->get('router')->generate('paustianquickcheckmodule_admin_edittextquest'),
                 'text' => $this->__('Create Text Question')); 
         $submenulinks[] = array(

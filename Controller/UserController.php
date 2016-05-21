@@ -300,15 +300,14 @@ class UserController extends AbstractController {
         $sq_ids = array();
         $letters = array();
         $questions = array();
-        
-        $this->render_quiz($examQuestions, $questions, $sq_ids, $letters);
+        $repo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
+        $repo->render_quiz($examQuestions, $questions, $sq_ids, $letters);
         
         return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                     'q_ids' => $sq_ids,
                     'questions' => $questions,
-                    'notice' => $notice,
                     'return_url' => $return_url,
-                    'exam_name' => $exam_name]));
+                    'exam_name' => $examName]));
     }
     
     

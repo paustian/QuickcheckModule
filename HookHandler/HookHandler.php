@@ -8,9 +8,8 @@ use Zikula\Bundle\HookBundle\Hook\AbstractHookListener;
 use Zikula\Bundle\HookBundle\Hook\DisplayHook;
 use Zikula\Bundle\HookBundle\Hook\DisplayHookResponse;
 use SecurityUtil;
-use ServiceUtil;
 use Paustian\QuickcheckModule\QuickcheckModuleVersion;
-use Zikula_View;
+
 use ModUtil;
 /**
  * Copyright 2016 Timothy Paustian
@@ -28,20 +27,15 @@ class HookHandler extends AbstractHookListener {
      */
     protected $entityManager;
 
-    /**
-     * @var RequestStack
-     */
-    protected $requestStack;
 
     /**
      * @var EngineInterface
      */
     protected $renderEngine;
     
-    public function __construct(EntityManagerInterface $entityManager, RequestStack $requestStack, EngineInterface $renderEngine)
+    public function __construct(EntityManagerInterface $entityManager, EngineInterface $renderEngine)
     {
         $this->entityManager = $entityManager;
-        $this->requestStack = $requestStack;
         $this->renderEngine = $renderEngine;
     }
     
@@ -58,6 +52,9 @@ class HookHandler extends AbstractHookListener {
      * @return void
      */
     public function display_view(DisplayHook $hook) {
+        /** A TEMPORARY INSERT UNTIL I GET QUICKEHCK WORKING
+         * 
+         */
         // Security check
         /*if (!$this->view->hasPermission('Quickcheck::', '::', ACCESS_OVERVIEW)) {
             return;

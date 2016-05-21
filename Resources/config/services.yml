@@ -1,5 +1,6 @@
  # Hook handlers
- services:
-  paustian_quickcheck_module.hook_handler.quickcheck:
-    class: Paustian\QuickCheckModule\HookHandler\HookHandler
-    arguments: [@doctrine.entitymanager, @request_stack, @templating]
+ 
+services:
+    paustian_quickcheck_module.hook_handler.quickcheck:
+        class: Paustian\QuickcheckModule\HookHandler\HookHandler
+        arguments: [@doctrine.entitymanager, @templating]

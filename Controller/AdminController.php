@@ -177,8 +177,6 @@ class AdminController extends AbstractController {
         }
         $em = $this->getDoctrine()->getManager();
         $id = $question->getId();
-        //flush the references out of the questioncategory table.
-        $this->_flushCategoryRefs($em, $id);
         $this->_removeQuestionFromExams($em, $id);
         $em->remove($question);
         $em->flush();
@@ -344,45 +342,19 @@ class AdminController extends AbstractController {
             $built_question['type'] = $question->getQuickcheckqType();
             //this sends back an ArrayCollection of 1 item (each question can only be in 1 category)
             $catItems = $question->getCategories();
-            if (empty($catItems)) {
+            if ($catItems->isEmpty()) {
                 $questions[__('Uncategorized')][] = $built_question;
                 continue;
             }
-            //We use array_shift here because the category can have any registry id
-            //shift an element off the array, the only element. 
-            $catCollection = array_shift($catItems);
+
             //$catCollection is an ArrayCollection, we can use those calls
-            $catObj = $catCollection->first();
+            $catObj = $catItems->first();
             //now we have a categoryEntity Object. What we want is the name.
-            $catName = $catObj->getName();
+            $catName = $catObj->getCategory()->getName();
             $questions[$catName][] = $built_question;
         }
 
         return $questions;
-    }
-
-    /**
-     *  _flushCategoryRefs()
-     * 
-     * @param $qId - The id of the question to get rid of.
-     * 
-     */
-    private function _flushCategoryRefs($em, $qId) {
-        $qb = $em->createQueryBuilder();
-
-        //First see if there is anything to delete.
-        $qb->select('u');
-        $qb->from('PaustianQuickcheckModule:QuickcheckQuestionCategory', 'u');
-        $qb->where('u.entity = :ent');
-        $qb->setParameter('ent', $qId);
-        $query = $qb->getQuery();
-        // execute query
-        $items = $query->getResult();
-        //the objects exists, so delete it now.
-        foreach ($items as $item) {
-            $em->remove($item);
-            $em->flush($item);
-        }
     }
 
     /**
@@ -398,7 +370,6 @@ class AdminController extends AbstractController {
     private function _persistQuestion($question, $doMerge, $flashText, $redirect) {
         $em = $this->getDoctrine()->getManager();
         if ($doMerge) {
-            $this->_flushCategoryRefs($em, $question['id']);
             $em->merge($question);
         } else {
             $em->persist($question);
@@ -417,8 +388,11 @@ class AdminController extends AbstractController {
     private function _persistQuestionList($questionList, $categories) {
         $em = $this->getDoctrine()->getManager();
         foreach ($questionList as $qId) {
-            $this->_flushCategoryRefs($em, $qId);
             $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $qId);
+            //this sets the entity for the table. For some reason this is being lost.
+            $catElement = $categories->first();
+            $catElement['entity'] = $question;
+            $categories->set(0, $catElement);
             $question->setCategories($categories);
             $em->merge($question);
         }
@@ -798,10 +772,11 @@ class AdminController extends AbstractController {
 
         if ($form->isValid()) {
             $questPick = $request->get('questions');
+            
             $categories = $form->get('categories')->getData();
             $this->_persistQuestionList($questPick, $categories);
             $this->addFlash('status', __('Questions recategorized.'));
-            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
+            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_categorize'));
             return $response;
         }
 
@@ -898,7 +873,21 @@ class AdminController extends AbstractController {
         //grab the manager for saving the data.
         $em = $this->getDoctrine()->getManager();
         foreach ($questionArray as $q_item) {
-            $question = new QuickcheckQuestionEntity();
+            $doMerge = false;
+            $id = isset($q_item->qid) ? (integer) $q_item->qid : -1;
+            $question = null;
+            if ($id < 0) {
+                $question = new QuickcheckQuestionEntity();
+            } else {
+                $fquestion = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
+                if ($fquestion === null) {
+                    $question = new QuickcheckQuestionEntity();
+                    $question->setId($id);
+                } else {
+                    $question = $fquestion;
+                    $doMerge = true;
+                }
+            }
             $type = (string) $q_item->qtype;
             switch ($type) {
                 case 'multichoice':
@@ -918,9 +907,10 @@ class AdminController extends AbstractController {
                     break;
                 default:
                     //if we get here there is an issue, throw an error
-                    $this->throwNotFound($this->__('Unrecognized question type, was your qtype empty in the xml file?'));
+                    throw new NotFoundHttpException($this->__('Unrecognized question type, was your qtype empty in the xml file?'));
                     break;
             }
+
             $text = (string) $q_item->qtext;
             $question->setQuickcheckqText($text);
             $explan = (string) $q_item->qexplanation;
@@ -940,14 +930,19 @@ class AdminController extends AbstractController {
                         $answer = 'no';
                     } else if (strcmp($sanswer, 'True') == 0) {
                         $answer = 'yes';
-                    } else {
-                        $answer = $sanswer;
                     }
                 }
             }
+           if($answer == ''){
+               $answer = $sanswer;
+           }
             $question->setQuickcheckqAnswer($answer);
             $question->setCategories($category);
-            $em->persist($question);
+            if ($doMerge) {
+                $em->merge($question);
+            } else {
+                $em->persist($question);
+            }
         }
         $em->flush();
     }
@@ -1075,27 +1070,27 @@ class AdminController extends AbstractController {
                     $potAnswer = $question->getQuickcheckqAnswer();
                     $potParam = $question->getQuickcheckqParam();
                     //if param is empty, then we don't need to do anything.
-                    if($potParam == '')
+                    if ($potParam == '')
                         continue;
                     $answers = unserialize($potAnswer);
-                    $params = unserialize($potParam );
-                } catch(\Exception $e) {
+                    $params = unserialize($potParam);
+                } catch (\Exception $e) {
                     continue;
                 }
                 $newAnswer = '';
                 $array_size = count($answers);
-                for($i = 0; $i < $array_size; $i++) {
+                for ($i = 0; $i < $array_size; $i++) {
                     $newAnswer .= "$answers[$i]|$params[$i]\n";
                 }
                 $question->setQuickcheckqParam('');
                 $question->setQuickcheckqAnswer($newAnswer);
                 $em->merge($question);
             }
-            if($type == AdminController::_QUICKCHECK_TF_TYPE){
+            if ($type == AdminController::_QUICKCHECK_TF_TYPE) {
                 $answer = $question->getQuickcheckqAnswer();
-                if($answer === '0'){
+                if ($answer === '0') {
                     $question->setQuickcheckqAnswer('no');
-                } else if($answer === '1'){
+                } else if ($answer === '1') {
                     $question->setQuickcheckqAnswer('yes');
                 }
             }

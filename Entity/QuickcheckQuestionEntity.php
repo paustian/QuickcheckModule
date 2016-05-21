@@ -15,7 +15,6 @@
 namespace Paustian\QuickcheckModule\Entity;
 
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Zikula\Core\Doctrine\EntityAccess;
 use Doctrine\Common\Collections\ArrayCollection;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory as QuickcheckCategoryRelation;
 use Paustian\QuickcheckModule\Controller\AdminController;
@@ -30,7 +29,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity
  * @ORM\Table(name="quickcheck_quest")
  */
-class QuickcheckQuestionEntity extends EntityAccess {
+class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
 
     /**
      * question id
@@ -79,7 +78,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
 
     /**
      * @ORM\OneToMany(targetEntity="Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory",
-     *                mappedBy="entity", cascade={"all"},
+     *                mappedBy="entity", cascade={"remove", "persist"},
      *                orphanRemoval=true, fetch="EAGER")
      */
     private $categories;
@@ -124,20 +123,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
      * @return \Doctrine\Common\Collections\ArrayCollection
      */
     public function getCategories() {
-        $categories = array();
-        /** @var \Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity $catRelation */
-        foreach ($this->categories as $catRelation) {
-            $registryId = $catRelation->getCategoryRegistryId();
-//            if (is_array($catRelation)) {
-            if (!isset($categories[$registryId])) {
-                $categories[$registryId] = new ArrayCollection();
-            }
-            $categories[$registryId]->add($catRelation->getCategory());
-//            } else {
-//                $categories[$registryId] = $catRelation->getCategory();
-//            }
-        }
-        return $categories;
+        return $this->categories;
     }
 
     public function setId($id) {
@@ -167,24 +153,41 @@ class QuickcheckQuestionEntity extends EntityAccess {
 
     /**
      * Set question categories
-     *
+     * I wonder if I can just set this for 1.4.2
      * @param $categories
      */
-    public function setCategories($categories) {
-        foreach ($categories as $regId => $category) {
-            $this->categories = new ArrayCollection();
-            if ($category instanceof ArrayCollection) {
-                // a result of multiple select box
-                //We need to delete any entries in the table.
-                foreach ($category as $element) {
-                    $this->categories[] = new QuickcheckCategoryRelation($regId, $element, $this);
-                }
+    public function setCategories(ArrayCollection $categories) {
+        foreach ($this->categories as $categoryAssignment) {
+            if (false === $key = $this->collectionContains($categories, $categoryAssignment)) {
+                $this->categories->removeElement($categoryAssignment);
             } else {
-                // a normal select box
-                $catItem = array_shift($category);
-                $this->categories[] = new QuickcheckCategoryRelation($regId, $catItem, $this);
+                $categories->remove($key);
             }
         }
+        foreach ($categories as $category) {
+            $this->categories->add($category);
+        }
+    }
+    
+    /**
+     * Check if a collection contains an element based only on two criteria (categoryRegistryId, categoy).
+     * @param $collection
+     * @param $element
+     * @return bool|int
+     */
+    private function collectionContains($collection, $element)
+    {
+        foreach ($collection as $key => $collectionAssignment) {
+            /** @var \Zikula\PagesModule\Entity\CategoryEntity $collectionAssignment */
+            if ($collectionAssignment->getCategoryRegistryId() == $element->getCategoryRegistryId()
+                && $collectionAssignment->getCategory() == $element->getCategory()
+            ) {
+
+                return $key;
+            }
+        }
+
+        return false;
     }
 
     /**

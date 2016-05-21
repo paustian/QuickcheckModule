@@ -4,7 +4,8 @@ namespace Paustian\QuickcheckModule\Entity\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
-
+use Paustian\QuickcheckModule\Controller\AdminController;
+use DataUtil;
 
 class QuickcheckExamRepository extends EntityRepository {
    
@@ -48,7 +49,7 @@ class QuickcheckExamRepository extends EntityRepository {
         $em = $this->_em;
         foreach ($examQuestions as $quest) {
             $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $quest);
-            $questions[] = $this->_unpackQuestion($question);
+            $questions[] = $this->unpackQuestion($question);
         }
         //we need to walk questions array and find all the matching questions and randomize the answers
         $total = count($questions);

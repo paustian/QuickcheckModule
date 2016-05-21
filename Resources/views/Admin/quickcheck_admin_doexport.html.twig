@@ -1,17 +1,18 @@
 {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
 <div class="container-fluid">
 <textarea name="quest_to_import" cols="120" rows="30">
-&lt; ?xml version="1.0" encoding="UTF-8" ?&gt;
+&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
 &lt;questiondoc&gt;
 {% for item in questions %}
+
 {% set qtype = item.quickcheckqtype %}
 &lt;question&gt;
+&lt;qid&gt;{{ item.id }}&lt;/qid&gt;
 {% if qtype == 0 %}&lt;qtype&gt;text&lt;/qtype&gt;{% endif %}
 {% if qtype == 1 %}&lt;qtype&gt;multichoice&lt;/qtype&gt;{% endif %}
 {% if qtype == 2 %}&lt;qtype&gt;truefalse&lt;/qtype&gt;{% endif %}
 {% if qtype == 3 %}&lt;qtype&gt;matching&lt;/qtype&gt;{% endif %}
 {% if qtype == 4 %}&lt;qtype&gt;multianswer&lt;/qtype&gt;{% endif %}
-
 &lt;qtext&gt;{{ item.quickcheckqtext }}&lt;/qtext&gt;
 &lt;qanswer&gt;{{ item.quickcheckqanswer }}&lt;/qanswer&gt;
 &lt;qexplanation&gt;{{ item.quickcheckqexpan }}&lt;/qexplanation&gt;

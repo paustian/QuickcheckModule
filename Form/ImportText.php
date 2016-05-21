@@ -4,7 +4,11 @@ namespace Paustian\QuickcheckModule\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\ButtonType;
-use Zikula\CategoriesModule\Form\Type\CategoryType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Zikula\CategoriesModule\Form\Type\CategoriesType;
+
 
 /**
  * Description of QuiccheckTFQuestion
@@ -17,14 +21,15 @@ class ImportText extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('importText', 'textarea', array('label' => __('Question'), 'required' => false, 'mapped' => false))
-            ->add('save', 'submit', array('label' => 'Import Questions'));
-        $builder->add('cancel', 'button', array('label' => __('Cancel')));
+            ->add('importText', TextareaType::class, array('label' => __('Question'), 'required' => false, 'mapped' => false))
+            ->add('save', SubmitType::class, array('label' => 'Import Questions'));
+        $builder->add('cancel', ButtonType::class, array('label' => __('Cancel')));
         
         $entityCategoryRegistries = \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity', 'id');
-        $builder->add('categories', 'choice', array('placeholder' => 'Choose an option'));
+        $builder->add('categories', ChoiceType::class, array('placeholder' => 'Choose an option'));
         foreach ($entityCategoryRegistries as $registryId => $parentCategoryId) {
-            $builder->add('categories', new CategoryType($registryId, $parentCategoryId), array('multiple' => true));
+            $builder->add('categories', new CategoriesType($registryId, $parentCategoryId), 
+                        ['module' => 'PaustianQuickcheckModule', 'entity' => 'QuickcheckQuestionEntity', 'entityCategoryClass' => 'Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory']);
         }
     }
 

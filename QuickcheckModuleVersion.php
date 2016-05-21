@@ -36,7 +36,7 @@ class QuickcheckModuleVersion extends \Zikula_AbstractVersion {
 
 // The following in formation is used by the credits module
 // to display the correct credits
-        $meta['core_min'] = '1.4.0'; // Fixed to 1.3.x range
+        $meta['core_min'] = '1.4.2'; // Fixed to 1.3.x range
         $meta['capabilities'] = array(HookUtil::PROVIDER_CAPABLE => array('enabled' => true));
         $meta['author'] = 'Timothy Paustian';
         $meta['contact'] = 'http://inst.bact.wisc.edu';

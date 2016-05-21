@@ -7,7 +7,10 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\ButtonType;
-use Zikula\CategoriesModule\Form\Type\CategoryType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Zikula\CategoriesModule\Form\Type\CategoriesType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Zikula\Bundle\FormExtensionBundle\Form\DataTransformer\NullToEmptyTransformer;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -24,18 +27,19 @@ class MatchQuestion extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('quickcheckqtext', 'textarea', array('label' => __('Question'), 'required' => true))
-            ->add('quickcheckqanswer', 'textarea', array('label' => __('Answer'), 'required' => true))
-            ->add('quickcheckqexpan', 'textarea', array('label' => __('Explanation'), 'required' => true))
-            ->add('save', 'submit', array('label' => 'Save Question'));
-        $builder->add('cancel', 'button', array('label' => __('Cancel')));
+            ->add('quickcheckqtext', TextareaType::class, array('label' => __('Question'), 'required' => true))
+            ->add('quickcheckqanswer', TextareaType::class, array('label' => __('Answer'), 'required' => true))
+            ->add('quickcheckqexpan', TextareaType::class, array('label' => __('Explanation'), 'required' => true))
+            ->add('save', SubmitType::class, array('label' => 'Save Question'));
+        $builder->add('cancel', ButtonType::class, array('label' => __('Cancel')));
         
-        $builder->add('quickcheckqtype', 'hidden', array('data' => AdminController::_QUICKCHECK_MATCHING_TYPE));
+        $builder->add('quickcheckqtype', HiddenType::class, array('data' => AdminController::_QUICKCHECK_MATCHING_TYPE));
 
         $entityCategoryRegistries = \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity', 'id');
-        $builder->add('categories', 'choice', array('placeholder' => 'Choose an option'));
+        $builder->add('categories', ChoiceType::class, array('placeholder' => 'Choose an option'));
         foreach ($entityCategoryRegistries as $registryId => $parentCategoryId) {
-            $builder->add('categories', new CategoryType($registryId, $parentCategoryId), array('multiple' => true));
+            $builder->add('categories', new CategoriesType($registryId, $parentCategoryId), 
+                        ['module' => 'PaustianQuickcheckModule', 'entity' => 'QuickcheckQuestionEntity', 'entityCategoryClass' => 'Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory']);
         }
     }
 
