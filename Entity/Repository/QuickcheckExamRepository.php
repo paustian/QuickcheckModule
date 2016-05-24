@@ -12,20 +12,23 @@ class QuickcheckExamRepository extends EntityRepository {
     /**
      * get the exam object for the referring id
      * 
-     * @param number $exam_id
+     * @param number $art_id
      * @return QuickcheckExamEntity
      */
-    public function get_exam($args){
+    public function get_exam($art_id){
         $qb = $this->_em->createQueryBuilder();
         
         $qb->select('u')
                 ->from('PaustianQuickcheckModule:QuickcheckExamEntity', 'u');
-        $qb->where('u.quickcheckref_id = ?1');
-        $qb->setParameter(1, $args['refid']);
+        $qb->where('u.quickcheckrefid = ?1');
+        $qb->setParameter(1, $art_id);
         $query = $qb->getQuery();
         $result = $query->execute();
         //don't fail if we don't find it. a null result is ok
-        return $result;
+        if(empty($result)){
+            return false;
+        }
+        return $result[0];
     }
     
     

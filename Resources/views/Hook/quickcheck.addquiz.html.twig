@@ -1,2 +1,36 @@
-{# empty Twig template #}
-<p>This is a test</p>
+
+<div class="container-fluid">
+    <div class="col-lg-6">
+        <form action="{{ path('paustianquickcheckmodule_admin_attach') }}" method="post" enctype="application/x-www-form-urlencoded">
+            <input type="hidden" name="art_id" value="{{ art_id }}">
+            <input type="hidden" name="return_url" value="{{ return_url }}">
+            <table class="table table-narrow table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>{{ __('Exam Name') }}</th>
+                        <th> {{ __('Add Exam') }} </th></tr>
+                </thead>
+                <tbody>
+                    {% for item in exams %}
+                        <tr>
+                            <td><input type="radio" name="exam" value="{{ item.id }}"></td>
+                            <td class="actions">
+                                {{ item.quickcheckname }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+    </div>
+    <div class="form-group">
+        <div class="col-lg-offset-1 col-lg-9">
+            <button class="btn btn-success" type="submit" name="attach" value="attach">
+                {{ __('Attach') }}
+            </button>
+            <button class="btn btn-success" type="submit" name="delete" value="delete">
+                {{ __('Remove') }}
+            </button>
+        </div>
+    </div>
+</form>
+</div>

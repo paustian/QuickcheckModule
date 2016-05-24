@@ -252,7 +252,7 @@ class AdminController extends AbstractController {
     }
 
     /**
-     * @Route ("/attach")
+     * @Route ("/attach/")
      * @Method("POST")
      * @param Request $request
      * 
@@ -264,42 +264,45 @@ class AdminController extends AbstractController {
      * @return RedirectResponse
      */
     public function attachAction(Request $request) {
-        $this->checkCsrfToken();
         if (!$this->hasPermission('quickcheck::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
         //get the values
-        $ret_url = $request->request->get('ret_url', null);
-        $art_id = $request->request->get('art_id', null);
+        $ret_url = $request->request->get('return_url', null);
         $exam = $request->request->get('exam', null);
-
+        $art_id = $request->request->get('art_id', null);
+        $attach = $request->request->get('attach', null);
         //arguments check
-        if (!isset($ret_url)) {
-            throw new NotFoundHttpException($this->__('A return URL is required'));
-        }
-        if (!isset($art_id) || !isset($exam)) {
-            throw new NotFoundHttpException($this->__('An article id or exam id are missing'));
+        if ($ret_url == "") {
+            //if a default route is not provided, then just send them to the quickcheck admin interface
+            $ret_url = $this->generateUrl('paustianquickcheckmodule_admin_index');
         }
 
-        // Security check - important to do this as early as possible to avoid
-        // potential security holes or just too much wasted processing
-        if (!$this->hasPermission('quickcheck::', '::', ACCESS_EDIT)) {
-            throw new AccessDeniedException();
-            ;
-        }
-        //get rid of the old exam if there is one.
-        $old_exam = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'get', array('art_id' => $art_id));
+        $em = $this->getDoctrine()->getManager();
+        $repo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
+
+        //get rid of the old exam if there is one.    
+        $old_exam = $repo->get_exam($art_id);
         if ($old_exam) {
-            $old_exam['art_id'] = -1; //no article attached
-            modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'update', $old_exam);
+            $old_exam->setQuickcheckrefid(-1); //no article attached
+            $em->merge($old_exam);
         }
-        //modify the exam by grabbing it and then changing or adding the art_id
-        $exam = modUtil::apiFunc('PaustianQuickcheckModule', 'user', 'get', array('id' => $exam));
-        $exam['art_id'] = $art_id;
-        //now update the exam
-        if (modUtil::apiFunc('PaustianQuickcheckModule', 'admin', 'update', $exam)) {
+        if (isset($attach)) {
+            if (!isset($art_id) || !isset($exam)) {
+                throw new NotFoundHttpException($this->__('An article id or exam id are missing'));
+            }
+            //modify the exam by grabbing it and then changing or adding the art_id
+            $new_exam = $em->find('PaustianQuickcheckModule:QuickcheckExamEntity', $exam);
+            if (null === $new_exam) {
+                throw new \Doctrine\ORM\NoResultException($this->__('An exam was not found, when it should have been.'));
+            }
+            $new_exam->setQuickcheckrefid($art_id);
+            $em->merge($new_exam);
             $request->getSession()->getFlashBag()->add('status', $this->__('The exam was attached.'));
+        } else {
+            $request->getSession()->getFlashBag()->add('status', $this->__('The exam was removed.'));
         }
+        $em->flush();
         //finally return to the page that called.
         return new RedirectResponse($ret_url);
     }
@@ -772,7 +775,7 @@ class AdminController extends AbstractController {
 
         if ($form->isValid()) {
             $questPick = $request->get('questions');
-            
+
             $categories = $form->get('categories')->getData();
             $this->_persistQuestionList($questPick, $categories);
             $this->addFlash('status', __('Questions recategorized.'));
@@ -933,9 +936,9 @@ class AdminController extends AbstractController {
                     }
                 }
             }
-           if($answer == ''){
-               $answer = $sanswer;
-           }
+            if ($answer == '') {
+                $answer = $sanswer;
+            }
             $question->setQuickcheckqAnswer($answer);
             $question->setCategories($category);
             if ($doMerge) {

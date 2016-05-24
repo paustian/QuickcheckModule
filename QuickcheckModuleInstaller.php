@@ -57,7 +57,7 @@ class QuickcheckModuleInstaller implements ExtensionInstallerInterface, Containe
      * @author       Timothy Paustian
      * @return       bool       true on success, false otherwise
      */
-    public function install() {
+    public function  install() {
         // create tables
         $this->entityManager = $this->container->get('doctrine.entitymanager');
         

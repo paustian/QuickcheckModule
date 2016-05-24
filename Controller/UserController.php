@@ -307,7 +307,8 @@ class UserController extends AbstractController {
                     'q_ids' => $sq_ids,
                     'questions' => $questions,
                     'return_url' => $return_url,
-                    'exam_name' => $examName]));
+                    'exam_name' => $examName,
+                    'admininterface' => '']));
     }
     
     
