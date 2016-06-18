@@ -3,7 +3,7 @@
 namespace Paustian\QuickcheckModule\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Zikula\Core\Doctrine\Entity\AbstractEntityCategory;
+use Zikula\CategoriesModule\Entity\AbstractCategoryAssignment;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 
 /**
@@ -12,7 +12,7 @@ use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
  *            uniqueConstraints={@ORM\UniqueConstraint(name="cat_unq",columns={"registryId", "categoryId", "entityId"})})
  */
 
-class QuickcheckQuestionCategory extends AbstractEntityCategory
+class QuickcheckQuestionCategory extends AbstractCategoryAssignment
 {
     /**
      * @ORM\ManyToOne(targetEntity="Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity", inversedBy="categories")

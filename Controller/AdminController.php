@@ -15,6 +15,7 @@
 
 namespace Paustian\QuickcheckModule\Controller;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Zikula\Core\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -390,12 +391,15 @@ class AdminController extends AbstractController {
      */
     private function _persistQuestionList($questionList, $categories) {
         $em = $this->getDoctrine()->getManager();
+        $catElement = $categories->first();
+        
         foreach ($questionList as $qId) {
             $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $qId);
-            //this sets the entity for the table. For some reason this is being lost.
-            $catElement = $categories->first();
-            $catElement['entity'] = $question;
-            $categories->set(0, $catElement);
+            //You need to close the element so that each question has its own link pointing from
+            //the questionentity to the category table.
+            $newCat = clone $catElement;
+            $newCat['entity'] = $question;
+            $categories->set(0, $newCat);
             $question->setCategories($categories);
             $em->merge($question);
         }
@@ -872,8 +876,13 @@ class AdminController extends AbstractController {
      */
     private function _parseImportedQuizXML($xmlQuestionText, $category) {
         //An awesome function for parsing simple xml.
-        $questionArray = simplexml_load_string($xmlQuestionText);
-        //grab the manager for saving the data.
+        //First we need to scrumb any regular html out so that we don't lose it
+        $htmlToRemove = ["|<i>|", "|</i>|", "|<b>|", "|</b>|", "|<a (.*?)>|", "|</a>}"];
+        $htmltoReplace = ["#i#", "#/i#", "#b#", "#/b#", "#a $1#", "#/a#"];
+        $textToParse = preg_replace($htmlToRemove, $htmltoReplace, $xmlQuestionText);
+        $questionArray = simplexml_load_string($textToParse);
+         I am here. I need to reverse the string replacements above
+//grab the manager for saving the data.
         $em = $this->getDoctrine()->getManager();
         foreach ($questionArray as $q_item) {
             $doMerge = false;

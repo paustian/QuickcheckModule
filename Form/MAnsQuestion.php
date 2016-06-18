@@ -36,12 +36,13 @@ class MAnsQuestion extends AbstractType {
         
         $builder->add('quickcheckqtype', HiddenType::class, array('data' => AdminController::_QUICKCHECK_MULTIANSWER_TYPE));
 
-        $entityCategoryRegistries = \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity', 'id');
-        $builder->add('categories', ChoiceType::class, array('placeholder' => 'Choose an option'));
-        foreach ($entityCategoryRegistries as $registryId => $parentCategoryId) {
-            $builder->add('categories', new CategoriesType($registryId, $parentCategoryId), 
-                        ['module' => 'PaustianQuickcheckModule', 'entity' => 'QuickcheckQuestionEntity', 'entityCategoryClass' => 'Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory']);
-        }
+        $builder->add('categories', 'Zikula\CategoriesModule\Form\Type\CategoriesType', [
+            'required' => false,
+            'multiple' => false,
+            'module' => 'PaustianQuickcheckModule',
+            'entity' => 'QuickcheckQuestionEntity',
+            'entityCategoryClass' => 'Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory',
+        ]);
     }
 
     public function getName()
