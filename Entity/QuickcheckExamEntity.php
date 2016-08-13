@@ -60,6 +60,14 @@ class QuickcheckExamEntity extends EntityAccess {
      */
     private $quickcheckrefid;
 
+    /**
+     * Constructor 
+     */
+    public function __construct() {
+        $this->quickcheckname = '';
+        $this->quickcheckref_id = 0;
+    }
+    
     public function getId() {
         return $this->id;
     }

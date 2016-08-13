@@ -80,6 +80,8 @@ class HookHandler extends AbstractHookListener {
             //Now just use the renderEngine to renger a twig template and send it as a string back as a response.
             if ($is_admin) {
                 $content = $admininterface;
+            } else {
+                return null;
             }
         } else {
             //render the exam.

@@ -11,14 +11,9 @@ within a module
 */
 
 table.questions {
-    width:60%;
+    width:100%;
 }
-tr.table_header{
-    text-align: left;
-    font-weight: bold;
-    color:red;
-    background-color: #fff
-}
+
 
 td.questions {
     padding:2px;
@@ -49,15 +44,41 @@ textarea.qc_importtext{
 ol.upper-alpha {list-style-type: upper-alpha;}
 
 ul.sortable_a { 
-         list-style-type: none; 
-         margin: 0;
-         padding: 0;
-         width: 49%; 
-         float:left 
+    list-style-type: none; 
+    margin: 0;
+    padding: 0;
+    width: 49%; 
+    float:left 
 }
 li.matching { 
-        padding: 5px 5px 5px 5px; 
-        font-size: 12px; height: 50px;
-        border: 1px solid black; }
+    padding: 5px 5px 5px 5px; 
+    font-size: 12px; height: 50px;
+    border: 1px solid black; }
 
- 
+table.exams {
+    width: 100%;
+}
+
+thead.exams, tbody.exams, tr.exams, td.exams, th.exams { display: block; }
+
+tr.exams:after {
+    content: ' ';
+    display: block;
+    visibility: hidden;
+    clear: both;
+}
+
+thead.exams th.exams {
+    height: 30px;
+
+    /*text-align: left;*/
+}
+
+tbody.exams {
+    height: 520px;
+    overflow-y: auto;
+}
+
+thead.exams {
+    /* fallback */
+}

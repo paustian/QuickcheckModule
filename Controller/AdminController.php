@@ -117,17 +117,15 @@ class AdminController extends AbstractController {
             $em = $this->getDoctrine()->getManager();
             $questPick = $request->get('questions');
             $exam->setQuickcheckquestions($questPick);
-            //set it to a dummy refid so that we know it is not attached to an id
-            //There should never be a 0 id
-            $exam->setQuickcheckrefid(0);
             if ($doMerge) {
                 $em->merge($exam);
             } else {
+                $exam->setQuickcheckrefid(0);
                 $em->persist($exam);
             }
             $em->flush();
             $this->addFlash('status', _('Exam saved.'));
-            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edit'));
+            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
 
@@ -876,17 +874,26 @@ class AdminController extends AbstractController {
      */
     private function _parseImportedQuizXML($xmlQuestionText, $category) {
         //An awesome function for parsing simple xml.
-        //First we need to scrumb any regular html out so that we don't lose it
-        $htmlToRemove = ["|<i>|", "|</i>|", "|<b>|", "|</b>|", "|<a (.*?)>|", "|</a>}"];
-        $htmltoReplace = ["#i#", "#/i#", "#b#", "#/b#", "#a $1#", "#/a#"];
-        $textToParse = preg_replace($htmlToRemove, $htmltoReplace, $xmlQuestionText);
-        $questionArray = simplexml_load_string($textToParse);
-         I am here. I need to reverse the string replacements above
+        //First we need to scrumb out our xml tags before doing this magic
+        $tagsSearch1 = ["|<questiondoc>|", "|</questiondoc>|", 
+                        "", "|</question>|",
+                        "|<qtext>|", "|</qtext>|", 
+                        "|<qanswer>|", "|</qanswer>|", 
+                        "|<qexplanation>|", "|</qexplanation>|",
+                        "|<qparam>|", "|</qparam>|", 
+                        "|<qtype>|", "|</qtype>|", "|<\?xml(.*?)>|"];
+        
+        preg_match_all("|<question>(.*?)</question>|s", $xmlQuestionText, $questionArray);
+         
 //grab the manager for saving the data.
         $em = $this->getDoctrine()->getManager();
-        foreach ($questionArray as $q_item) {
+        foreach ($questionArray[1] as $q_item) {
             $doMerge = false;
-            $id = isset($q_item->qid) ? (integer) $q_item->qid : -1;
+            if(preg_match("|<qId>(.*?)</qId>|", $q_item, $qId)){
+                $id = $qId[1];
+            } else {
+                $id=-1;
+            }
             $question = null;
             if ($id < 0) {
                 $question = new QuickcheckQuestionEntity();
@@ -900,8 +907,10 @@ class AdminController extends AbstractController {
                     $doMerge = true;
                 }
             }
-            $type = (string) $q_item->qtype;
-            switch ($type) {
+            if(!preg_match("|<qtype>(.*?)</qtype>|", $q_item, $type)){
+                continue;
+            }
+            switch ($type[1]) {
                 case 'multichoice':
                     $question->setQuickcheckqType(self::_QUICKCHECK_MULTIPLECHOICE_TYPE);
                     break;
@@ -922,31 +931,39 @@ class AdminController extends AbstractController {
                     throw new NotFoundHttpException($this->__('Unrecognized question type, was your qtype empty in the xml file?'));
                     break;
             }
-
-            $text = (string) $q_item->qtext;
-            $question->setQuickcheckqText($text);
-            $explan = (string) $q_item->qexplanation;
-            $question->setQuickcheckqExpan($explan);
-            $sparam = (string) $q_item->qparam;
-            $sanswer = (string) $q_item->qanswer;
+            if(!preg_match("|<qtext>(.*?)</qtext>|", $q_item, $text)){
+                continue;
+            }
+            $question->setQuickcheckqText($text[1]);
+            if(preg_match("|<qexplanation>(.*?)</qexplanation>|", $q_item, $explan)){
+                $question->setQuickcheckqExpan($explan[1]);
+            } else {
+                $question->setQuickcheckqExpan("");
+            }
+            preg_match("|<qparam>(.*?)</qparam>|", $q_item, $sparam);
+            if(!preg_match("|<qanswer>(.*?)</qanswer>|", $q_item, $sanswer)){
+                continue;
+            }
+            
             $answer = "";
-            if ($sparam != '') {
-                $q_param = explode('|', $sparam);
-                $q_answer = explode('|', $sanswer);
+            $parse = strpos($sparam[1], '|');
+            if ($parse !== false) {
+                $q_param = explode('|', $sparam[1]);
+                $q_answer = explode('|', $sanswer[1]);
                 foreach ($q_param as $index => $param) {
                     $answer .= $q_answer[$index] . "|" . $param . "\n";
                 }
             } else {
                 if (strcmp($type, 'truefalse') == 0) {
-                    if (strcmp($sanswer, 'False') == 0) {
+                    if (strcmp($sanswer[1], 'False') == 0) {
                         $answer = 'no';
-                    } else if (strcmp($sanswer, 'True') == 0) {
+                    } else if (strcmp($sanswer[1], 'True') == 0) {
                         $answer = 'yes';
                     }
                 }
             }
             if ($answer == '') {
-                $answer = $sanswer;
+                $answer = $sanswer[1];
             }
             $question->setQuickcheckqAnswer($answer);
             $question->setCategories($category);

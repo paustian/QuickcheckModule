@@ -34,7 +34,7 @@ class TFQuestion extends AbstractType {
                 ->add('save', SubmitType::class, array('label' => 'Save Question'));
         $builder->add('cancel', ButtonType::class, array('label' => __('Cancel')));
         $builder->add('quickcheckqanswer', ChoiceType::class, array(
-            'choices' => array('True' => 'yes', 'False' => 'no'),
+            'choices' => array('True' => '1', 'False' => '0'),
             'required' => true,
             'label' => __('Answer'),
             'choices_as_values' => true,

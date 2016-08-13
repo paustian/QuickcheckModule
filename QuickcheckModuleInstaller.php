@@ -71,7 +71,10 @@ class QuickcheckModuleInstaller implements ExtensionInstallerInterface, Containe
         //get ready for using categories
         // create our default category
         $this->_quickcheck_createdefaultcategory(); 
-        
+        //set up the hook provider
+        $versionClass = $this->bundle->getVersionClass();
+        $version = new $versionClass($this->bundle);
+        HookUtil::registerProviderBundles($version->getHookProviderBundles());
         // Initialisation successful
         return true;
     }

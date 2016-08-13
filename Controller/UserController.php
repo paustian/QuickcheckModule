@@ -189,11 +189,10 @@ class UserController extends AbstractController {
         $quiz_questions = array(); //the array that will hold the questions
         $random_questions = array(); //the random questions from a category
         $examRepo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
-        
+
         foreach ($num_quests as $catid => $number_of_questions) {
-            if (!is_numeric($number_of_questions) || ($number_of_questions < 0)) {
-                $request->getSession()->getFlashBag()->add('error', $this->__('You need to pick the number of questions.'));
-                return new RedirectResponse($ret_url);
+            if( (!is_numeric($number_of_questions)) || ($number_of_questions <= 0) ){
+                continue;
             }
             if ($number_of_questions > 0) {
                 //grab the random keys from the array of questions
@@ -210,11 +209,15 @@ class UserController extends AbstractController {
                 }
             }
         }
+        if (count($quiz_questions) == 0) {
+            $request->getSession()->getFlashBag()->add('error', $this->__('You need to pick the number of questions.'));
+            return new RedirectResponse($ret_url);
+        }
         //shuffle the array to randomize the order in which they get asked.
         shuffle($quiz_questions);
         //build the sq_id array. This is used to grade the quesitons
-        $sq_ids = array();       
-        foreach($quiz_questions as $question){
+        $sq_ids = array();
+        foreach ($quiz_questions as $question) {
             $sq_ids[] = $question->getId();
         }
         //I need to change this so that it sends back it's own response. What this entails is just getting the data that it
@@ -222,10 +225,9 @@ class UserController extends AbstractController {
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
         return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                     'q_ids' => $sq_ids,
-                    'questions' => $questions,
+                    'questions' => $quiz_questions,
                     'return_url' => $return_url,
                     'exam_name' => __('Practice Exam')]));
-        
     }
 
     /**
@@ -237,15 +239,16 @@ class UserController extends AbstractController {
     private function _binQuestionCategories($questions) {
         $binned_questions = array();
         foreach ($questions as $question) {
-            $item = $question->getCategories();
-            $aCollection = array_shift($item);
+            $perCollect = $question->getCategories();
+            $aCollection = $perCollect->unwrap();
             $category = $aCollection->current();
-            $reg_id = $category->getId();
-            $binned_questions[$reg_id][] = $question;
+            if ($category !== false) {
+                $reg_id = $category->getCategory()->getId();
+                $binned_questions[$reg_id][] = $question;
+            }
         }
         return $binned_questions;
     }
-
 
     private function _fetch_cat_questions($in_questions, $in_cat_id) {
         $ret_questions = array();
@@ -255,8 +258,8 @@ class UserController extends AbstractController {
                 $started = true;
                 $ret_questions[] = $question;
             } else if ($started) {
-            //we can break out of the loop now because we have collected all
-            //the questions (they are sorted)
+                //we can break out of the loop now because we have collected all
+                //the questions (they are sorted)
                 break;
             }
         }
@@ -276,13 +279,13 @@ class UserController extends AbstractController {
      * @return Response
      *
      */
-    public function displayAction(Request $request, QuickcheckExamEntity $exam = null, $return_url="") {
+    public function displayAction(Request $request, QuickcheckExamEntity $exam = null, $return_url = "") {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
             throw AccessDeniedException();
         }
-        
+
         $examQuestions = array();
         $examName = "";
         if ($exam !== null) {
@@ -290,7 +293,7 @@ class UserController extends AbstractController {
             $examName = $exam->getQuickcheckname();
         } else {
             $examData = $request->request->get('exam', null);
-            if(!isset($examData)){
+            if (!isset($examData)) {
                 return null;
             }
             $examQuestions = $examData['questions'];
@@ -302,7 +305,7 @@ class UserController extends AbstractController {
         $questions = array();
         $repo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
         $repo->render_quiz($examQuestions, $questions, $sq_ids, $letters);
-        
+
         return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                     'q_ids' => $sq_ids,
                     'questions' => $questions,
@@ -310,8 +313,6 @@ class UserController extends AbstractController {
                     'exam_name' => $examName,
                     'admininterface' => '']));
     }
-    
-    
 
     /**
      * @Route("/gradeexam")
@@ -355,7 +356,8 @@ class UserController extends AbstractController {
                     //we don't grade text types
                     break;
                 case AdminController::_QUICKCHECK_TF_TYPE:
-                    if ($student_answer == $question->getQuickcheckqanswer()) {
+                    //do a quick translation from 1/0 to yes/no
+                    if ($student_answer === $question->getQuickcheckqanswer()) {
                         $score += 1;
                     }
                     $ur_answer = $student_answer;
@@ -432,7 +434,7 @@ class UserController extends AbstractController {
                     'score' => $score,
                     'percent' => $percent,
                     'letters' => $letters,
-                    'student_answers' => $student_answers]));
+                    'student_answers' => $student_answers])->getContent());
     }
 
 }

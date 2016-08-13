@@ -36,7 +36,7 @@ class AdminApi extends \Zikula_AbstractApi {
                     'icon' => 'plus');
         $links[] = array(
                     'url' => $this->get('router')->generate('paustianquickcheckmodule_admin_modify'),
-                    'text' => $this->__('Mofidy Exam'), 
+                    'text' => $this->__('Modify Exam'), 
                     'icon' => 'list');
         //The quesiton editing menu
         $submenulinks = array();
