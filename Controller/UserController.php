@@ -227,7 +227,7 @@ class UserController extends AbstractController {
                     'q_ids' => $sq_ids,
                     'questions' => $quiz_questions,
                     'return_url' => $return_url,
-                    'exam_name' => __('Practice Exam')]));
+                    'exam_name' => __('Practice Exam')])->getContent());
     }
 
     /**
