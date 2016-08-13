@@ -62,7 +62,7 @@ class UserController extends AbstractController {
 
         $categoryData = $propertiesdata[0]['subcategories'];
 
-        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_index.html.twig', ['categories' => $categoryData]));
+        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_index.html.twig', ['categories' => $categoryData])->getContent());
     }
 
     /**
@@ -224,7 +224,7 @@ class UserController extends AbstractController {
         //needs and then sending it back.
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
         return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
-                    'q_ids' => $sq_ids,
+                    'q_ids' => \serialize($sq_ids),
                     'questions' => $quiz_questions,
                     'return_url' => $return_url,
                     'exam_name' => __('Practice Exam')])->getContent());
