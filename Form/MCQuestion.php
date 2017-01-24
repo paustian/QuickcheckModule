@@ -5,13 +5,6 @@ namespace Paustian\QuickcheckModule\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Symfony\Component\Form\Extension\Core\Type\ButtonType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Zikula\CategoriesModule\Form\Type\CategoriesType;
 use Paustian\QuickcheckModule\Controller\AdminController;
 /**
  * Description of QuiccheckTFQuestion
@@ -24,13 +17,13 @@ class MCQuestion extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('quickcheckqtext', TextareaType::class, array('label' => __('Question'), 'required' => true))
-            ->add('quickcheckqanswer', TextareaType::class, array('label' => __('Answer'), 'required' => true))
-            ->add('quickcheckqexpan', TextareaType::class, array('label' => __('Explanation'), 'required' => true))
-            ->add('save', SubmitType::class, array('label' => 'Save Question'));
-        $builder->add('cancel', ButtonType::class, array('label' => __('Cancel')));
+            ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => __('Question'), 'required' => true))
+            ->add('quickcheckqanswer', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => __('Answer'), 'required' => true))
+            ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => __('Explanation'), 'required' => true))
+            ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Save Question'));
+        $builder->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' => __('Cancel')));
         
-        $builder->add('quickcheckqtype', HiddenType::class, array('data' => AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE));
+        $builder->add('quickcheckqtype', \Symfony\Component\Form\Extension\Core\Type\HiddenType::class, array('data' => AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE));
 
         $builder->add('categories', 'Zikula\CategoriesModule\Form\Type\CategoriesType', [
             'required' => false,

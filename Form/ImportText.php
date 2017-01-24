@@ -3,11 +3,6 @@ namespace Paustian\QuickcheckModule\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\Extension\Core\Type\ButtonType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Zikula\CategoriesModule\Form\Type\CategoriesType;
 
 
 /**
@@ -21,9 +16,9 @@ class ImportText extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('importText', TextareaType::class, array('label' => __('Question'), 'required' => false, 'mapped' => false))
-            ->add('save', SubmitType::class, array('label' => 'Import Questions'));
-        $builder->add('cancel', ButtonType::class, array('label' => __('Cancel')));
+            ->add('importText', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => __('Question'), 'required' => false, 'mapped' => false))
+            ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Import Questions'));
+        $builder->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' => __('Cancel')));
         
         $builder->add('categories', 'Zikula\CategoriesModule\Form\Type\CategoriesType', [
             'required' => false,

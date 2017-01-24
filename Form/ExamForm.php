@@ -15,9 +15,9 @@ class ExamForm extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('quickcheckname', 'text', array('label' => __('Exam Name'), 'required' => true))
-            ->add('save', 'submit', array('label' => 'Save Exam'))
-            ->add('cancel', 'button', array('label' => __('Cancel')));
+            ->add('quickcheckname', \Symfony\Component\Form\Extension\Core\Type\TextType::class, array('label' => __('Exam Name'), 'required' => true))
+            ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Save Exam'))
+            ->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' => __('Cancel')));
         
     }
 

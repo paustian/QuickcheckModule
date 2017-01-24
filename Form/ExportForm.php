@@ -14,8 +14,8 @@ class ExportForm extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('export', 'submit', array('label' => 'Export'))
-            ->add('exportall', 'submit', array('label' => __('Export All')));
+            ->add('export', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Export'))
+            ->add('exportall', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => __('Export All')));
     }
 
     public function getName()

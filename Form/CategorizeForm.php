@@ -6,7 +6,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Zikula\CategoriesModule\Form\Type\CategoriesType;
 /**
  * Description of CategorizeForm
- * Set up the elements for a Exam form.
+ * Set up the elements for a Exam form. A simple forms
  *
  * @author paustian
  * 
@@ -17,6 +17,7 @@ class CategorizeForm extends AbstractType {
         $builder
             ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Recategorize'))
             ->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' => __('Cancel')));
+        
         
         $builder->add('categories', 'Zikula\CategoriesModule\Form\Type\CategoriesType', [
             'required' => false,
