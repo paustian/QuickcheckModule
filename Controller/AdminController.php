@@ -90,7 +90,7 @@ class AdminController extends AbstractController {
     public function editAction(Request $request, QuickcheckExamEntity $exam = null) {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
-        if (!$this->hasPermission('quickcheck::', '::', ACCESS_ADD)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
 
@@ -142,7 +142,7 @@ class AdminController extends AbstractController {
      * @param Request $request
      */
     public function deleteAction(Request $request, QuickcheckExamEntity $exam = null) {
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_DELETE)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
             return DataUtil::formatForDisplayHTML($this->__("You do not have permission to delete exams."));
         }
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_modify'));
@@ -166,7 +166,7 @@ class AdminController extends AbstractController {
      * 
      */
     public function deleteQuestionAction(Request $request, QuickcheckQuestionEntity $question = null) {
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_DELETE)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
             return DataUtil::formatForDisplayHTML($this->__("You do not have permission to delete questions."));
         }
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
@@ -228,7 +228,7 @@ class AdminController extends AbstractController {
      * The one to modify
      */
     public function modifyAction(Request $request) {
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_EDIT)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             return DataUtil::formatForDisplayHTML($this->__("You do not have permission to edit questions."));
         }
         // create a QueryBuilder instance
@@ -263,7 +263,7 @@ class AdminController extends AbstractController {
      * @return RedirectResponse
      */
     public function attachAction(Request $request) {
-        if (!$this->hasPermission('quickcheck::', '::', ACCESS_ADD)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
         //get the values
@@ -417,7 +417,7 @@ class AdminController extends AbstractController {
     public function editTextQuestAction(Request $request, QuickcheckQuestionEntity $question = null) {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
-        if (!$this->hasPermission('quickcheck::', '::', ACCESS_ADD)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
         //If the $questions already exists coming in, then we want to merge
@@ -455,7 +455,7 @@ class AdminController extends AbstractController {
      * @return       Response
      */
     public function editMatchQuestAction(Request $request, QuickcheckQuestionEntity $question = null) {
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_ADD)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
         $doMerge = false;
@@ -497,7 +497,7 @@ class AdminController extends AbstractController {
 
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
-        if (!$this->hasPermission('quickcheck::', '::', ACCESS_ADD)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
         $em = $this->getDoctrine()->getManager();
@@ -537,7 +537,7 @@ class AdminController extends AbstractController {
      * HEre is another:0
      */
     public function editMCQuestAction(Request $request, QuickcheckQuestionEntity $question = null) {
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_ADD)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
         $doMerge = false;
@@ -577,7 +577,7 @@ class AdminController extends AbstractController {
      */
     public function editMANSQuestAction(Request $request, QuickcheckQuestionEntity $question = null) {
 
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_ADD)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
         $doMerge = false;
@@ -614,7 +614,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
     public function modifyquestionAction(Request $request) {
-        if (!$this->hasPermission('quickcheck::', '::', ACCESS_EDIT)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
 
@@ -680,7 +680,7 @@ class AdminController extends AbstractController {
      * 
      */
     public function editquestionsAction(Request $request) {
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_EDIT)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
         $questions = $this->_prep_question_list('radio');
@@ -744,7 +744,7 @@ class AdminController extends AbstractController {
             $render->assign('hasexam', 1);
         }
         //no exam, display an interface to pick one, only if this is an admin
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_EDIT)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             //we return an empty results for someone who cannot edit, you don't want to fail here
             //as each hooked page would then have the error message.
             return $ret_text;
@@ -765,7 +765,7 @@ class AdminController extends AbstractController {
     public function categorizeAction(Request $request) {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
-        if (!$this->hasPermission('quickcheck::', '::', ACCESS_ADD)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
 
@@ -804,7 +804,7 @@ class AdminController extends AbstractController {
         $this->checkCsrfToken();
 
         //you have to have edit access to do this
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_EDIT)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
 
@@ -839,7 +839,7 @@ class AdminController extends AbstractController {
      */
     public function findunansweredAction() {
         //you have to have edit access to do this
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_EDIT)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
         $qb = $this->getDoctrine()->getManager()->createQueryBuilder();
@@ -884,7 +884,7 @@ class AdminController extends AbstractController {
                         "|<qtype>|", "|</qtype>|", "|<\?xml(.*?)>|"];
         
         preg_match_all("|<question>(.*?)</question>|s", $xmlQuestionText, $questionArray);
-         
+        
 //grab the manager for saving the data.
         $em = $this->getDoctrine()->getManager();
         foreach ($questionArray[1] as $q_item) {
@@ -907,6 +907,7 @@ class AdminController extends AbstractController {
                     $doMerge = true;
                 }
             }
+            
             if(!preg_match("|<qtype>(.*?)</qtype>|", $q_item, $type)){
                 continue;
             }
@@ -931,30 +932,34 @@ class AdminController extends AbstractController {
                     throw new NotFoundHttpException($this->__('Unrecognized question type, was your qtype empty in the xml file?'));
                     break;
             }
+            
             if(!preg_match("|<qtext>(.*?)</qtext>|", $q_item, $text)){
                 continue;
             }
+            
             $question->setQuickcheckqText($text[1]);
             if(preg_match("|<qexplanation>(.*?)</qexplanation>|", $q_item, $explan)){
                 $question->setQuickcheckqExpan($explan[1]);
             } else {
                 $question->setQuickcheckqExpan("");
             }
+            
             preg_match("|<qparam>(.*?)</qparam>|", $q_item, $sparam);
-            if(!preg_match("|<qanswer>(.*?)</qanswer>|", $q_item, $sanswer)){
+            
+            if(!preg_match("|<qanswer>(.*?)</qanswer>|s", $q_item, $sanswer)){
                 continue;
             }
             
             $answer = "";
-            $parse = strpos($sparam[1], '|');
-            if ($parse !== false) {
+            
+            if (!empty($sparam)) {
                 $q_param = explode('|', $sparam[1]);
                 $q_answer = explode('|', $sanswer[1]);
                 foreach ($q_param as $index => $param) {
                     $answer .= $q_answer[$index] . "|" . $param . "\n";
                 }
             } else {
-                if (strcmp($type, 'truefalse') == 0) {
+                if (strcmp($type[0], 'truefalse') == 0) {
                     if (strcmp($sanswer[1], 'False') == 0) {
                         $answer = 'no';
                     } else if (strcmp($sanswer[1], 'True') == 0) {
@@ -965,7 +970,7 @@ class AdminController extends AbstractController {
             if ($answer == '') {
                 $answer = $sanswer[1];
             }
-            $question->setQuickcheckqAnswer($answer);
+            $question->setQuickcheckqAnswer($answer);         
             $question->setCategories($category);
             if ($doMerge) {
                 $em->merge($question);
@@ -985,7 +990,7 @@ class AdminController extends AbstractController {
      */
     public function importquizAction(Request $request) {
         //you have to have edit access to do this
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_EDIT)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
 
@@ -1019,7 +1024,7 @@ class AdminController extends AbstractController {
     public function exportquizAction(Request $request) {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
-        if (!$this->hasPermission('quickcheck::', '::', ACCESS_ADD)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
 
