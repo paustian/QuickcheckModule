@@ -80,7 +80,7 @@ class AdminController extends AbstractController {
     /**
      * @Route("/edit/{exam}")
      * 
-     * * form to add new exam
+     * * form to add new exam  
      *
      * Create a new exam
      *
@@ -958,7 +958,7 @@ class AdminController extends AbstractController {
                 foreach ($q_param as $index => $param) {
                     $answer .= $q_answer[$index] . "|" . $param . "\n";
                 }
-            } else {ee
+            } else {
                 if (strcmp($type[0], 'truefalse') == 0) {
                     if (strcmp($sanswer[1], 'False') == 0) {
                         $answer = 'no';

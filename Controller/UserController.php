@@ -279,7 +279,7 @@ class UserController extends AbstractController {
      * @return Response
      *
      */
-    public function displayAction(Request $request, QuickcheckExamEntity $exam = null, $return_url = "") {
+    public function displayAction(Request $request, QuickcheckExamEntity $exam = null, $return_url = "", $print = false) {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
@@ -311,9 +311,26 @@ class UserController extends AbstractController {
                     'questions' => $questions,
                     'return_url' => $return_url,
                     'exam_name' => $examName,
-                    'admininterface' => '']));
+                    'admininterface' => '',
+                    'print' => $print]));
     }
 
+     /**
+     * @Route("/print/{exam}")
+     * 
+     * This displays an quiz from the database, or it displays a quiz set up by 
+     * the student for self study.
+     * 
+     * Date: November 3 2015
+     * @author Timothy Paustian
+     * 
+     * @param Request the exam info that holds the questions* 
+     * @return Response
+     *
+     */
+    public function printAction(Request $request, QuickcheckExamEntity $exam = null) {
+        return $this->displayAction($request, $exam, "", true);
+    }
     /**
      * @Route("/gradeexam")
      * @Method("POST")
