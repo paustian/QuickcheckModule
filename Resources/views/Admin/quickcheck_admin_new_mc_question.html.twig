@@ -1,6 +1,8 @@
 {% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
 {{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
-{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
+{% if hasPermission('PaustianQuickcheckModule::', '::', 'ACCESS_ADMIN') %}
+{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}   
+{% endif %}
 <div class="container-fluid">
     <div class="row">
         <h3>

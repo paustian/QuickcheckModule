@@ -54,7 +54,7 @@ class UserController extends AbstractController {
      */
     public function indexAction() {
         //securtiy check first
-        if (!$this->hasPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
             throw new AccessDeniedException();
         }
 
@@ -166,7 +166,7 @@ class UserController extends AbstractController {
      */
     public function createExamAction(Request $request) {
         //you have to have edit access to do this
-        if (!$this->hasPermission('quickcheck::', "::", ACCESS_OVERVIEW)) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_OVERVIEW)) {
             throw new AccessDeniedException();
         }
 
@@ -282,7 +282,7 @@ class UserController extends AbstractController {
     public function displayAction(Request $request, QuickcheckExamEntity $exam = null, $return_url = "") {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
-        if (!$this->hasPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
             throw AccessDeniedException();
         }
 
@@ -327,7 +327,7 @@ class UserController extends AbstractController {
      */
     public function gradeexamAction(Request $request) {
 
-        if (!$this->hasPermission('quickcheck::', '::', ACCESS_OVERVIEW)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
             throw AccessDeniedException();
         }
         $return_url = $request->request->get('ret_url', null);

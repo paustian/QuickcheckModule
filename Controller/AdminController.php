@@ -958,7 +958,7 @@ class AdminController extends AbstractController {
                 foreach ($q_param as $index => $param) {
                     $answer .= $q_answer[$index] . "|" . $param . "\n";
                 }
-            } else {
+            } else {ee
                 if (strcmp($type[0], 'truefalse') == 0) {
                     if (strcmp($sanswer[1], 'False') == 0) {
                         $answer = 'no';
