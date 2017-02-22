@@ -164,6 +164,7 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
                 $categories->remove($key);
             }
         }
+        
         foreach ($categories as $category) {
             $this->categories->add($category);
         }
