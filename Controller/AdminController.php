@@ -376,9 +376,11 @@ class AdminController extends AbstractController {
         } else {
             $em->persist($question);
         }
+        
         $em->flush();
-
-        $this->addFlash('status', $flashText);
+        $id = $question->getId();
+        
+        $this->addFlash('status', $flashText . " Question ID was: $id");
         return $redirect;
     }
 
