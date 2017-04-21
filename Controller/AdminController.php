@@ -436,7 +436,13 @@ class AdminController extends AbstractController {
         $form->handleRequest($request);
 
         if ($form->isValid()) {
-            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittextquest'));
+            $fromModifyForm = $request->query->get('modify');
+            $response = null;
+            if ($fromModifyForm) {
+                $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
+            } else {
+                $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittextquest'));
+            }
             return $this->_persistQuestion($question, $doMerge, __('Text question saved!'), $response);
         }
 
@@ -474,7 +480,13 @@ class AdminController extends AbstractController {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
-            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmatchquest'));
+            $fromModifyForm = $request->query->get('modify');
+            $response = null;
+            if ($fromModifyForm) {
+                $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
+            } else {
+                $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmatchquest'));
+            }
             return $this->_persistQuestion($question, $doMerge, __('Matching question saved!'), $response);
         }
 
@@ -516,7 +528,13 @@ class AdminController extends AbstractController {
 
         /** @var \Doctrine\ORM\EntityManager $em */
         if ($form->isValid()) {
-            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittfquest'));
+            $fromModifyForm = $request->query->get('modify');
+            $response = null;
+            if ($fromModifyForm) {
+                $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
+            } else {
+                $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittfquest'));
+            }
             return $this->_persistQuestion($question, $doMerge, __('True/False question saved!'), $response);
         }
 
@@ -556,7 +574,13 @@ class AdminController extends AbstractController {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
-            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmcquest'));
+            $fromModifyForm = $request->query->get('modify');
+            $response = null;
+            if ($fromModifyForm) {
+                $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
+            } else {
+                $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmcquest'));
+            }
             return $this->_persistQuestion($question, $doMerge, __('Multiple-Choice  question saved!'), $response);
         }
 
@@ -596,7 +620,13 @@ class AdminController extends AbstractController {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
-            $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmansquest'));
+            $fromModifyForm = $request->query->get('modify');
+            $response = null;
+            if ($fromModifyForm) {
+                $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
+            } else {
+                $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmansquest'));
+            }
             return $this->_persistQuestion($question, $doMerge, __('Multiple-Answer question saved!'), $response);
         }
 
@@ -643,22 +673,22 @@ class AdminController extends AbstractController {
         if ($button == 'edit') {
             switch ($questionType) {
                 case self::_QUICKCHECK_TEXT_TYPE:
-                    $response = new RedirectResponse($this->generateUrl('paustianquickcheckmodule_admin_edittextquest', array('question' => $id)));
+                    $response = new RedirectResponse($this->generateUrl('paustianquickcheckmodule_admin_edittextquest', array('question' => $id, 'modify' => true)));
                     break;
                 case self::_QUICKCHECK_MATCHING_TYPE:
-                    $response = new RedirectResponse($this->generateUrl('paustianquickcheckmodule_admin_editmatchquest', array('question' => $id)));
+                    $response = new RedirectResponse($this->generateUrl('paustianquickcheckmodule_admin_editmatchquest', array('question' => $id, 'modify' => true)));
                     ;
                     break;
                 case self::_QUICKCHECK_MULTIANSWER_TYPE:
-                    $response = new RedirectResponse($this->generateUrl('paustianquickcheckmodule_admin_editmansquest', array('question' => $id)));
+                    $response = new RedirectResponse($this->generateUrl('paustianquickcheckmodule_admin_editmansquest', array('question' => $id, 'modify' => true)));
                     ;
                     break;
                 case self::_QUICKCHECK_MULTIPLECHOICE_TYPE:
-                    $response = new RedirectResponse($this->generateUrl('paustianquickcheckmodule_admin_editmcquest', array('question' => $id)));
+                    $response = new RedirectResponse($this->generateUrl('paustianquickcheckmodule_admin_editmcquest', array('question' => $id, 'modify' => true)));
                     ;
                     break;
                 case self::_QUICKCHECK_TF_TYPE:
-                    $response = new RedirectResponse($this->generateUrl('paustianquickcheckmodule_admin_edittfquest', array('question' => $id)));
+                    $response = new RedirectResponse($this->generateUrl('paustianquickcheckmodule_admin_edittfquest', array('question' => $id, 'modify' => true)));
                     ;
                     break;
             }
@@ -978,7 +1008,7 @@ class AdminController extends AbstractController {
             }
             
             $question->setQuickcheckqAnswer($answer);
-            print $category;
+
             $question->setCategories($category);
             if ($doMerge) {
                 $em->merge($question);
