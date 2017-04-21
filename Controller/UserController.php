@@ -186,10 +186,11 @@ class UserController extends AbstractController {
         $questions = $query->getResult();
         //bin the questions into separate categories
         $bin_questions = $this->_binQuestionCategories($questions);
+        
         $quiz_questions = array(); //the array that will hold the questions
         $random_questions = array(); //the random questions from a category
         $examRepo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
-
+        $questRepo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity');
         foreach ($num_quests as $catid => $number_of_questions) {
             if( (!is_numeric($number_of_questions)) || ($number_of_questions <= 0) ){
                 continue;
@@ -198,12 +199,14 @@ class UserController extends AbstractController {
                 //grab the random keys from the array of questions
                 $random_questions = array_rand($bin_questions[$catid], $number_of_questions);
                 if ($number_of_questions == 1) {
-                    $the_question = $examRepo->unpackQuestion($bin_questions[$catid][$random_questions]);
+                    $qID = $bin_questions[$catid][$random_questions];
+                    $the_question = $examRepo->unpackQuestion($questRepo->find($qID));
                     $quiz_questions[] = $the_question;
                 } else {
                     //now fill our array with these questions
                     foreach ($random_questions as $qIndex) {
-                        $the_question = $examRepo->unpackQuestion($bin_questions[$catid][$qIndex]);
+                        $qID = $bin_questions[$catid][$qIndex];
+                        $the_question = $examRepo->unpackQuestion($questRepo->find($qID));
                         $quiz_questions[] = $the_question;
                     }
                 }
@@ -244,7 +247,7 @@ class UserController extends AbstractController {
             $category = $aCollection->current();
             if ($category !== false) {
                 $reg_id = $category->getCategory()->getId();
-                $binned_questions[$reg_id][] = $question;
+                $binned_questions[$reg_id][] = $question->getId();
             }
         }
         return $binned_questions;

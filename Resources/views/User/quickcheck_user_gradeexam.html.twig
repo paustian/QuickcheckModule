@@ -72,7 +72,7 @@
             </table>
         {% endif %}
         {% if question.quickcheckqtype == 4 %} {# multiple answer #}
-            I need to take off points for choosing incorrect answers. Right now if you check everything, you get it right.
+            <!--I need to take off points for choosing incorrect answers. Right now if you check everything, you get it right.-->
             <ol class="upper-alpha">
                 {% set answers = question.quickcheckqanswer %}
                 {% set params = question.quickcheckqparam %}
@@ -94,6 +94,7 @@
                 {% endfor %}
             </ol>
             {% endif %}
+            <p><b>Explanation:</b> {{ question.quickcheckqexpan|raw }}</p>
         </div>
     {% endfor %}
 </div>
