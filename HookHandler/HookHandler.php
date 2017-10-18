@@ -2,50 +2,47 @@
 
 namespace Paustian\QuickcheckModule\HookHandler;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
-use Zikula\Bundle\HookBundle\Hook\AbstractHookListener;
+
 use Zikula\Bundle\HookBundle\Hook\DisplayHook;
 use Zikula\Bundle\HookBundle\Hook\ProcessHook;
 use Zikula\Bundle\HookBundle\Hook\DisplayHookResponse;
-use SecurityUtil;
-use Paustian\QuickcheckModule\QuickcheckModuleVersion;
-use ModUtil;
 
 /**
- * Copyright 2016 Timothy Paustian
+ * Copyright 2017 Timothy Paustian
  *
  * @license MIT
  *
  */
-class HookHandler extends AbstractHookListener {
+
+class HookHandler
+{
+    /**
+     * @var RequestStack
+     */
+    private $requestStack;
 
     /**
-     * @var EntityManagerInterface
+     * ProviderHandler constructor.
+     * @param RequestStack $requestStack
      */
-    protected $entityManager;
-
-    /**
-     * @var EngineInterface
-     */
-    protected $renderEngine;
-
-    public function __construct(EntityManagerInterface $entityManager, EngineInterface $renderEngine) {
-        $this->entityManager = $entityManager;
-        $this->renderEngine = $renderEngine;
+    public function __construct(RequestStack $requestStack)
+    {
+        $this->requestStack = $requestStack;
     }
 
-    /**
-     * Display hook for view.
-     *
-     * Subject is the object being viewed that we're attaching to.
-     * args[id] is the id of the object.
-     * args[caller] the module who notified of this event.
-     *
-     * @param Zikula_Hook $hook
-     *
-     * @return void
-     */
+    public function uiView(DisplayHook $hook)
+    {
+        $hook->setResponse(new DisplayHookResponse(HookContainer::PROVIDER_UIAREANAME, 'This is the quickcheck Response'));
+    }
+
+    public function processEdit(ProcessHook $hook)
+    {
+        $this->requestStack->getMasterRequest()->getSession()->getFlashBag()->add('success', 'Ui hook properly processed!');
+    }
+}
+/*class HookHandler extends AbstractHookListener {
+
+
     public function display_view(DisplayHook $hook) {
 
         // Security check
@@ -107,17 +104,6 @@ class HookHandler extends AbstractHookListener {
         $hook->setResponse($response);
     }
 
-    /**
-     * Display hook for delete views.
-     *
-     * Subject is the object being created/edited that we're attaching to.
-     * args[id] Is the ID of the subject.
-     * args[caller] the module who notified of this event.
-     *
-     * @param Zikula_Hook $hook
-     *
-     * @return void
-     */
     public function process_delete(ProcessHook $hook) {
         // Security check
         if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_DELETE)) {
@@ -136,4 +122,4 @@ class HookHandler extends AbstractHookListener {
         }
     }
 
-}
+}*/
