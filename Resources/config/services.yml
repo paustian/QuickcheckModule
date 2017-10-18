@@ -3,4 +3,15 @@
 services:
     paustian_quickcheck_module.hook_handler.quickcheck:
         class: Paustian\QuickcheckModule\HookHandler\HookHandler
-        arguments: [@doctrine.entitymanager, @templating]
+        arguments:
+                  - "@doctrine.entitymanager"
+                  -  "@templating"
+                  tags:
+                    - { name: "zikula.hook.provider", areaName: "provider.pages.ui_hooks.pages"}
+
+    zikula_pages_module.hook_subscriber.ui_hooks_subscriber:
+        class: Zikula\PagesModule\HookSubscriber\UiHooksSubscriber
+        arguments:
+                  - "@translator.default"
+                tags:
+                    - { name: zikula.hook_subscriber, areaName: "subscriber.pages.ui_hooks.pages" }
