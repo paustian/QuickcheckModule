@@ -109,7 +109,7 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new ExamForm(), $exam);
+        $form = $this->createForm(ExamForm::class, $exam);
 
         $form->handleRequest($request);
 
@@ -124,7 +124,7 @@ class AdminController extends AbstractController {
                 $em->persist($exam);
             }
             $em->flush();
-            $this->addFlash('status', __('Exam saved.'));
+            $this->addFlash('status', $this->__('Exam saved.'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
@@ -153,7 +153,7 @@ class AdminController extends AbstractController {
         $em = $this->getDoctrine()->getManager();
         $em->remove($exam);
         $em->flush();
-        $this->addFlash('status', __('Exam Deleted.'));
+        $this->addFlash('status', $this->__('Exam Deleted.'));
         return $response;
     }
 
@@ -179,7 +179,7 @@ class AdminController extends AbstractController {
         $this->_removeQuestionFromExams($em, $id);
         $em->remove($question);
         $em->flush();
-        $this->addFlash('status', __('Question Deleted.'));
+        $this->addFlash('status', $this->__('Question Deleted.'));
         return $response;
     }
 
@@ -243,7 +243,7 @@ class AdminController extends AbstractController {
         // execute query
         $exams = $query->getResult();
         if (!$exams) {
-            $this->addFlash('error', __('There are no exams to edit'));
+            $this->addFlash('error', $this->__('There are no exams to edit'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
@@ -345,7 +345,7 @@ class AdminController extends AbstractController {
             //this sends back an ArrayCollection of 1 item (each question can only be in 1 category)
             $catItems = $question->getCategories();
             if ($catItems->isEmpty()) {
-                $questions[__('Uncategorized')][] = $built_question;
+                $questions[$this->__('Uncategorized')][] = $built_question;
                 continue;
             }
 
@@ -443,7 +443,7 @@ class AdminController extends AbstractController {
             } else {
                 $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittextquest'));
             }
-            return $this->_persistQuestion($question, $doMerge, __('Text question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->__('Text question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_text_question.html.twig', array(
@@ -487,7 +487,7 @@ class AdminController extends AbstractController {
             } else {
                 $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmatchquest'));
             }
-            return $this->_persistQuestion($question, $doMerge, __('Matching question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->__('Matching question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_match_question.html.twig', array(
@@ -535,7 +535,7 @@ class AdminController extends AbstractController {
             } else {
                 $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittfquest'));
             }
-            return $this->_persistQuestion($question, $doMerge, __('True/False question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->__('True/False question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_tf_question.html.twig', array(
@@ -581,7 +581,7 @@ class AdminController extends AbstractController {
             } else {
                 $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmcquest'));
             }
-            return $this->_persistQuestion($question, $doMerge, __('Multiple-Choice  question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->__('Multiple-Choice  question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_mc_question.html.twig', array(
@@ -627,7 +627,7 @@ class AdminController extends AbstractController {
             } else {
                 $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmansquest'));
             }
-            return $this->_persistQuestion($question, $doMerge, __('Multiple-Answer question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->__('Multiple-Answer question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_mans_question.html.twig', array(
@@ -736,7 +736,7 @@ class AdminController extends AbstractController {
         $questions = $this->_build_questions_list($ckquestions);
 
         if (!$questions) {
-            $this->addFlash('error', __('There are no questions to modify. Create some first.'));
+            $this->addFlash('error', $this->__('There are no questions to modify. Create some first.'));
 
             return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
         }
@@ -812,7 +812,7 @@ class AdminController extends AbstractController {
 
             $categories = $form->get('categories')->getData();
             $this->_persistQuestionList($questPick, $categories);
-            $this->addFlash('status', __('Questions recategorized.'));
+            $this->addFlash('status', $this->__('Questions recategorized.'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_categorize'));
             return $response;
         }
@@ -890,7 +890,7 @@ class AdminController extends AbstractController {
 //            
 //        }
         if (empty($questions)) {
-            $this->addFlash('error', __("There are no unexplained questions."));
+            $this->addFlash('error', $this->__("There are no unexplained questions."));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
@@ -1042,7 +1042,7 @@ class AdminController extends AbstractController {
             //take the xml that is imported, and parse it into an array
             //That array should have filled out a new question entity which it shoudl return
             $questions = $this->_parseImportedQuizXML($xmlQuestionText, $category);
-            $this->addFlash('status', __("Questions imported."));
+            $this->addFlash('status', $this->__("Questions imported."));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_importquiz'));
             return $response;
         }
@@ -1168,7 +1168,7 @@ class AdminController extends AbstractController {
             }
         }
         $em->flush();
-        $this->addFlash('status', __("Questions updated."));
+        $this->addFlash('status', $this->__("Questions updated."));
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
         return $response;
     }

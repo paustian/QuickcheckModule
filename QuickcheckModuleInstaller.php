@@ -22,6 +22,7 @@ namespace Paustian\QuickcheckModule;
 
 use Zikula\Core\AbstractExtensionInstaller;
 use Zikula\CategoriesModule\Entity\CategoryEntity;
+use Zikula\CategoriesModule\Entity\CategoryRegistryEntity;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory;
@@ -75,18 +76,26 @@ class QuickcheckModuleInstaller extends AbstractExtensionInstaller {
     {
         $locale = $this->container->get('request_stack')->getCurrentRequest()->getLocale();
         $repo = $this->container->get('zikula_categories_module.category_repository');
-        // create pages root category
+        // create quickcheck root category
         $parent = $repo->findOneBy(['name' => 'Modules']);
-        $pagesRoot = new CategoryEntity();
-        $pagesRoot->setParent($parent);
-        $pagesRoot->setName($this->bundle->getName());
-        $pagesRoot->setDisplay_name([
+        $quickcheckRoot = new CategoryEntity();
+        $quickcheckRoot->setParent($parent);
+        $quickcheckRoot->setName($this->bundle->getName());
+        $quickcheckRoot->setDisplay_name([
             $locale => $this->__('Quickcheck', 'paustianquickcheckmodule', $locale)
         ]);
-        $pagesRoot->setDisplay_desc([
+        $quickcheckRoot->setDisplay_desc([
             $locale => $this->__('Quickcheck Questions', 'paustianquickcheckmodule', $locale)
         ]);
-        $this->entityManager->persist($pagesRoot);
+        $this->entityManager->persist($quickcheckRoot);
+
+        // create Registry
+        $registry = new CategoryRegistryEntity();
+        $registry->setCategory($quickcheckRoot);
+        $registry->setEntityname('QuickcheckQuestionEntity');
+        $registry->setModname($this->bundle->getName());
+        $registry->setProperty('Main');
+        $this->entityManager->persist($registry);
         $this->entityManager->flush();
         return true;
     }

@@ -227,7 +227,7 @@ class UserController extends AbstractController {
                     'q_ids' => \serialize($sq_ids),
                     'questions' => $quiz_questions,
                     'return_url' => $return_url,
-                    'exam_name' => __('Practice Exam')])->getContent());
+                    'exam_name' => $this->__('Practice Exam')])->getContent());
     }
 
     /**

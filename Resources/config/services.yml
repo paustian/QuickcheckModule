@@ -1,17 +1,14 @@
  # Hook handlers
  
 services:
-    paustian_quickcheck_module.hook_handler.quickcheck:
-        class: Paustian\QuickcheckModule\HookHandler\HookHandler
+    paustian_quickcheck_module.hook_handler:
+        class: Paustian\QuickcheckModule\HookHandler\UiHooksProviderHandler
         arguments:
-                  - "@doctrine.entitymanager"
-                  -  "@templating"
-                  tags:
-                    - { name: "zikula.hook.provider", areaName: "provider.pages.ui_hooks.pages"}
+          - "@request_stack"
 
-    zikula_pages_module.hook_subscriber.ui_hooks_subscriber:
-        class: Zikula\PagesModule\HookSubscriber\UiHooksSubscriber
+    paustian_quickcheck_module.form.examform_type:
+        class: Paustian\QuickcheckModule\Form\ExamForm
         arguments:
-                  - "@translator.default"
-                tags:
-                    - { name: zikula.hook_subscriber, areaName: "subscriber.pages.ui_hooks.pages" }
+          - "@translator.default"
+        tags:
+          - { name: form.type }

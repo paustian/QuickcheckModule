@@ -3,6 +3,7 @@
 namespace Paustian\QuickcheckModule\HookHandler;
 
 
+use Symfony\Component\HttpFoundation\RequestStack;
 use Zikula\Bundle\HookBundle\Hook\DisplayHook;
 use Zikula\Bundle\HookBundle\Hook\ProcessHook;
 use Zikula\Bundle\HookBundle\Hook\DisplayHookResponse;
@@ -14,7 +15,7 @@ use Zikula\Bundle\HookBundle\Hook\DisplayHookResponse;
  *
  */
 
-class HookHandler
+class UiHooksProviderHandler
 {
     /**
      * @var RequestStack
@@ -40,7 +41,7 @@ class HookHandler
         $this->requestStack->getMasterRequest()->getSession()->getFlashBag()->add('success', 'Ui hook properly processed!');
     }
 }
-/*class HookHandler extends AbstractHookListener {
+/*class UiHooksProviderHandler extends AbstractHookListener {
 
 
     public function display_view(DisplayHook $hook) {
