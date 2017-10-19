@@ -47,7 +47,7 @@ class QuickcheckModuleInstaller extends AbstractExtensionInstaller {
      * @return       bool       true on success, false otherwise
      */
     public function  install() {
-        //Create the tables of the module. Book has 5
+        //Create the tables of the module.
         try {
             $this->schemaTool->create($this->entities);
         } catch (\Exception $e) {

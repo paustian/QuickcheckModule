@@ -2,6 +2,9 @@
 namespace Paustian\QuickcheckModule\Form;
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Zikula\Common\Translator\TranslatorInterface;
@@ -31,9 +34,9 @@ class ExamForm extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('quickcheckname', \Symfony\Component\Form\Extension\Core\Type\TextType::class, array('label' => $this->translator->__('Exam Name'), 'required' => true))
-            ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => $this->translator->__('Save Exam')))
-            ->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' => $this->translator->__('Cancel')));
+            ->add('quickcheckname', TextType::class, array('label' => $this->translator->__('Exam Name'), 'required' => true))
+            ->add('save', SubmitType::class, array('label' => $this->translator->__('Save Exam')))
+            ->add('cancel', ButtonType::class, array('label' => $this->translator->__('Cancel')));
         
     }
 

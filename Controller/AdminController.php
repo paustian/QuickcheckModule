@@ -74,7 +74,7 @@ class AdminController extends AbstractController {
     public function indexAction(Request $request) {
 
         // Return a page of menu items.
-        return new Response($this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig'));
+        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig');
     }
 
     /**
