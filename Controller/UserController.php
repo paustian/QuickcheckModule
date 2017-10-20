@@ -31,8 +31,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\RouterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
-use ModUtil;
-use SecurityUtil;
 use CategoryUtil;
 use DataUtil;
 use Paustian\QuickcheckModule\Controller\AdminController;
@@ -71,7 +69,10 @@ class UserController extends AbstractController {
      * @return array
      */
     private function _getCategories() {
-        $categoryRegistry = \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity');
+        /*This does not work and I need to fix it. Look at how the Pages module does it. I clearly grabbed this code from the pages module
+        $categoryRegistry = $this->
+            get('zikula_categories_module.api.category_registry')->getModuleCategoryIds(
+            \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity');
         $properties = array_keys($categoryRegistry);
         $propertiesdata = array();
         foreach ($properties as $property) {
@@ -87,7 +88,7 @@ class UserController extends AbstractController {
             }
         }
 
-        return array($properties, $propertiesdata);
+        return array($properties, $propertiesdata);*/
     }
 
     /**

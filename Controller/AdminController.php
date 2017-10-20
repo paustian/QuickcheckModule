@@ -431,7 +431,7 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new TextQuestion(), $question);
+        $form = $this->createForm(TextQuestion::class, $question);
 
         $form->handleRequest($request);
 
@@ -473,7 +473,7 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new MatchQuestion(), $question);
+        $form = $this->createForm(MatchQuestion::class, $question);
 
         $form->handleRequest($request);
 
@@ -567,7 +567,7 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new MCQuestion(), $question);
+        $form = $this->createForm(MCQuestion::class, $question);
 
         $form->handleRequest($request);
 
@@ -613,7 +613,7 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new MAnsQuestion(), $question);
+        $form = $this->createForm(MAnsQuestion::class, $question);
 
         $form->handleRequest($request);
 
@@ -738,7 +738,7 @@ class AdminController extends AbstractController {
         if (!$questions) {
             $this->addFlash('error', $this->__('There are no questions to modify. Create some first.'));
 
-            return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
+            return "";
         }
 
         $html = $this->renderView('PaustianQuickcheckModule:Admin:quickcheck_admin_qpart.html.twig', [ 'questions' => $questions,
@@ -803,7 +803,7 @@ class AdminController extends AbstractController {
 
         $questions = $this->_prep_question_list('checkbox');
 
-        $form = $this->createForm(new CategorizeForm());
+        $form = $this->createForm(CategorizeForm::class);
 
         $form->handleRequest($request);
 
@@ -1032,7 +1032,7 @@ class AdminController extends AbstractController {
             throw new AccessDeniedException();
         }
 
-        $form = $this->createForm(new ImportText());
+        $form = $this->createForm(ImportText::class);
 
         $form->handleRequest($request);
 
@@ -1068,7 +1068,7 @@ class AdminController extends AbstractController {
 
         $questions = $this->_prep_question_list('checkbox');
 
-        $form = $this->createForm(new ExportForm());
+        $form = $this->createForm(ExportForm::class);
 
         $form->handleRequest($request);
 

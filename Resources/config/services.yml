@@ -14,11 +14,53 @@ services:
           - { name: form.type }
 
     paustian_quickcheck_module.form.tfquestion_type:
-            class: Paustian\QuickcheckModule\Form\TFQuestion
+          class: Paustian\QuickcheckModule\Form\TFQuestion
+          arguments:
+            - "@translator.default"
+          tags:
+            - { name: form.type }
+
+    paustian_quickcheck_module.form.categorizeform_type:
+          class: Paustian\QuickcheckModule\Form\CategorizeForm
+          arguments:
+            - "@translator.default"
+          tags:
+            - { name: form.type }
+
+    paustian_quickcheck_module.form.MAnsQuestion_type:
+          class: Paustian\QuickcheckModule\Form\MAnsQuestion
+          arguments:
+            - "@translator.default"
+          tags:
+            - { name: form.type }
+
+    paustian_quickcheck_module.form.MatchQuestion_type:
+              class: Paustian\QuickcheckModule\Form\MatchQuestion
+              arguments:
+                - "@translator.default"
+              tags:
+                - { name: form.type }
+
+    paustian_quickcheck_module.form.MCQuestion_type:
+            class: Paustian\QuickcheckModule\Form\MCQuestion
             arguments:
               - "@translator.default"
             tags:
               - { name: form.type }
+
+    paustian_quickcheck_module.form.ExportForm_type:
+              class: Paustian\QuickcheckModule\Form\ExportForm
+              arguments:
+                - "@translator.default"
+              tags:
+                - { name: form.type }
+
+    paustian_quickcheck_module.form.ImportForm_type:
+              class: Paustian\QuickcheckModule\Form\ImportText
+              arguments:
+                - "@translator.default"
+              tags:
+                - { name: form.type }
 
     paustian_quickcheck_module.container.link_container:
         class: Paustian\QuickcheckModule\Container\LinkContainer

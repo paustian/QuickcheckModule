@@ -3,7 +3,7 @@ namespace Paustian\QuickcheckModule\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Zikula\CategoriesModule\Form\Type\CategoriesType;
+use Zikula\Common\Translator\TranslatorInterface;
 /**
  * Description of CategorizeForm
  * Set up the elements for a Exam form. A simple forms
@@ -12,11 +12,29 @@ use Zikula\CategoriesModule\Form\Type\CategoriesType;
  * 
  */
 class CategorizeForm extends AbstractType {
+
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+
+
+    /**
+     * BlockType constructor.
+     * @param TranslatorInterface $translator
+     */
+    public function __construct(
+        TranslatorInterface $translator
+    ) {
+        $this->translator = $translator;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Recategorize'))
-            ->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' => __('Cancel')));
+            ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => $this->translator->__('Recategorize')))
+            ->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' => $this->translator->__('Cancel')));
         
         
         $builder->add('categories', 'Zikula\CategoriesModule\Form\Type\CategoriesType', [
@@ -28,7 +46,7 @@ class CategorizeForm extends AbstractType {
         ]);
     }
 
-    public function getName()
+    public function getPrefixName()
     {
         return 'paustianquickcheckmodule_categorizeform';
     }

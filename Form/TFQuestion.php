@@ -32,7 +32,6 @@ class TFQuestion extends AbstractType {
     /**
      * BlockType constructor.
      * @param TranslatorInterface $translator
-     * @param LocaleApiInterface $localeApi
      */
     public function __construct(
         TranslatorInterface $translator
@@ -75,7 +74,7 @@ class TFQuestion extends AbstractType {
      * OptionsResolverInterface is @deprecated and is supposed to be replaced by
      * OptionsResolver but docs not clear on implementation
      *
-     * @param OptionsResolverInterface $resolver
+     * @param OptionsResolver $resolver
      */
     public function setDefaultOptions(OptionsResolver $resolver) {
         $resolver->setDefaults(array(
