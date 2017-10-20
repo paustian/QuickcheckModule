@@ -48,6 +48,13 @@ services:
             tags:
               - { name: form.type }
 
+    paustian_quickcheck_module.form.TextQuestion_type:
+            class: Paustian\QuickcheckModule\Form\TextQuestion
+            arguments:
+              - "@translator.default"
+            tags:
+              - { name: form.type }
+
     paustian_quickcheck_module.form.ExportForm_type:
               class: Paustian\QuickcheckModule\Form\ExportForm
               arguments:

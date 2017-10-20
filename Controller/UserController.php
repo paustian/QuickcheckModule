@@ -60,7 +60,7 @@ class UserController extends AbstractController {
 
         $categoryData = $propertiesdata[0]['subcategories'];
 
-        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_index.html.twig', ['categories' => $categoryData])->getContent());
+        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_index.html.twig', ['categories' => $categoryData]);
     }
 
     /**
@@ -69,7 +69,15 @@ class UserController extends AbstractController {
      * @return array
      */
     private function _getCategories() {
+        $categoryRegistry = $this->container->get('zikula_categories_module.category_registry_repository')->findOneBy([
+            'modname' => $this->getName(),
+            'entityname' => 'QuickcheckQuestionEntity',
+            'property' => 'Main'
+        ]);
+
+
         /*This does not work and I need to fix it. Look at how the Pages module does it. I clearly grabbed this code from the pages module
+
         $categoryRegistry = $this->
             get('zikula_categories_module.api.category_registry')->getModuleCategoryIds(
             \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity');
