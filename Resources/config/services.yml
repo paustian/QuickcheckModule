@@ -13,6 +13,13 @@ services:
         tags:
           - { name: form.type }
 
+    paustian_quickcheck_module.form.tfquestion_type:
+            class: Paustian\QuickcheckModule\Form\TFQuestion
+            arguments:
+              - "@translator.default"
+            tags:
+              - { name: form.type }
+
     paustian_quickcheck_module.container.link_container:
         class: Paustian\QuickcheckModule\Container\LinkContainer
         arguments:

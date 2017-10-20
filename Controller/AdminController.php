@@ -522,7 +522,7 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new TFQuestion(), $question);
+        $form = $this->createForm(TFQuestion::class, $question);
 
         $form->handleRequest($request);
 
