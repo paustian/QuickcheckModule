@@ -5,6 +5,8 @@ services:
         class: Paustian\QuickcheckModule\HookHandler\UiHooksProviderHandler
         arguments:
           - "@request_stack"
+        tags:
+        - { name: zikula.hook_provider, areaName: "provider.quickcheck.ui_hooks.quickcheck" }
 
     paustian_quickcheck_module.form.examform_type:
         class: Paustian\QuickcheckModule\Form\ExamForm

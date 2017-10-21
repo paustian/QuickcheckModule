@@ -7,6 +7,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Zikula\Bundle\HookBundle\Hook\DisplayHook;
 use Zikula\Bundle\HookBundle\Hook\ProcessHook;
 use Zikula\Bundle\HookBundle\Hook\DisplayHookResponse;
+use Zikula\Bundle\HookBundle\HookProviderInterface;
+use Zikula\Bundle\HookBundle\Category\UiHooksCategory;
 
 /**
  * Copyright 2017 Timothy Paustian
@@ -15,12 +17,14 @@ use Zikula\Bundle\HookBundle\Hook\DisplayHookResponse;
  *
  */
 
-class UiHooksProviderHandler
+
+class UiHooksProviderHandler  implements HookProviderInterface
 {
     /**
      * @var RequestStack
      */
     private $requestStack;
+    private $serviceID;
 
     /**
      * ProviderHandler constructor.
@@ -29,16 +33,76 @@ class UiHooksProviderHandler
     public function __construct(RequestStack $requestStack)
     {
         $this->requestStack = $requestStack;
+        $this->serviceID = 'paustian_quickcheck_module.hook_handler';
     }
+
+    public function getOwner()
+    {
+        return 'PaustianQuickcheckModule';
+    }
+
+    public function getCategory()
+    {
+        return UiHooksCategory::NAME;
+    }
+
+    public function getProviderTypes()
+    {
+        return [
+            UiHooksCategory::TYPE_DISPLAY_VIEW => 'uiView',
+            UiHooksCategory::TYPE_PROCESS_DELETE => 'processDelete',
+            UiHooksCategory::TYPE_PROCESS_EDIT => 'processEdit'
+        ];
+    }
+
 
     public function uiView(DisplayHook $hook)
     {
         $hook->setResponse(new DisplayHookResponse(HookContainer::PROVIDER_UIAREANAME, 'This is the quickcheck Response'));
     }
 
+    public function processDelete(ProcessHook $hook)
+    {
+        $this->requestStack->getMasterRequest()->getSession()->getFlashBag()->add('success', 'Ui hook delete properly processed!');
+    }
+
     public function processEdit(ProcessHook $hook)
     {
-        $this->requestStack->getMasterRequest()->getSession()->getFlashBag()->add('success', 'Ui hook properly processed!');
+        $this->requestStack->getMasterRequest()->getSession()->getFlashBag()->add('success', 'Ui hook edit properly processed!');
+    }
+
+    /**
+     * Translated string to display as a title in the hook UI
+     * e.g. return $translator->__('FooHook FormAware Provider');
+     * @return string
+     */
+    public function getTitle()
+    {
+        // TODO: Implement getTitle() method.
+        return 'Quickcheck quiz provider';
+    }
+
+    /**
+     * Sets the container service id for this class
+     * @see \Zikula\Bundle\HookBundle\ServiceIdTrait
+     * @param string $serviceId
+     */
+    public function setServiceId($serviceId)
+    {
+        // TODO: Implement setServiceId() method.
+        $this->serviceID = $serviceId;
+
+    }
+
+    /**
+     * Gets the container service id for this class
+     * @see \Zikula\Bundle\HookBundle\ServiceIdTrait
+     * @return string
+     */
+    public function getServiceId()
+    {
+        // TODO: Implement getServiceId() method.
+        return $this->serviceID;
     }
 }
 /*class UiHooksProviderHandler extends AbstractHookListener {
