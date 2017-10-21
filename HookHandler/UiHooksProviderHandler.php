@@ -9,6 +9,7 @@ use Zikula\Bundle\HookBundle\Hook\ProcessHook;
 use Zikula\Bundle\HookBundle\Hook\DisplayHookResponse;
 use Zikula\Bundle\HookBundle\HookProviderInterface;
 use Zikula\Bundle\HookBundle\Category\UiHooksCategory;
+use Zikula\Bundle\HookBundle\ServiceIdTrait;
 
 /**
  * Copyright 2017 Timothy Paustian
@@ -20,11 +21,13 @@ use Zikula\Bundle\HookBundle\Category\UiHooksCategory;
 
 class UiHooksProviderHandler  implements HookProviderInterface
 {
+    use ServiceIdTrait;
+
     /**
      * @var RequestStack
      */
     private $requestStack;
-    private $serviceID;
+
 
     /**
      * ProviderHandler constructor.
@@ -33,7 +36,6 @@ class UiHooksProviderHandler  implements HookProviderInterface
     public function __construct(RequestStack $requestStack)
     {
         $this->requestStack = $requestStack;
-        $this->serviceID = 'paustian_quickcheck_module.hook_handler';
     }
 
     public function getOwner()
@@ -80,29 +82,6 @@ class UiHooksProviderHandler  implements HookProviderInterface
     {
         // TODO: Implement getTitle() method.
         return 'Quickcheck quiz provider';
-    }
-
-    /**
-     * Sets the container service id for this class
-     * @see \Zikula\Bundle\HookBundle\ServiceIdTrait
-     * @param string $serviceId
-     */
-    public function setServiceId($serviceId)
-    {
-        // TODO: Implement setServiceId() method.
-        $this->serviceID = $serviceId;
-
-    }
-
-    /**
-     * Gets the container service id for this class
-     * @see \Zikula\Bundle\HookBundle\ServiceIdTrait
-     * @return string
-     */
-    public function getServiceId()
-    {
-        // TODO: Implement getServiceId() method.
-        return $this->serviceID;
     }
 }
 /*class UiHooksProviderHandler extends AbstractHookListener {
