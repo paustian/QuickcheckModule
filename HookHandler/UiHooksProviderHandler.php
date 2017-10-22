@@ -4,12 +4,13 @@ namespace Paustian\QuickcheckModule\HookHandler;
 
 
 use Symfony\Component\HttpFoundation\RequestStack;
-use Zikula\Bundle\HookBundle\Hook\DisplayHook;
-use Zikula\Bundle\HookBundle\Hook\ProcessHook;
-use Zikula\Bundle\HookBundle\Hook\DisplayHookResponse;
-use Zikula\Bundle\HookBundle\HookProviderInterface;
 use Zikula\Bundle\HookBundle\Category\UiHooksCategory;
+use Zikula\Bundle\HookBundle\Hook\DisplayHook;
+use Zikula\Bundle\HookBundle\Hook\DisplayHookResponse;
+use Zikula\Bundle\HookBundle\Hook\ProcessHook;
+use Zikula\Bundle\HookBundle\HookProviderInterface;
 use Zikula\Bundle\HookBundle\ServiceIdTrait;
+use Zikula\Common\Translator\TranslatorInterface;
 
 /**
  * Copyright 2017 Timothy Paustian
@@ -24,6 +25,11 @@ class UiHooksProviderHandler  implements HookProviderInterface
     use ServiceIdTrait;
 
     /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    /**
      * @var RequestStack
      */
     private $requestStack;
@@ -33,14 +39,22 @@ class UiHooksProviderHandler  implements HookProviderInterface
      * ProviderHandler constructor.
      * @param RequestStack $requestStack
      */
-    public function __construct(RequestStack $requestStack)
+    public function __construct(TranslatorInterface $translator,
+                                RequestStack $requestStack)
     {
+        $this->translator = $translator;
         $this->requestStack = $requestStack;
+
     }
 
     public function getOwner()
     {
         return 'PaustianQuickcheckModule';
+    }
+
+    public function getTitle()
+    {
+        return $this->translator->__('Quickcheck Display Provider');
     }
 
     public function getCategory()
@@ -60,28 +74,18 @@ class UiHooksProviderHandler  implements HookProviderInterface
 
     public function uiView(DisplayHook $hook)
     {
-        $hook->setResponse(new DisplayHookResponse(HookContainer::PROVIDER_UIAREANAME, 'This is the quickcheck Response'));
+        $hook->setResponse(new DisplayHookResponse('provider.paustianquickcheckmodule.ui_hooks.quickcheck', $this->translator__('This is the quickcheck Response')));
     }
 
     public function processDelete(ProcessHook $hook)
     {
+
         $this->requestStack->getMasterRequest()->getSession()->getFlashBag()->add('success', 'Ui hook delete properly processed!');
     }
 
     public function processEdit(ProcessHook $hook)
     {
         $this->requestStack->getMasterRequest()->getSession()->getFlashBag()->add('success', 'Ui hook edit properly processed!');
-    }
-
-    /**
-     * Translated string to display as a title in the hook UI
-     * e.g. return $translator->__('FooHook FormAware Provider');
-     * @return string
-     */
-    public function getTitle()
-    {
-        // TODO: Implement getTitle() method.
-        return 'Quickcheck quiz provider';
     }
 }
 /*class UiHooksProviderHandler extends AbstractHookListener {

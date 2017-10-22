@@ -1,12 +1,13 @@
  # Hook handlers
  
 services:
-    paustian_quickcheck_module.hook_handler:
+    paustian_quickcheck_module.hook_provider.ui_hooks_provider:
         class: Paustian\QuickcheckModule\HookHandler\UiHooksProviderHandler
         arguments:
+          - "@translator.default"
           - "@request_stack"
         tags:
-        - { name: zikula.hook_provider, areaName: "provider.quickcheck.ui_hooks.quickcheck" }
+        - { name: zikula.hook_provider, areaName: "provider.paustianquickcheckmodule.ui_hooks.quickcheck" }
 
     paustian_quickcheck_module.form.examform_type:
         class: Paustian\QuickcheckModule\Form\ExamForm
