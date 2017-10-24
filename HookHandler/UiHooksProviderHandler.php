@@ -3,6 +3,7 @@
 namespace Paustian\QuickcheckModule\HookHandler;
 
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Zikula\Bundle\HookBundle\Category\UiHooksCategory;
 use Zikula\Bundle\HookBundle\Hook\DisplayHook;
@@ -11,6 +12,11 @@ use Zikula\Bundle\HookBundle\Hook\ProcessHook;
 use Zikula\Bundle\HookBundle\HookProviderInterface;
 use Zikula\Bundle\HookBundle\ServiceIdTrait;
 use Zikula\Common\Translator\TranslatorInterface;
+use Zikula\PermissionsModule\Api\ApiInterface\PermissionApiInterface;
+use Paustian\QuickcheckModule\Entity\Repository\QuickcheckExamRepository;
+use Symfony\Component\Templating\EngineInterface;
+use Zikula\Core\UrlInterface;
+
 
 /**
  * Copyright 2017 Timothy Paustian
@@ -30,6 +36,21 @@ class UiHooksProviderHandler  implements HookProviderInterface
     private $translator;
 
     /**
+     * @var PermissionApiInterface
+     */
+    private $permissionApi;
+
+    /**
+     * @var EngineInterface
+     */
+    private $templating;
+
+    /**
+     * @var EntityManager
+     */
+    private $entityManager;
+
+    /**
      * @var RequestStack
      */
     private $requestStack;
@@ -40,11 +61,16 @@ class UiHooksProviderHandler  implements HookProviderInterface
      * @param RequestStack $requestStack
      */
     public function __construct(TranslatorInterface $translator,
+                                PermissionApiInterface $permissionApi,
+                                EngineInterface $templating,
+                                EntityManager $entityManager,
                                 RequestStack $requestStack)
     {
         $this->translator = $translator;
+        $this->permissionApi = $permissionApi;
+        $this->templating = $templating;
+        $this->entityManager = $entityManager;
         $this->requestStack = $requestStack;
-
     }
 
     public function getOwner()
@@ -74,7 +100,63 @@ class UiHooksProviderHandler  implements HookProviderInterface
 
     public function uiView(DisplayHook $hook)
     {
-        $hook->setResponse(new DisplayHookResponse('provider.paustianquickcheckmodule.ui_hooks.quickcheck', $this->translator__('This is the quickcheck Response')));
+
+        // Security check
+        $is_admin = $this->permissionApi->hasPermission('Quickcheck::', '::', ACCESS_ADMIN);
+        $route_url = $hook->getUrl();
+        if(isset($route_url)){
+            $return_url = $route_url->getRoute();
+        } else {
+            $return_url = "";
+        }
+        $id = $hook->getId();
+        $repo = $this->entityManager->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
+        $examObj = $repo->get_exam($id);
+        $exams = null;
+        $admininterface = "";
+        if ($is_admin) {
+            $qb2 = $this->entityManager->createQueryBuilder();
+
+            // add select and from params
+            $qb2->select('u')
+                ->from('PaustianQuickcheckModule:QuickcheckExamEntity', 'u', 'u.quickcheckname');
+            $query2 = $qb2->getQuery();
+            $exams = $query2->getResult();
+            $admininterface = $this->templating->render('PaustianQuickcheckModule:Hook:quickcheck.addquiz.html.twig', [
+                'exams' => $exams,
+                'art_id' => $id,
+                'return_url' => $return_url]);
+        }
+        if (false === $examObj) {
+            //Now just use the templating to renger a twig template and send it as a string back as a response.
+            if ($is_admin) {
+                $content = $admininterface;
+            } else {
+                $content = "";
+            }
+        } else {
+            //render the exam.
+            $sq_ids = array();
+            $letters = array();
+            $questions = array();
+            $examQuestions = $examObj->getQuickcheckquestions();
+            $examName = $examObj->getQuickcheckname();
+
+            $repo->render_quiz($examQuestions, $questions, $sq_ids, $letters);
+
+            if (!$is_admin) {
+                $admininterface = "";
+            }
+            $content = $this->templating->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
+                'q_ids' => $sq_ids,
+                'questions' => $questions,
+                'return_url' => $return_url,
+                'exam_name' => $examName,
+                'admininterface' => $admininterface,
+                'print' => false]);
+        }
+        $response = new DisplayHookResponse($this->getServiceId(), $content);
+        $hook->setResponse($response);
     }
 
     public function processDelete(ProcessHook $hook)
@@ -93,63 +175,7 @@ class UiHooksProviderHandler  implements HookProviderInterface
 
     public function display_view(DisplayHook $hook) {
 
-        // Security check
-        $is_admin = SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_ADMIN);
-        $route_url = $hook->getUrl();
-        if(isset($route_url)){
-            $return_url = $route_url->getRoute();
-        } else {
-            $return_url = "";
-            //You need to 
-            //throw new \Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException($this->__("A return url must be supplied in the subscriber."));
-        }
-            $id = $hook->getId();
-        $repo = $this->entityManager->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
-        $examObj = $repo->get_exam($id);
-        $exams = null;
-        $admininterface = "";
-        if ($is_admin) {
-            $qb2 = $this->entityManager->createQueryBuilder();
 
-            // add select and from params
-            $qb2->select('u')
-                    ->from('PaustianQuickcheckModule:QuickcheckExamEntity', 'u', 'u.quickcheckname');
-            $query2 = $qb2->getQuery();
-            $exams = $query2->getResult();
-            $admininterface = $this->renderEngine->render('PaustianQuickcheckModule:Hook:quickcheck.addquiz.html.twig', [
-                'exams' => $exams,
-                'art_id' => $id,
-                'return_url' => $return_url]);
-        }
-        if (false === $examObj) {
-            //Now just use the renderEngine to renger a twig template and send it as a string back as a response.
-            if ($is_admin) {
-                $content = $admininterface;
-            } else {
-                return null;
-            }
-        } else {
-            //render the exam.
-            $sq_ids = array();
-            $letters = array();
-            $questions = array();
-            $examQuestions = $examObj->getQuickcheckquestions();
-            $examName = $examObj->getQuickcheckname();
-
-            $repo->render_quiz($examQuestions, $questions, $sq_ids, $letters);
-
-            if (!$is_admin) {
-                $admininterface = "";
-            }
-            $content = $this->renderEngine->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
-                'q_ids' => $sq_ids,
-                'questions' => $questions,
-                'return_url' => $return_url,
-                'exam_name' => $examName,
-                'admininterface' => $admininterface]);
-        }
-        $response = new DisplayHookResponse(QuickcheckModuleVersion::QCPROVIDER_UIAREANAME, $content);
-        $hook->setResponse($response);
     }
 
     public function process_delete(ProcessHook $hook) {

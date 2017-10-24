@@ -1,11 +1,14 @@
  # Hook handlers
  
 services:
-    paustian_quickcheck_module.hook_provider.ui_hooks_provider:
+    paustian_quickcheck_module.hook_provider.ui_hooks_hooks_provider:
         class: Paustian\QuickcheckModule\HookHandler\UiHooksProviderHandler
         arguments:
-          - "@translator.default"
-          - "@request_stack"
+          - '@translator.default'
+          - '@zikula_permissions_module.api.permission'
+          - '@templating'
+          - '@doctrine.orm.entity_manager'
+          - '@request_stack'
         tags:
         - { name: zikula.hook_provider, areaName: "provider.paustianquickcheckmodule.ui_hooks.quickcheck" }
 
