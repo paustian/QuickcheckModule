@@ -24,7 +24,8 @@
             "displayname": "Quickcheck Module",
             "oldnames": [],
             "capabilities": {
-                "admin": {"route": "paustianwebsitefeemodule_admin_edit"}
+                "admin": {"route": "paustianquickcheckmodule_admin_modify"},
+                "user": {"route": "paustianquickcheckmodule_user_index"}
             },
             "securityschema": {
                 "PaustianQuickcheckModule::": "exam::quiz"

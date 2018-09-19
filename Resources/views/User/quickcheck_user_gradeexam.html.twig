@@ -43,11 +43,11 @@
         {% if question.quickcheckqtype == 2 %} {# true/false #}
             {% if question.quickcheckqanswer == student_answers[loop.index0] %}
                 {% if question.quickcheckqanswer == 'yes' %}
-                    <p><span class="fa fa-thumbs-o-up"></span>{{__('True') }} {{__('Your answer') }}</p>
+                    <p><span class="fa fa-thumbs-o-up"></span>{{__('True') }} {{__('- Correct - Your answer') }}</p>
                     <p>{{__('False') }}</p>
                 {% else %}
                     <p>{{__('True') }}</p>
-                    <p><span class="fa fa-thumbs-o-up"></span>{{__('False') }} {{__('Your answer') }}</p> 
+                    <p><span class="fa fa-thumbs-o-up"></span>{{__('False') }} {{__('Correct - Your answer') }}</p>
                 {% endif %}
             {% else %}
                 {% if question.quickcheckqanswer == 'yes' %}
