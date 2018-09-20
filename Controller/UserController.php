@@ -57,10 +57,16 @@ class UserController extends AbstractController {
         }
 
         $categoryData = $this->_getCategories();
+        $counts = [];
+        foreach($categoryData as $categoryItem){
+            $counts[$categoryItem['id']] = $this->_countItems($categoryItem['id']);
+        }
 
         //$categoryData = $propertiesdata[0]['subcategories'];
 
-        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_index.html.twig', ['categories' => $categoryData]);
+        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_index.html.twig',
+                ['categories' => $categoryData,
+                    'counts' => $counts]);
     }
 
     /**
@@ -84,20 +90,18 @@ class UserController extends AbstractController {
      *
      * @return integer number of items held by this module
      */
-    private function countItems($args) {
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->get('doctrine.entitymanager');
+    private function _countItems($category) {
 
-        if (isset($args['category']) && !empty($args['category'])) {
-            if (is_array($args['category'])) {
-                $args['category'] = $args['category']['Main'][0];
-            }
+        $em = $this->getDoctrine()->getManager();
+
+        if (isset($category) && !empty($category)) {
             $qb = $em->createQueryBuilder();
+
             $qb->select('count(p)')
                     ->from('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', 'p')
                     ->join('p.categories', 'c')
                     ->where('c.category = :categories')
-                    ->setParameter('categories', $args['category']);
+                    ->setParameter('categories', $category);
 
             return $qb->getQuery()->getSingleScalarResult();
         }
@@ -105,43 +109,6 @@ class UserController extends AbstractController {
         $qb->select('count(p)')->from('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', 'p');
 
         return $qb->getQuery()->getSingleScalarResult();
-    }
-
-    /**
-     * sort_cat_array
-     * Sort an array based on the sort value of the array
-     * This is used to sort a category array before display
-     * Date: July 11 2010
-     * @author Timothy Paustian
-     * @param array $a one value in the array
-     * @param array $b secont value in array to compare
-     * @return (0 if same, -1 if b less than a, 1 if b more than a)
-     */
-    static function sort_cat_array($a, $b) {
-        if ($a['sort'] == $b['sort']) {
-            return 0;
-        }
-        return ($a['sort'] < $b['sort']) ? -1 : 1;
-    }
-
-    /**
-     * sort_by_id
-     * This sorts the array of questions based upon what is in the
-     * category id (sorts by chapter)
-     * Date: July 11 2010
-     * @author Timothy Paustian
-     * @param array $a one value in the array
-     * @param array $b secont value in array to compare
-     * @return (0 if same, -1 if b less than a, 1 if b more than a)
-     */
-    static function sort_by_catid($a, $b) {
-//stopped here. I need to sort the question by their cat id, makes it easy for picking them out
-        $a_id = $a['__CATEGORIES__']['Main']['sort_value'];
-        $b_id = $b['__CATEGORIES__']['Main']['sort_value'];
-        if ($a_id == $b_id) {
-            return 0;
-        }
-        return ($a_id < $b_id) ? -1 : 1;
     }
 
     /**
@@ -213,7 +180,8 @@ class UserController extends AbstractController {
         return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                     'q_ids' => \serialize($sq_ids),
                     'questions' => $quiz_questions,
-                    'return_url' => $return_url,
+                    'return_url' => $ret_url,
+                    'print' => false,
                     'exam_name' => $this->__('Practice Exam')])->getContent());
     }
 
