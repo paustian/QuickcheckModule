@@ -109,6 +109,7 @@ class UiHooksProviderHandler  implements HookProviderInterface
         } else {
             $return_url = "";
         }
+        //todo:Check to make sure this is getting the ID we expect from the book. It may be something else.
         $id = $hook->getId();
         $repo = $this->entityManager->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
         $examObj = $repo->get_exam($id);
