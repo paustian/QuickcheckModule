@@ -56,9 +56,9 @@ class UserController extends AbstractController {
             throw new AccessDeniedException();
         }
 
-        list($properties, $propertiesdata) = $this->_getCategories();
+        $categoryData = $this->_getCategories();
 
-        $categoryData = $propertiesdata[0]['subcategories'];
+        //$categoryData = $propertiesdata[0]['subcategories'];
 
         return $this->render('PaustianQuickcheckModule:User:quickcheck_user_index.html.twig', ['categories' => $categoryData]);
     }
@@ -69,34 +69,12 @@ class UserController extends AbstractController {
      * @return array
      */
     private function _getCategories() {
-        $categoryRegistry = $this->container->get('zikula_categories_module.category_registry_repository')->findOneBy([
-            'modname' => $this->getName(),
-            'entityname' => 'QuickcheckQuestionEntity',
-            'property' => 'Main'
-        ]);
-
-
-        /*This does not work and I need to fix it. Look at how the Pages module does it. I clearly grabbed this code from the pages module
-
-        $categoryRegistry = $this->
-            get('zikula_categories_module.api.category_registry')->getModuleCategoryIds(
-            \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity');
-        $properties = array_keys($categoryRegistry);
-        $propertiesdata = array();
-        foreach ($properties as $property) {
-            $rootcat = CategoryUtil::getCategoryByID($categoryRegistry[$property]);
-            if (!empty($rootcat)) {
-                $rootcat['path'] .= '/';
-                // add this to make the relative paths of the subcategories with ease - mateo
-                $subcategories = CategoryUtil::getCategoriesByParentID($rootcat['id']);
-                foreach ($subcategories as $k => $category) {
-                    $subcategories[$k]['count'] = $this->countItems(array('category' => $category['id'], 'property' => $property));
-                }
-                $propertiesdata[] = array('name' => $property, 'rootcat' => $rootcat, 'subcategories' => $subcategories);
-            }
-        }
-
-        return array($properties, $propertiesdata);*/
+        $em = $this->getDoctrine()->getManager();
+        $registryRepository = $em->getRepository('ZikulaCategoriesModule:CategoryRegistryEntity');
+        $categoryRegistries = $registryRepository->findBy(['modname' => 'PaustianQuickcheckModule']);
+        $baseCategory = $categoryRegistries[0]->getCategory();
+        $children = $baseCategory->getChildren();
+        return $children->toArray();
     }
 
     /**
@@ -382,7 +360,6 @@ class UserController extends AbstractController {
                     //we don't grade text types
                     break;
                 case AdminController::_QUICKCHECK_TF_TYPE:
-                    //do a quick translation from 1/0 to yes/no
                     if ($student_answer === $question->getQuickcheckqanswer()) {
                         $score += 1;
                     }
