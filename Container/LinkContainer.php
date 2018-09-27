@@ -103,6 +103,9 @@ class LinkContainer implements LinkContainerInterface
             $submenulinks[] = array(
                 'url' => $this->router->generate('paustianquickcheckmodule_admin_editmatchquest'),
                 'text' => $this->translator->__('Create Matching Question'));
+            $submenulinks[] = array(
+                'url' => $this->router->generate('paustianquickcheckmodule_admin_findmyid'),
+                'text' => $this->translator->__('List all the IDs of Questions'));
             $links[] = array(
                 'url' => $this->router->generate('paustianquickcheckmodule_admin_editquestions'),
                 'text' => $this->translator->__('Edit Questions'),

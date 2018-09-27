@@ -386,9 +386,9 @@ class UserController extends AbstractController {
                     }
                     break;
                 case AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE:
-                    $mc_answers = explode('_', $student_answer);
-                    $score += $mc_answers[0] / 100;
-                    $ur_answer = $mc_answers[1];
+                    preg_match("/([0-9]{1,3}).*?([0-9])/s", $student_answer,$matches);
+                    $score += $matches[1] / 100;
+                    $ur_answer = $matches[2];
                     break;
             }
             //save the questions in an array for display.

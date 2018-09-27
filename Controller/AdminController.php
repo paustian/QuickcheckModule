@@ -1173,4 +1173,34 @@ class AdminController extends AbstractController {
         return $response;
     }
 
+    /**
+     * @Route("/findmyid")
+     *
+     * Match the ID of a question using the first 250 charaters of the stem. This is useful for students trying to look up the QID,
+     * @return Response
+     * @throws AccessDeniedException
+     *
+     */
+    public function findmyidAction(){
+        // Security check - important to do this as early as possible to avoid
+        // potential security holes or just too much wasted processing
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
+            throw new AccessDeniedException();
+        }
+
+        $em = $this->getDoctrine()->getManager();
+        //get them all
+        $qb = $em->createQueryBuilder();
+        // add select and from params
+        $qb->select('u')
+            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
+            ->where('u.id > ?1' )
+            ->setParameter(1, '1300');
+        $query = $qb->getQuery();
+        // execute query
+        $questions = $query->getResult();
+
+        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_findmyid.html.twig', ['questions' => $questions]);
+    }
+
 }
