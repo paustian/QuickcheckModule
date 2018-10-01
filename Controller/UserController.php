@@ -376,14 +376,14 @@ class UserController extends AbstractController {
                             //mark this position as one that was checked.
                             $marked_answers[$mc_answers[1]] = (int) $mc_answers[1];
                         }
-                        $ur_answer = $marked_answers;
-                        //substract 
-                        $deduction = (count($student_answer) - $num_that_should) * (100 / $array_size);
-                        if ($deduction > 0) {
-                            $total -= $deduction;
-                        }
-                        $score += $total / 100;
                     }
+                    $ur_answer = $marked_answers;
+                    //substract
+                    $deduction = (count($student_answer) - $num_that_should) * (100 / $array_size);
+                    if ($deduction > 0) {
+                        $total -= $deduction;
+                    }
+                    $score += $total / 100;
                     break;
                 case AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE:
                     preg_match("/([0-9]{1,3}).*?([0-9])/s", $student_answer,$matches);

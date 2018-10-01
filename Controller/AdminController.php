@@ -1122,6 +1122,9 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
     public function upgradeoldquestionsAction() {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
         //walk through all the questions and get rid of serialized data.
         //get the questions
         $em = $this->getDoctrine()->getManager();
@@ -1203,4 +1206,50 @@ class AdminController extends AbstractController {
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_findmyid.html.twig', ['questions' => $questions]);
     }
 
+    /**
+     * @Route("/cleanCatDupes")
+     *
+     * export the chosen questions. First step. This displays the interface to export the questions
+     * @return Response
+     * @throws AccessDeniedException
+     */
+
+    public function cleanCatDupesAction(){
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
+        //get all the questions
+        $em = $this->getDoctrine()->getManager();
+        // create a QueryBuilder instance
+        $qb = $em->createQueryBuilder();
+
+        // add select and from params
+        $qb->select('u')
+            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
+        // convert querybuilder instance into a Query object
+        $query = $qb->getQuery();
+        // execute query
+        $questions = $query->getResult();
+        $dups = 0;
+        foreach($questions as $question){
+            $qid = $question->getId();
+            //find it in the category table
+            $qb2 = $em->createQueryBuilder();
+            $qb2->select('u')
+                ->from('PaustianQuickcheckModule:QuickcheckQuestionCategory', 'u')
+                ->where('u.entity=:ent' )
+                ->setParameter('ent', $qid);
+            $query2 = $qb2->getQuery();
+            $result = $query2->getResult();
+            if(count($result) > 1){
+                //delete the second category
+                $em->remove($result[1]);
+                $dups++;
+            }
+        }
+        $em->flush();
+        $this->addFlash('status', $dups  . $this->__(" questions removed."));
+        $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
+        return $response;
+    }
 }
