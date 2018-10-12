@@ -127,8 +127,8 @@ class LinkContainer implements LinkContainerInterface
                 'url' => $this->router->generate('paustianquickcheckmodule_admin_findunanswered'),
                 'text' => $this->translator->__('Find unexplained questions'));
             $submenulinks2[] = array(
-                'url' => $this->router->generate('paustianquickcheckmodule_admin_upgradeoldquestions'),
-                'text' => $this->translator->__('Update old questions'));
+                'url' => $this->router->generate('paustianquickcheckmodule_getpreviewhtml'),
+                'text' => $this->translator->__('Get Preview'));
             $links[] = array(
                 'url' => $this->router->generate('paustianquickcheckmodule_admin_importquiz'),
                 'text' => $this->translator->__('Question Processing'),

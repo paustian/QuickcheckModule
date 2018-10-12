@@ -199,13 +199,13 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
 
         //Check to make sure the question has an answer
         if ($this->getQuickcheckqText() == "") {
-            $context->buildViolation(__('The question text cannot be empty'))
+            $context->buildViolation('The question text cannot be empty')
                     ->atPath('quickcheckqtext')
                     ->addViolation();
         }
         //Check to make sure there is an explanation
         if ($this->getQuickcheckqExpan() == "") {
-            $context->buildViolation(__('The question explanation cannot be empty'))
+            $context->buildViolation('The question explanation cannot be empty')
                     ->atPath('quickcheckqexpan')
                     ->addViolation();
         }
@@ -217,7 +217,7 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
             case AdminController::_QUICKCHECK_TF_TYPE:
             case AdminController::_QUICKCHECK_MATCHING_TYPE:
                 if ($answer == "") {
-                    $context->buildViolation(__('The answer to the question cannot be empty'))
+                    $context->buildViolation('The answer to the question cannot be empty')
                             ->atPath('quickcheckqanswer')
                             ->addViolation();
                 }
@@ -235,7 +235,7 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
                 }
                 if ($total_percent != 100 || !$hasOneAnswer) {
                     //It has to add to 100% if not, there is an error
-                    $context->buildViolation(__('Your answer must have one response that is set to 100% and the others set to 0%'))
+                    $context->buildViolation('Your answer must have one response that is set to 100% and the others set to 0%')
                             ->atPath('quickcheckqanswer')
                             ->addViolation();
                 }
@@ -249,7 +249,7 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
                 }
                 if ($total_percent != 100) {
                     //It has to add to 100% if not, there is an error
-                    $context->buildViolation(__('Your answer does not add up to 100%'))
+                    $context->buildViolation('Your answer does not add up to 100%')
                             ->atPath('quickcheckqanswer')
                             ->addViolation();
                 }

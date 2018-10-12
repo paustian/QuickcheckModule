@@ -744,6 +744,7 @@ class AdminController extends AbstractController {
         $html = $this->renderView('PaustianQuickcheckModule:Admin:quickcheck_admin_qpart.html.twig', [ 'questions' => $questions,
             'buttons' => $buttons]);
 
+
         return $html;
     }
 

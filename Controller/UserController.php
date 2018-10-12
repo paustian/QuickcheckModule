@@ -22,9 +22,9 @@
 
 namespace Paustian\QuickcheckModule\Controller;
 
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 use Zikula\Core\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -35,6 +35,8 @@ use CategoryUtil;
 use DataUtil;
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
+use Zikula\Core\Response\Ajax\ForbiddenResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class UserController extends AbstractController {
 
@@ -261,13 +263,13 @@ class UserController extends AbstractController {
         $repo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
         $repo->render_quiz($examQuestions, $questions, $sq_ids, $letters);
 
-        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
+        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                     'q_ids' => $sq_ids,
                     'questions' => $questions,
                     'return_url' => $return_url,
                     'exam_name' => $examName,
                     'admininterface' => '',
-                    'print' => $print]));
+                    'print' => $print]);
     }
 
      /**
@@ -406,6 +408,44 @@ class UserController extends AbstractController {
                     'percent' => $percent,
                     'letters' => $letters,
                     'student_answers' => $student_answers])->getContent());
+    }
+
+    /**
+     * @Route("/getpreviewhtml")
+     * @Method("GET")
+     * @param Request $request
+     * @return JsonResponse|FatalResponse|ForbiddenResponse bid or Ajax error
+     *
+     * Grab all comments associated with this module and item ID and return them to the caller
+     * The caller is a javascript, see the javascripts in Resources/public/js directory
+     */
+
+    public function getPreviewHtml(Request $request){
+        return "";
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_READ)) {
+            return new ForbiddenResponse($this->__('Access forbidden since you cannot read questions.'));
+        }
+        //fetch the parameters for the question
+        $questionText = $request->query->get('question');
+        $answer = $request->query->get('answer');
+        $type = $request->query->get('answer');
+        $question = new QuickcheckQuestionEntity();
+        $question->setQuickcheckqType($type);
+        $question->setQuickcheckqText($questionText);
+        $question->setQuickcheckqAnswer($answer);
+        //Create the type of object that we need for the renderexam template
+        $repo = $this->getDoctrine()->getManager()->getRepository("QuickcheckExamEntity");
+        $questions = $repo->unpackQuestion($question);
+        $response = $this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
+            'q_ids' => [0],
+            'questions' => $questions,
+            'return_url' => "",
+            'exam_name' => "Preview",
+            'admininterface' => '',
+            'print' => true]);
+        $jsonReply = ['html' => $response->getContent()];
+
+        return  new JsonResponse($jsonReply);
     }
 
 }
