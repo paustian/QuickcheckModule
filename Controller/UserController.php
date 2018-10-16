@@ -411,8 +411,8 @@ class UserController extends AbstractController {
     }
 
     /**
-     * @Route("/getpreviewhtml")
-     * @Method("GET")
+     * @Route("/getpreviewhtml", options={"expose"=true})
+     * @Method("POST")
      * @param Request $request
      * @return JsonResponse|FatalResponse|ForbiddenResponse bid or Ajax error
      *
@@ -420,29 +420,24 @@ class UserController extends AbstractController {
      * The caller is a javascript, see the javascripts in Resources/public/js directory
      */
 
-    public function getPreviewHtml(Request $request){
-        return "";
+    public function getpreviewhtmlAction(Request $request){
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_READ)) {
             return new ForbiddenResponse($this->__('Access forbidden since you cannot read questions.'));
         }
         //fetch the parameters for the question
-        $questionText = $request->query->get('question');
-        $answer = $request->query->get('answer');
-        $type = $request->query->get('answer');
+        $questionText = $request->get('question');
+        $answer = $request->get('answer');
+        $type = $request->get('type');
         $question = new QuickcheckQuestionEntity();
         $question->setQuickcheckqType($type);
         $question->setQuickcheckqText($questionText);
         $question->setQuickcheckqAnswer($answer);
         //Create the type of object that we need for the renderexam template
-        $repo = $this->getDoctrine()->getManager()->getRepository("QuickcheckExamEntity");
-        $questions = $repo->unpackQuestion($question);
-        $response = $this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
-            'q_ids' => [0],
-            'questions' => $questions,
-            'return_url' => "",
-            'exam_name' => "Preview",
-            'admininterface' => '',
-            'print' => true]);
+        $repo = $this->getDoctrine()->getManager()->getRepository("Paustian\QuickcheckModule\Entity\QuickcheckExamEntity");
+        $question = $repo->unpackQuestion($question);
+        $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
+        $response = $this->render('PaustianQuickcheckModule:User:quickcheck_user_preview.html.twig', ['letters' => $letters,
+            'question' => $question]);
         $jsonReply = ['html' => $response->getContent()];
 
         return  new JsonResponse($jsonReply);

@@ -1,0 +1,42 @@
+<p>{{ __("Question Preview") }}</p>
+    <p>1. {{ question.quickcheckqtext|raw }}</p>
+    {% if question.quickcheckqtype == 0 %} {# text #}
+        <p><textarea cols="60" rows="5" name="{{ question.id }}" required></textarea>
+    {%  endif %}
+    {% if question.quickcheckqtype == 1 %} {# multiple choice #}
+        <ol class="upper-alpha">
+            {% set answers = question.quickcheckqanswer %}
+            {% for answer in answers %}
+                <li><input type="radio" name="{{ question.id }}" value="{{ question.quickcheckqparam[loop.index0] }}_{{ loop.index0 }}" required> {{ answer|raw }}</li>
+            {% endfor %}
+        </ol>
+    {% endif %}
+    {% if question.quickcheckqtype == 2 %} {# true/false #}
+        <input type="radio" name="{{ question.id}}" value="1" required> {{__('True') }} <br/>
+        <input type="radio" name="{{ question.id }}" value="0" required> {{__('False') }}<br />
+    {% endif %}
+    {% if question.quickcheckqtype == 3 %} {# matching #}
+        <input name="order_{{ question.id }}" id="order_{{ question.id }}" type="hidden" />
+        {% set answers = question.quickcheckqanswer %}
+        <ul class="sortable_a">
+            {% for answer in answers %}
+                <li class="matching">{{ answer|raw }}</li>
+            {% endfor %}
+        </ul>
+        {% set params = question.quickcheckqparam[0] %}
+        {% set position = question.quickcheckqparam[1] %}
+        <ul class="sortable_a" id="sortable{{ question.id }}">
+            {% for match in params %}
+                <li class="matching" id="item_{{ position[loop.index0] }}">  <span class="fa fa-arrows-v"></span>  {{ match|raw }}</li>
+            {% endfor %}
+        </ul>
+        <br />
+    {% endif %}
+    {% if question.quickcheckqtype == 4 %} {# multiple answer #}
+        <ol class="upper-alpha">
+            {% set answers = question.quickcheckqanswer %}
+            {% for answer in answers %}
+                <li><input type="checkbox" name="{{ question.id }}[]" value="{{ question.quickcheckqparam[loop.index0] }}_{{ loop.index0 }}"> {{ answer|raw }}</li>
+            {% endfor %}
+        </ol>
+    {% endif %}

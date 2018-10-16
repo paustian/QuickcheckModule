@@ -16,10 +16,11 @@
         },
 
         cacheDom: function () {
-            this.$previewButton = $("button[id^=preview]");
+            this.$previewButton = $("button[id=preview_button]");
             this.$questionText = $("textarea[id=mc_question_quickcheckqtext]");
             this.$answerText = $("textarea[id=mc_question_quickcheckqanswer]");
             this.$type = $("input[id=type]");
+            this.$preview = $("#preview_div");
         },
 
         bindEvents: function () {
@@ -44,7 +45,21 @@
         },
 
         displayPreview: function(result, textStatus, jqXHR){
-            var htmlText = result.htmlText;
+            this.$preview.html(result.html);
+            this.$preview.dialog({
+                title: "Preview Question",
+                modal: true,
+                position: ["center", "top"],
+                show: "blind",
+                hide: "blind",
+                width: 400,
+                dialogClass: "ui-dialog-osx",
+                buttons: {
+                    "OK": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
         },
 
         sendAjax: function (url, data, options) {

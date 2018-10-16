@@ -82,3 +82,7 @@ tbody.exams {
 thead.exams {
     /* fallback */
 }
+
+.ui-dialog-osx {
+    text-align: left;
+}
