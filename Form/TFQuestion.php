@@ -42,7 +42,7 @@ class TFQuestion extends AbstractType {
                 ->add('quickcheckqtext', TextType::class, array('label' => $this->translator->__('Question'), 'required' => true))
                 ->add('quickcheckqexpan', TextareaType::class, array('label' => $this->translator->__('Explanation'), 'required' => true))
                 ->add('save', SubmitType::class, array('label' => 'Save Question'));
-        $builder->add('cancel', ButtonType::class, array('label' => $this->translator->__('Cancel')));
+
         $builder->add('quickcheckqanswer', ChoiceType::class, array(
             'choices' => array('True' => '1', 'False' => '0'),
             'required' => true,

@@ -5,7 +5,7 @@
     <div class="">
         <h3>
             <span class="fa fa-book"></span>
-            {{ exam_name }}  
+            {{ exam_name }}
         </h3>
         <p>{{ __("Answer the questions below and then hit the Grade Exam button") }}</p>
         <form action="{{ path('paustianquickcheckmodule_user_gradeexam') }}" method="post" enctype="application/x-www-form-urlencoded">
@@ -14,13 +14,20 @@
             {% for question in questions %}
                 <p>{{ loop.index }}. {{ question.quickcheckqtext|raw }}</p>
                 {% if question.quickcheckqtype == 0 %} {# text #}
-                    <p><textarea cols="60" rows="5" name="{{ question.id }}" required></textarea>
+                    {% if print==false %}
+                        <p><textarea cols="60" rows="5" name="{{ question.id }}" required></textarea>
+                    {%  else %}
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                    {%  endif %}
                 {%  endif %}
                 {% if question.quickcheckqtype == 1 %} {# multiple choice #}
                     <ol class="upper-alpha">
                         {% set answers = question.quickcheckqanswer %}
                         {% for answer in answers %}
-                                <li>{%  if print == false %}<input type="radio" name="{{ question.id }}" value="{{ question.quickcheckqparam[loop.index0] }}_{{ loop.index0 }}" required>{%  endif %} {{ answer|raw }}</li>
+                            <li>{%  if print == false %}<input type="radio" name="{{ question.id }}" value="{{ question.quickcheckqparam[loop.index0] }}_{{ loop.index0 }}" required>{%  endif %} {{ answer|raw }}</li>
                         {% endfor %}
                     </ol>
                 {% endif %}
@@ -36,14 +43,14 @@
                     <ul class="sortable_a">
                         {% for answer in answers %}
                             <li class="matching">{{ answer|raw }}</li>
-                            {% endfor %}
+                        {% endfor %}
                     </ul>
                     {% set params = question.quickcheckqparam[0] %}
                     {% set position = question.quickcheckqparam[1] %}
                     <ul class="sortable_a" id="sortable{{ question.id }}">
                         {% for match in params %}
                             <li class="matching" id="item_{{ position[loop.index0] }}">  <span class="fa fa-arrows-v"></span>  {{ match|raw }}</li>
-                            {% endfor %}
+                        {% endfor %}
                     </ul>
                     <br />
                 {% endif %}
@@ -52,7 +59,7 @@
                         {% set answers = question.quickcheckqanswer %}
                         {% for answer in answers %}
                             <li>{% if print==false %}<input type="checkbox" name="{{ question.id }}[]" value="{{ question.quickcheckqparam[loop.index0] }}_{{ loop.index0 }}">{% endif %} {{ answer|raw }}</li>
-                            {% endfor %}
+                        {% endfor %}
                     </ol>
                 {% endif %}
             {% endfor %}
@@ -72,16 +79,16 @@
 <script type="text/javascript">
     function setMatching() {
         {% for question in questions %}
-            {% if question.quickcheckqtype == 3 %}
-                jQuery("#sortable{{ question.id }}").sortable({
-                    update: function(event, ui) {
-                        var Order = jQuery(this).sortable('serialize');
+        {% if question.quickcheckqtype == 3 %}
+        jQuery("#sortable{{ question.id }}").sortable({
+            update: function(event, ui) {
+                var Order = jQuery(this).sortable('serialize');
 
-                        jQuery('#order_{{ question.id }}').val(Order);
-                    }
-                });
-                jQuery("#sortable{{ question.id }}").disableSelection();
-            {% endif %}
+                jQuery('#order_{{ question.id }}').val(Order);
+            }
+        });
+        jQuery("#sortable{{ question.id }}").disableSelection();
+        {% endif %}
         {% endfor %}
     };
     document.onreadystatechange = function () {

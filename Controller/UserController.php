@@ -179,7 +179,7 @@ class UserController extends AbstractController {
         //I need to change this so that it sends back it's own response. What this entails is just getting the data that it
         //needs and then sending it back.
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
-        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
+        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                     'q_ids' => \serialize($sq_ids),
                     'questions' => $quiz_questions,
                     'return_url' => $ret_url,

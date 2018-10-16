@@ -37,8 +37,7 @@ class MCQuestion extends AbstractType {
             ->add('quickcheckqanswer', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Answer'), 'required' => true))
             ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Explanation'), 'required' => true))
             ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => $this->translator->__('Save Question')));
-        $builder->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' =>  $this->translator->__('Cancel')));
-        
+
         $builder->add('quickcheckqtype', \Symfony\Component\Form\Extension\Core\Type\HiddenType::class, array('data' => AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE));
 
         $builder->add('categories', 'Zikula\CategoriesModule\Form\Type\CategoriesType', [
