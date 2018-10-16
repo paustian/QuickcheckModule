@@ -402,12 +402,12 @@ class UserController extends AbstractController {
         $percent = $score / count($q_ids) * 100;
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
 
-        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_gradeexam.html.twig', [
+        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_gradeexam.html.twig', [
                     'questions' => $display_questions,
                     'score' => $score,
                     'percent' => $percent,
                     'letters' => $letters,
-                    'student_answers' => $student_answers])->getContent());
+                    'student_answers' => $student_answers]);
     }
 
     /**
