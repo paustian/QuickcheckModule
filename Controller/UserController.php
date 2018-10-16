@@ -184,7 +184,7 @@ class UserController extends AbstractController {
                     'questions' => $quiz_questions,
                     'return_url' => $ret_url,
                     'print' => false,
-                    'exam_name' => $this->__('Practice Exam')])->getContent());
+                    'exam_name' => $this->__('Practice Exam')]);
     }
 
     /**
