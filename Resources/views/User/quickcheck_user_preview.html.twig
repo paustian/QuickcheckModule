@@ -1,7 +1,7 @@
 <p>{{ __("Question Preview") }}</p>
     <p>1. {{ question.quickcheckqtext|raw }}</p>
     {% if question.quickcheckqtype == 0 %} {# text #}
-        <p><textarea cols="60" rows="5" name="{{ question.id }}" required></textarea>
+        <p><textarea cols="60" rows="5" name="{{ question.id }}" required>{{ question.quickcheckqanswer }}</textarea>
     {%  endif %}
     {% if question.quickcheckqtype == 1 %} {# multiple choice #}
         <ol class="upper-alpha">

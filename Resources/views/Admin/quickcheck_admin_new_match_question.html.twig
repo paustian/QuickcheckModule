@@ -24,6 +24,7 @@ Green|Content</textarea>
                 {{ showflashes() }}
                 {{ form_start(form) }}
                 {{ form_errors(form) }}
+            <input id="type" type="hidden" name="type" value="3"> <!- matching type ->
                 <fieldset>
                     <legend>{{ __('Matching Question') }}</legend>
                     {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
@@ -43,5 +44,7 @@ Green|Content</textarea>
                 {{ form_end(form) }}
             </div>
         </div>
+</div>
+<div id="preview_div" title="Preview Question" style="text-align: left">
 </div>
 {{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

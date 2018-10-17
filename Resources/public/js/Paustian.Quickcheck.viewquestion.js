@@ -17,8 +17,8 @@
 
         cacheDom: function () {
             this.$previewButton = $("button[id=preview_button]");
-            this.$questionText = $("textarea[id=mc_question_quickcheckqtext]");
-            this.$answerText = $("textarea[id=mc_question_quickcheckqanswer]");
+            this.$questionText = $("textarea[id*=_quickcheckqtext]");
+            this.$answerText = $("textarea[id*=_quickcheckqanswer]");
             this.$type = $("input[id=type]");
             this.$preview = $("#preview_div");
         },
@@ -49,10 +49,9 @@
             this.$preview.dialog({
                 title: "Preview Question",
                 modal: true,
-                position: ["center", "top"],
                 show: "blind",
                 hide: "blind",
-                width: 400,
+                width: 600,
                 dialogClass: "ui-dialog-osx",
                 buttons: {
                     "OK": function () {
