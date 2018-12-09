@@ -574,6 +574,9 @@ class AdminController extends AbstractController {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
+            if($form->get('delete')->isClicked()){
+                return $this->deleteQuestionAction($request, $question);
+            }
             $fromModifyForm = $request->query->get('modify');
             $response = null;
             if ($fromModifyForm) {

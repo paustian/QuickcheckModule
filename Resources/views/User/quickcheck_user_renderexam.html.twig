@@ -12,7 +12,12 @@
             {% if print==false %}<input type="hidden" name="q_ids" value="{{ q_ids }}" />{% endif %}
             {% if print==false %}<input type="hidden" name="return_url" value="{{ return_url }}" />{% endif %}
             {% for question in questions %}
-                <p>{{ loop.index }}. {{ question.quickcheckqtext|raw }}</p>
+                {%  if print %}
+                    {% set qID = question.id %}
+                {% else %}
+                    {% set qID = "" %}
+                {% endif %}
+                <p>{{  qID }} {{ loop.index }}. {{ question.quickcheckqtext|raw }}</p>
                 {% if question.quickcheckqtype == 0 %} {# text #}
                     {% if print==false %}
                         <p><textarea cols="60" rows="5" name="{{ question.id }}" required></textarea>
