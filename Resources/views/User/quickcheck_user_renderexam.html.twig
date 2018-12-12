@@ -15,9 +15,9 @@
                 {%  if print %}
                     {% set qID = question.id %}
                 {% else %}
-                    {% set qID = "" %}
-                {% endif %}
-                <p>{{  qID }} {{ loop.index }}. {{ question.quickcheckqtext|raw }}</p>
+                    {% set qID = ""  %}
+                {%  endif %}
+                <p>{{ qID }} {{ loop.index }}. {{ question.quickcheckqtext|raw }}</p>
                 {% if question.quickcheckqtype == 0 %} {# text #}
                     {% if print==false %}
                         <p><textarea cols="60" rows="5" name="{{ question.id }}" required></textarea>
