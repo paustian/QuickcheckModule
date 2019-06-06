@@ -1,31 +1,50 @@
 {% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
 {{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
-{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }} 
+{{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.viewquestion.js')) }}
+{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
 <div class="container-fluid">
     <div class="row">
         <h3>
             <span class="fa fa-edit"></span>
             {{ __("New Matching Question") }}
         </h3>
-        <p>{{ __("Write your new Matching question in the text box. Write the answers in the textbox. One choice per line, followed by a | charcter.
-After the | put the matching answer on the same line. Finally explain the correct answer in the explanation box.") }}</p>
-        {{ showflashes() }}
-        {{ form_start(form) }}
-        {{ form_errors(form) }}
-        <fieldset>
-            <legend>{{ __('Matching Question') }}</legend>
-            {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
-            {{ form_row(form.quickcheckqanswer, {'attr': {'class': 'qc_answer'}}) }}
-            {{ form_row(form.quickcheckqexpan, {'attr': {'class': 'qc_question'}}) }}
-            {{ form_row(form.categories) }}
-        </fieldset>
-        <div class="form-group">
-            <div class="col-lg-offset-3 col-lg-9">
-                {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
-                {{ form_widget(form.cancel, {'attr': {'class': 'btn btn-success'}}) }}
+        <p>{{ __("Write your new Matching question in the Quesiton text box. Write the answers in the Answer textbox. One choice per line, followed by a | charcter.
+After the | put the matching answer on the same line. See the exameple below. Finally explain the correct answer in the explanation box.") }}</p>
+        <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Question") }}</label>
+            <div class="col-sm-9"><textarea id="misc" class="qc_question form-control" readonly>{{ __("Match the color to the emotion ") }}</textarea>
+            </div>
+            <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Answer") }}</label>
+                <div class="col-sm-9"><textarea class="qc_answer form-control" readonly>
+Red|Angry
+Blue|Sad
+Yellow|Happy
+Green|Content</textarea>
+                </div>
+            </div>
+                {{ showflashes() }}
+                {{ form_start(form) }}
+                {{ form_errors(form) }}
+            <input id="type" type="hidden" name="type" value="3"> <!- matching type ->
+                <fieldset>
+                    <legend>{{ __('Matching Question') }}</legend>
+                    {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
+                    {{ form_row(form.quickcheckqanswer, {'attr': {'class': 'qc_answer'}}) }}
+                    {{ form_row(form.quickcheckqexpan, {'attr': {'class': 'qc_question'}}) }}
+                    {{ form_row(form.categories) }}
+                </fieldset>
+                <div class="form-group">
+                    <div class="col-lg-offset-3 col-lg-9">
+                        {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
+                        <button id="preview_button" type="button" class="btn btn-success" name="preview" value="preview">
+                            {{ __('Preview Question') }}
+                        </button>
+                    </div>
+
+                </div>
+                {{ form_end(form) }}
             </div>
         </div>
-        {{ form_end(form) }}
-    </div>
+</div>
+<div id="preview_div" title="Preview Question" style="text-align: left">
 </div>
 {{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

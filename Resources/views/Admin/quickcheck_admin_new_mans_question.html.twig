@@ -1,5 +1,6 @@
 {% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
 {{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
+{{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.viewquestion.js')) }}
 {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
 <div class="container-fluid">
     <div class="row">
@@ -8,10 +9,11 @@
             {{ __("New Multiple-Answer Question") }}
         </h3>
         <p>{{ __("Write your new Multiple-Answer question in the text box. Write the answers in the textbox. One choice per line, followed by a | charcter.
-After the | put the percent correct for that anwer. THese points can be distributed in any manner, but they must add up to 100%. Finally explain the correct answer in the explanation box.") }}</p>
+After the | put the percent correct for that anwer. These points can be distributed in any manner, but they must add up to 100%. Finally explain the correct answer in the explanation box.") }}</p>
         {{ showflashes() }}
         {{ form_start(form) }}
         {{ form_errors(form) }}
+        <input id="type" type="hidden" name="type" value="4"> <!- multiple answer type ->
         <fieldset>
             <legend>{{ __('Multiple-Answer Question') }}</legend>
             {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
@@ -22,10 +24,14 @@ After the | put the percent correct for that anwer. THese points can be distribu
         <div class="form-group">
             <div class="col-lg-offset-3 col-lg-9">
                 {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
-                {{ form_widget(form.cancel, {'attr': {'class': 'btn btn-success'}}) }}
+                <button id="preview_button" type="button" class="btn btn-success" name="preview" value="preview">
+                    {{ __('Preview Question') }}
+                </button>
             </div>
         </div>
         {{ form_end(form) }}
     </div>
+</div>
+<div id="preview_div" title="Preview Question" style="text-align: left">
 </div>
 {{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

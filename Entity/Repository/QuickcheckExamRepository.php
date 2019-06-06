@@ -41,28 +41,34 @@ class QuickcheckExamRepository extends EntityRepository {
     
    
     public function render_quiz($examQuestions, &$questions, &$sq_ids, &$letters) {
+
         //grab the questions
         $em = $this->_em;
-        foreach ($examQuestions as $quest) {
-            $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $quest);
-            $questions[] = $this->unpackQuestion($question);
-        }
-        //we need to walk questions array and find all the matching questions and randomize the answers
-        $total = count($questions);
-        $q_ids = array();
-        for ($i = 0; $i < $total; $i++) {
-            $item = $questions[$i];
-            $q_ids[] = $item['id'];
-            if ($item['q_type'] == 3) {
-                //matching question, add a new parameter
-                $ran_array = $item['q_answer'];
-                shuffle($ran_array);
-                $item['ran_array'] = $ran_array;
-                $questions[$i] = $item;
+        if($examQuestions != null){
+            foreach ($examQuestions as $quest) {
+                $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $quest);
+                $questions[] = $this->unpackQuestion($question);
             }
+            //we need to walk questions array and find all the matching questions and randomize the answers
+            $total = count($questions);
+            $q_ids = array();
+            for ($i = 0; $i < $total; $i++) {
+                $item = $questions[$i];
+                $q_ids[] = $item['id'];
+                if ($item['q_type'] == 3) {
+                    //matching question, add a new parameter
+                    $ran_array = $item['q_answer'];
+                    shuffle($ran_array);
+                    $item['ran_array'] = $ran_array;
+                    $questions[$i] = $item;
+                }
+            }
+
+            $sq_ids = serialize($q_ids);
+        } else {
+            $sq_ids = "";
         }
 
-        $sq_ids = DataUtil::formatForDisplay(serialize($q_ids));
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
     }
     

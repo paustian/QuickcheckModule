@@ -4,8 +4,14 @@ namespace Paustian\QuickcheckModule\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\ButtonType;
+use Zikula\Common\Translator\TranslatorInterface;
 use Paustian\QuickcheckModule\Controller\AdminController;
 
 /**
@@ -16,21 +22,35 @@ use Paustian\QuickcheckModule\Controller\AdminController;
  * 
  */
 class TFQuestion extends AbstractType {
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    /**
+     * BlockType constructor.
+     * @param TranslatorInterface $translator
+     */
+    public function __construct(
+        TranslatorInterface $translator
+    ) {
+        $this->translator = $translator;
+    }
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $builder
-                ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextType::class, array('label' => __('Question'), 'required' => true))
-                ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => __('Explanation'), 'required' => true))
-                ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Save Question'));
-        $builder->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' => __('Cancel')));
-        $builder->add('quickcheckqanswer', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, array(
+                ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => $this->translator->__('Question'), 'required' => true))
+                ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => $this->translator->__('Explanation'), 'required' => true))
+                ->add('save', SubmitType::class, array('label' => 'Save Question'));
+
+        $builder->add('quickcheckqanswer', ChoiceType::class, array(
             'choices' => array('True' => '1', 'False' => '0'),
             'required' => true,
-            'label' => __('Answer'),
+            'label' => $this->translator->__('Answer'),
             'choices_as_values' => true,
             'expanded' => true,
             'multiple' => false));
-        $builder->add('quickcheckqtype', \Symfony\Component\Form\Extension\Core\Type\HiddenType::class, array('data' => AdminController::_QUICKCHECK_TF_TYPE));
+        $builder->add('quickcheckqtype', HiddenType::class, array('data' => AdminController::_QUICKCHECK_TF_TYPE));
         $id = $options['data']['id'];
         if (isset($id)) {
             $builder->add('id', HiddenType::class, array('data' => $id));
@@ -44,7 +64,7 @@ class TFQuestion extends AbstractType {
         ]);
     }
 
-    public function getName() {
+    public function getPrefixName() {
         return 'paustianquickcheckmodule_tfquesiton';
     }
 
@@ -52,9 +72,9 @@ class TFQuestion extends AbstractType {
      * OptionsResolverInterface is @deprecated and is supposed to be replaced by
      * OptionsResolver but docs not clear on implementation
      *
-     * @param OptionsResolverInterface $resolver
+     * @param OptionsResolver $resolver
      */
-    public function setDefaultOptions(OptionsResolverInterface $resolver) {
+    public function setDefaultOptions(OptionsResolver $resolver) {
         $resolver->setDefaults(array(
             'data_class' => 'Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity',
         ));

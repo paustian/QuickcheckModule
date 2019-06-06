@@ -19,32 +19,21 @@
 
 namespace Paustian\QuickcheckModule;
 
-use Zikula\Core\ExtensionInstallerInterface;
-use Zikula\Core\AbstractBundle;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use DoctrineHelper;
-use HookUtil;
-use CategoryUtil;
-use CategoryRegistryUtil;
 
-class QuickcheckModuleInstaller implements ExtensionInstallerInterface, ContainerAwareInterface {
+use Zikula\Core\AbstractExtensionInstaller;
+use Zikula\CategoriesModule\Entity\CategoryEntity;
+use Zikula\CategoriesModule\Entity\CategoryRegistryEntity;
+use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory;
+
+class QuickcheckModuleInstaller extends AbstractExtensionInstaller {
     
     private $entities = array(
-            'Paustian\QuickcheckModule\Entity\QuickcheckExamEntity',
-            'Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity',
-            'Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory'
+            QuickcheckExamEntity::class,
+            QuickcheckQuestionEntity::class,
+            QuickcheckQuestionCategory::class
         );
-   
-    private $entityManager;
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
-    /**
-     * @var AbstractBundle
-     */
-    private $bundle;
     
     
     /**
@@ -58,46 +47,59 @@ class QuickcheckModuleInstaller implements ExtensionInstallerInterface, Containe
      * @return       bool       true on success, false otherwise
      */
     public function  install() {
-        // create tables
-        $this->entityManager = $this->container->get('doctrine.entitymanager');
-        
+        //Create the tables of the module.
         try {
-            DoctrineHelper::createSchema($this->entityManager, $this->entities);
+            $this->schemaTool->create($this->entities);
         } catch (\Exception $e) {
-            print($e->getMessage());
             return false;
         }
 
-        //get ready for using categories
-        // create our default category
-        $this->_quickcheck_createdefaultcategory(); 
-        //set up the hook provider
-        $versionClass = $this->bundle->getVersionClass();
-        $version = new $versionClass($this->bundle);
-        HookUtil::registerProviderBundles($version->getHookProviderBundles());
+        // insert default category
+        try {
+            $this->createCategoryTree();
+        } catch (\Exception $e) {
+            $this->addFlash('error', $this->__f('Did not create default categories (%s).', ['%s' => $e->getMessage()]));
+        }
         // Initialisation successful
         return true;
     }
 
-    private function _quickcheck_createdefaultcategory($regpath = '/__SYSTEM__/Modules/Global') {
+    /**
+     * create the category tree
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException If Root category not found
+     * @throws \Exception
+     *
+     * @return boolean
+     */
+    private function createCategoryTree()
+    {
+        $locale = $this->container->get('request_stack')->getCurrentRequest()->getLocale();
+        $repo = $this->container->get('zikula_categories_module.category_repository');
+        // create quickcheck root category
+        $parent = $repo->findOneBy(['name' => 'Modules']);
+        $quickcheckRoot = new CategoryEntity();
+        $quickcheckRoot->setParent($parent);
+        $quickcheckRoot->setName($this->bundle->getName());
+        $quickcheckRoot->setDisplay_name([
+            $locale => $this->__('Quickcheck', 'paustianquickcheckmodule', $locale)
+        ]);
+        $quickcheckRoot->setDisplay_desc([
+            $locale => $this->__('Quickcheck Questions', 'paustianquickcheckmodule', $locale)
+        ]);
+        $this->entityManager->persist($quickcheckRoot);
 
-        // create category
-        CategoryUtil::createCategory('/__SYSTEM__/Modules', __('PaustianQuickcheckModule'), null, __('Quizzes'), __('Quizzes'));
-        // create subcategory
-        CategoryUtil::createCategory('/__SYSTEM__/Modules/PaustianQuickcheckModule', 'Chapter 2', null, __('Chapter 2'), __('Initial sub-category created on install'), array('color' => '#cceecc'));
-        CategoryUtil::createCategory('/__SYSTEM__/Modules/PaustianQuickcheckModule', 'Chapter 1', null, __('Chapter 1'), __('Initial sub-category created on install'), array('color' => '#99ccff'));
-        // get the category path to insert Pages categories
-        $rootcat = CategoryUtil::getCategoryByPath('/__SYSTEM__/Modules/PaustianQuickcheckModule');
-        if ($rootcat) {
-            // create an entry in the categories registry to the Main property
-            if (!CategoryRegistryUtil::insertEntry('PaustianQuickcheckModule', 'QuickcheckQuestionEntity', 'Main', $rootcat['id'])) {
-                throw new \Exception('Cannot insert Category Registry entry.');
-            }
-        } else {
-            throw new NotFoundHttpException('Root category not found.');
-        }
+        // create Registry
+        $registry = new CategoryRegistryEntity();
+        $registry->setCategory($quickcheckRoot);
+        $registry->setEntityname('QuickcheckQuestionEntity');
+        $registry->setModname($this->bundle->getName());
+        $registry->setProperty('Main');
+        $this->entityManager->persist($registry);
+        $this->entityManager->flush();
         return true;
     }
+
 
     /**
      * upgrade the Example module from an old version
@@ -109,20 +111,6 @@ class QuickcheckModuleInstaller implements ExtensionInstallerInterface, Containe
      * @return       bool       true on success, false otherwise
      */
     public function upgrade($oldversion) {
-        // Upgrade dependent on old version number
-        switch ($oldversion) {
-            case '1.1.0':
-            //the category stuff has to be updated.
-            //First create the new entity stuff.
-            $this->_quickcheck_createdefaultcategory();
-            //now shift it over.
-            $registry = CategoryRegistryUtil::getRegisteredModuleCategoriesIds('Quickcheck', 'quickcheck_quest');
-            foreach ($registry as $propname => $regId) {
-                $catId = CategoryRegistryUtil::getRegisteredModuleCategory('PaustianQuickcheckModule', 'QuickcheckQuestionCategory', $propName);
-                CategoryRegistyUtil::updateEntry($regId, 'PaustianQuickcheckModule', 'QuickcheckQuestionCategory', 'Main', $catId);
-            }
-        }
-        // Update successful
         return true;
     }
 
@@ -138,43 +126,19 @@ class QuickcheckModuleInstaller implements ExtensionInstallerInterface, Containe
      */
     public function uninstall() {
 
-        $this->entityManager = $this->container->get('doctrine.entitymanager');
         try {
-            DoctrineHelper::dropSchema($this->entityManager, $this->entities);
+            $this->schemaTool->drop($this->entities);
         } catch (\PDOException $e) {
-            print($e->getMessage());
             return false;
         }
-        
-        $versionClass = $this->bundle->getVersionClass();
-        $version = new $versionClass($this->bundle);
-        HookUtil::unregisterSubscriberBundles($version->getHookSubscriberBundles());
-        // Deletion successful
+
+        // Delete any module variables.
+        $this->delVars();
+
+        // Deletion successful*/
         return true;
     }
-    
-    public function setBundle(AbstractBundle $bundle)
-    {
-        $this->bundle = $bundle;
-    }
-    
-    /**
-     * Sets the Container.
-     *
-     * @param ContainerInterface|null $container A ContainerInterface instance or null
-     *
-     * @api
-     */
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
-        $this->setTranslator($container->get('translator'));
-    }
 
-    public function setTranslator($translator)
-    {
-        $this->translator = $translator;
-    }
 }
 
 ?>

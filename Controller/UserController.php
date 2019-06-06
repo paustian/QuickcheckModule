@@ -22,21 +22,21 @@
 
 namespace Paustian\QuickcheckModule\Controller;
 
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 use Zikula\Core\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\RouterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
-use ModUtil;
-use SecurityUtil;
 use CategoryUtil;
 use DataUtil;
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
+use Zikula\Core\Response\Ajax\ForbiddenResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class UserController extends AbstractController {
 
@@ -58,11 +58,17 @@ class UserController extends AbstractController {
             throw new AccessDeniedException();
         }
 
-        list($properties, $propertiesdata) = $this->_getCategories();
+        $categoryData = $this->_getCategories();
+        $counts = [];
+        foreach($categoryData as $categoryItem){
+            $counts[$categoryItem['id']] = $this->_countItems($categoryItem['id']);
+        }
 
-        $categoryData = $propertiesdata[0]['subcategories'];
+        //$categoryData = $propertiesdata[0]['subcategories'];
 
-        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_index.html.twig', ['categories' => $categoryData])->getContent());
+        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_index.html.twig',
+                ['categories' => $categoryData,
+                    'counts' => $counts]);
     }
 
     /**
@@ -71,23 +77,12 @@ class UserController extends AbstractController {
      * @return array
      */
     private function _getCategories() {
-        $categoryRegistry = \CategoryRegistryUtil::getRegisteredModuleCategories('PaustianQuickcheckModule', 'QuickcheckQuestionEntity');
-        $properties = array_keys($categoryRegistry);
-        $propertiesdata = array();
-        foreach ($properties as $property) {
-            $rootcat = CategoryUtil::getCategoryByID($categoryRegistry[$property]);
-            if (!empty($rootcat)) {
-                $rootcat['path'] .= '/';
-                // add this to make the relative paths of the subcategories with ease - mateo
-                $subcategories = CategoryUtil::getCategoriesByParentID($rootcat['id']);
-                foreach ($subcategories as $k => $category) {
-                    $subcategories[$k]['count'] = $this->countItems(array('category' => $category['id'], 'property' => $property));
-                }
-                $propertiesdata[] = array('name' => $property, 'rootcat' => $rootcat, 'subcategories' => $subcategories);
-            }
-        }
-
-        return array($properties, $propertiesdata);
+        $em = $this->getDoctrine()->getManager();
+        $registryRepository = $em->getRepository('ZikulaCategoriesModule:CategoryRegistryEntity');
+        $categoryRegistries = $registryRepository->findBy(['modname' => 'PaustianQuickcheckModule']);
+        $baseCategory = $categoryRegistries[0]->getCategory();
+        $children = $baseCategory->getChildren();
+        return $children->toArray();
     }
 
     /**
@@ -97,20 +92,18 @@ class UserController extends AbstractController {
      *
      * @return integer number of items held by this module
      */
-    private function countItems($args) {
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->get('doctrine.entitymanager');
+    private function _countItems($category) {
 
-        if (isset($args['category']) && !empty($args['category'])) {
-            if (is_array($args['category'])) {
-                $args['category'] = $args['category']['Main'][0];
-            }
+        $em = $this->getDoctrine()->getManager();
+
+        if (isset($category) && !empty($category)) {
             $qb = $em->createQueryBuilder();
+
             $qb->select('count(p)')
                     ->from('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', 'p')
                     ->join('p.categories', 'c')
                     ->where('c.category = :categories')
-                    ->setParameter('categories', $args['category']);
+                    ->setParameter('categories', $category);
 
             return $qb->getQuery()->getSingleScalarResult();
         }
@@ -118,43 +111,6 @@ class UserController extends AbstractController {
         $qb->select('count(p)')->from('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', 'p');
 
         return $qb->getQuery()->getSingleScalarResult();
-    }
-
-    /**
-     * sort_cat_array
-     * Sort an array based on the sort value of the array
-     * This is used to sort a category array before display
-     * Date: July 11 2010
-     * @author Timothy Paustian
-     * @param array $a one value in the array
-     * @param array $b secont value in array to compare
-     * @return (0 if same, -1 if b less than a, 1 if b more than a)
-     */
-    static function sort_cat_array($a, $b) {
-        if ($a['sort'] == $b['sort']) {
-            return 0;
-        }
-        return ($a['sort'] < $b['sort']) ? -1 : 1;
-    }
-
-    /**
-     * sort_by_id
-     * This sorts the array of questions based upon what is in the
-     * category id (sorts by chapter)
-     * Date: July 11 2010
-     * @author Timothy Paustian
-     * @param array $a one value in the array
-     * @param array $b secont value in array to compare
-     * @return (0 if same, -1 if b less than a, 1 if b more than a)
-     */
-    static function sort_by_catid($a, $b) {
-//stopped here. I need to sort the question by their cat id, makes it easy for picking them out
-        $a_id = $a['__CATEGORIES__']['Main']['sort_value'];
-        $b_id = $b['__CATEGORIES__']['Main']['sort_value'];
-        if ($a_id == $b_id) {
-            return 0;
-        }
-        return ($a_id < $b_id) ? -1 : 1;
     }
 
     /**
@@ -223,11 +179,12 @@ class UserController extends AbstractController {
         //I need to change this so that it sends back it's own response. What this entails is just getting the data that it
         //needs and then sending it back.
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
-        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
+        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                     'q_ids' => \serialize($sq_ids),
                     'questions' => $quiz_questions,
-                    'return_url' => $return_url,
-                    'exam_name' => __('Practice Exam')])->getContent());
+                    'return_url' => $ret_url,
+                    'print' => false,
+                    'exam_name' => $this->__('Practice Exam')]);
     }
 
     /**
@@ -306,13 +263,13 @@ class UserController extends AbstractController {
         $repo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
         $repo->render_quiz($examQuestions, $questions, $sq_ids, $letters);
 
-        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
+        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                     'q_ids' => $sq_ids,
                     'questions' => $questions,
                     'return_url' => $return_url,
                     'exam_name' => $examName,
                     'admininterface' => '',
-                    'print' => $print]));
+                    'print' => $print]);
     }
 
      /**
@@ -373,7 +330,6 @@ class UserController extends AbstractController {
                     //we don't grade text types
                     break;
                 case AdminController::_QUICKCHECK_TF_TYPE:
-                    //do a quick translation from 1/0 to yes/no
                     if ($student_answer === $question->getQuickcheckqanswer()) {
                         $score += 1;
                     }
@@ -422,19 +378,19 @@ class UserController extends AbstractController {
                             //mark this position as one that was checked.
                             $marked_answers[$mc_answers[1]] = (int) $mc_answers[1];
                         }
-                        $ur_answer = $marked_answers;
-                        //substract 
-                        $deduction = (count($student_answer) - $num_that_should) * (100 / $array_size);
-                        if ($deduction > 0) {
-                            $total -= $deduction;
-                        }
-                        $score += $total / 100;
                     }
+                    $ur_answer = $marked_answers;
+                    //substract
+                    $deduction = (count($student_answer) - $num_that_should) * (100 / $array_size);
+                    if ($deduction > 0) {
+                        $total -= $deduction;
+                    }
+                    $score += $total / 100;
                     break;
                 case AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE:
-                    $mc_answers = explode('_', $student_answer);
-                    $score += $mc_answers[0] / 100;
-                    $ur_answer = $mc_answers[1];
+                    preg_match("/([0-9]{1,3}).*?([0-9])/s", $student_answer,$matches);
+                    $score += $matches[1] / 100;
+                    $ur_answer = $matches[2];
                     break;
             }
             //save the questions in an array for display.
@@ -446,12 +402,45 @@ class UserController extends AbstractController {
         $percent = $score / count($q_ids) * 100;
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
 
-        return new Response($this->render('PaustianQuickcheckModule:User:quickcheck_user_gradeexam.html.twig', [
+        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_gradeexam.html.twig', [
                     'questions' => $display_questions,
                     'score' => $score,
                     'percent' => $percent,
                     'letters' => $letters,
-                    'student_answers' => $student_answers])->getContent());
+                    'student_answers' => $student_answers]);
+    }
+
+    /**
+     * @Route("/getpreviewhtml", options={"expose"=true})
+     * @Method("POST")
+     * @param Request $request
+     * @return JsonResponse|FatalResponse|ForbiddenResponse bid or Ajax error
+     *
+     * Grab all comments associated with this module and item ID and return them to the caller
+     * The caller is a javascript, see the javascripts in Resources/public/js directory
+     */
+
+    public function getpreviewhtmlAction(Request $request){
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_READ)) {
+            return new ForbiddenResponse($this->__('Access forbidden since you cannot read questions.'));
+        }
+        //fetch the parameters for the question
+        $questionText = $request->get('question');
+        $answer = $request->get('answer');
+        $type = $request->get('type');
+        $question = new QuickcheckQuestionEntity();
+        $question->setQuickcheckqType($type);
+        $question->setQuickcheckqText($questionText);
+        $question->setQuickcheckqAnswer($answer);
+        //Create the type of object that we need for the renderexam template
+        $repo = $this->getDoctrine()->getManager()->getRepository("Paustian\QuickcheckModule\Entity\QuickcheckExamEntity");
+        $question = $repo->unpackQuestion($question);
+        $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
+        $response = $this->render('PaustianQuickcheckModule:User:quickcheck_user_preview.html.twig', ['letters' => $letters,
+            'question' => $question]);
+        $jsonReply = ['html' => $response->getContent()];
+
+        return  new JsonResponse($jsonReply);
     }
 
 }

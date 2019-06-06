@@ -4,8 +4,9 @@ namespace Paustian\QuickcheckModule\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Paustian\QuickcheckModule\Controller\AdminController;
+use Zikula\Common\Translator\TranslatorInterface;
 /**
  * Description of QuiccheckTFQuestion
  * Set up the elements for a TF form.
@@ -14,15 +15,29 @@ use Paustian\QuickcheckModule\Controller\AdminController;
  * 
  */
 class MCQuestion extends AbstractType {
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    /**
+     * BlockType constructor.
+     * @param TranslatorInterface $translator
+     */
+    public function __construct(
+        TranslatorInterface $translator
+    ) {
+        $this->translator = $translator;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => __('Question'), 'required' => true))
-            ->add('quickcheckqanswer', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => __('Answer'), 'required' => true))
-            ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => __('Explanation'), 'required' => true))
-            ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Save Question'));
-        $builder->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' => __('Cancel')));
-        
+            ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Question'), 'required' => true))
+            ->add('quickcheckqanswer', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Answer'), 'required' => true))
+            ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Explanation'), 'required' => true))
+            ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => $this->translator->__('Save Question')))
+            ->add('delete', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Delete Question'));
         $builder->add('quickcheckqtype', \Symfony\Component\Form\Extension\Core\Type\HiddenType::class, array('data' => AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE));
 
         $builder->add('categories', 'Zikula\CategoriesModule\Form\Type\CategoriesType', [
@@ -34,7 +49,7 @@ class MCQuestion extends AbstractType {
         ]);
     }
 
-    public function getName()
+    public function getPrefixName()
     {
         return 'paustianquickcheckmodule_mcquesiton';
     }
@@ -43,9 +58,9 @@ class MCQuestion extends AbstractType {
      * OptionsResolverInterface is @deprecated and is supposed to be replaced by
      * OptionsResolver but docs not clear on implementation
      *
-     * @param OptionsResolverInterface $resolver
+     * @param OptionsResolver $resolver
      */
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function setDefaultOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
             'data_class' => 'Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity',

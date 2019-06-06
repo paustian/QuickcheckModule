@@ -1,5 +1,6 @@
 {% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
 {{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
+{{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.viewquestion.js')) }}
 {% if hasPermission('PaustianQuickcheckModule::', '::', 'ACCESS_ADMIN') %}
 {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}   
 {% endif %}
@@ -9,11 +10,24 @@
             <span class="fa fa-edit"></span>
             {{ __("New Multiple-Choice Question") }}
         </h3>
+    </div>
         <p>{{ __("Write your new Multiple-Choice question in the text box. Write the answers in the textbox. One choice per line, followed by a | charcter.
-After the | put the percent correct for that anwer. One of the answers should be set to 100 and the others set to 0. Finally explain the correct answer in the explanation box.") }}</p>
+After the | put the percent correct for that anwer. One of the answers should be set to 100 and the others set to 0. Finally explain the correct answer in the explanation box. Here is
+an example of how the text in the answer box should look") }}</p>
+    <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Question") }}</label><div class="col-sm-9"><textarea id="misc" class="qc_question form-control" readonly>{{ __("The most livable mid-size city in America is... ") }}</textarea>
+        </div>
+    </div>
+    <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Answer") }}</label><div class="col-sm-9"><textarea class="qc_answer form-control" readonly>
+Milwaukee, WI|0
+Peoria, IL|0
+Madison, WI|100
+San Bernadino, CA|0
+Newark, NJ|0</textarea>
+        </div>
         {{ showflashes() }}
         {{ form_start(form) }}
         {{ form_errors(form) }}
+        <input id="type" type="hidden" name="type" value="1"> <!- multiple choice type ->
         <fieldset>
             <legend>{{ __('Multiple-Choice Question') }}</legend>
             {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
@@ -24,10 +38,15 @@ After the | put the percent correct for that anwer. One of the answers should be
         <div class="form-group">
             <div class="col-lg-offset-3 col-lg-9">
                 {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
-                {{ form_widget(form.cancel, {'attr': {'class': 'btn btn-success'}}) }}
+                <button id="preview_button" type="button" class="btn btn-success" name="preview" value="preview">
+                    {{ __('Preview Question') }}
+                </button>
+                {{ form_widget(form.delete, {'attr': {'class': 'btn btn-danger'}}) }}
             </div>
         </div>
         {{ form_end(form) }}
     </div>
+</div>
+<div id="preview_div" title="Preview Question" style="text-align: left">
 </div>
 {{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

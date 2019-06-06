@@ -74,7 +74,7 @@ class AdminController extends AbstractController {
     public function indexAction(Request $request) {
 
         // Return a page of menu items.
-        return new Response($this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig'));
+        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig');
     }
 
     /**
@@ -109,7 +109,7 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new ExamForm(), $exam);
+        $form = $this->createForm(ExamForm::class, $exam);
 
         $form->handleRequest($request);
 
@@ -124,7 +124,7 @@ class AdminController extends AbstractController {
                 $em->persist($exam);
             }
             $em->flush();
-            $this->addFlash('status', __('Exam saved.'));
+            $this->addFlash('status', $this->__('Exam saved.'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
@@ -153,7 +153,7 @@ class AdminController extends AbstractController {
         $em = $this->getDoctrine()->getManager();
         $em->remove($exam);
         $em->flush();
-        $this->addFlash('status', __('Exam Deleted.'));
+        $this->addFlash('status', $this->__('Exam Deleted.'));
         return $response;
     }
 
@@ -179,7 +179,7 @@ class AdminController extends AbstractController {
         $this->_removeQuestionFromExams($em, $id);
         $em->remove($question);
         $em->flush();
-        $this->addFlash('status', __('Question Deleted.'));
+        $this->addFlash('status', $this->__('Question Deleted.'));
         return $response;
     }
 
@@ -243,7 +243,7 @@ class AdminController extends AbstractController {
         // execute query
         $exams = $query->getResult();
         if (!$exams) {
-            $this->addFlash('error', __('There are no exams to edit'));
+            $this->addFlash('error', $this->__('There are no exams to edit'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
@@ -345,7 +345,7 @@ class AdminController extends AbstractController {
             //this sends back an ArrayCollection of 1 item (each question can only be in 1 category)
             $catItems = $question->getCategories();
             if ($catItems->isEmpty()) {
-                $questions[__('Uncategorized')][] = $built_question;
+                $questions[$this->__('Uncategorized')][] = $built_question;
                 continue;
             }
 
@@ -431,7 +431,7 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new TextQuestion(), $question);
+        $form = $this->createForm(TextQuestion::class, $question);
 
         $form->handleRequest($request);
 
@@ -443,7 +443,7 @@ class AdminController extends AbstractController {
             } else {
                 $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittextquest'));
             }
-            return $this->_persistQuestion($question, $doMerge, __('Text question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->__('Text question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_text_question.html.twig', array(
@@ -473,7 +473,7 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new MatchQuestion(), $question);
+        $form = $this->createForm(MatchQuestion::class, $question);
 
         $form->handleRequest($request);
 
@@ -487,7 +487,7 @@ class AdminController extends AbstractController {
             } else {
                 $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmatchquest'));
             }
-            return $this->_persistQuestion($question, $doMerge, __('Matching question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->__('Matching question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_match_question.html.twig', array(
@@ -522,7 +522,7 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new TFQuestion(), $question);
+        $form = $this->createForm(TFQuestion::class, $question);
 
         $form->handleRequest($request);
 
@@ -535,7 +535,7 @@ class AdminController extends AbstractController {
             } else {
                 $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edittfquest'));
             }
-            return $this->_persistQuestion($question, $doMerge, __('True/False question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->__('True/False question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_tf_question.html.twig', array(
@@ -567,13 +567,16 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new MCQuestion(), $question);
+        $form = $this->createForm(MCQuestion::class, $question);
 
         $form->handleRequest($request);
 
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
+            if($form->get('delete')->isClicked()){
+                return $this->deleteQuestionAction($request, $question);
+            }
             $fromModifyForm = $request->query->get('modify');
             $response = null;
             if ($fromModifyForm) {
@@ -581,7 +584,7 @@ class AdminController extends AbstractController {
             } else {
                 $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmcquest'));
             }
-            return $this->_persistQuestion($question, $doMerge, __('Multiple-Choice  question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->__('Multiple-Choice  question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_mc_question.html.twig', array(
@@ -613,7 +616,7 @@ class AdminController extends AbstractController {
             $doMerge = true;
         }
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new MAnsQuestion(), $question);
+        $form = $this->createForm(MAnsQuestion::class, $question);
 
         $form->handleRequest($request);
 
@@ -627,7 +630,7 @@ class AdminController extends AbstractController {
             } else {
                 $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editmansquest'));
             }
-            return $this->_persistQuestion($question, $doMerge, __('Multiple-Answer question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->__('Multiple-Answer question saved!'), $response);
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_mans_question.html.twig', array(
@@ -736,13 +739,14 @@ class AdminController extends AbstractController {
         $questions = $this->_build_questions_list($ckquestions);
 
         if (!$questions) {
-            $this->addFlash('error', __('There are no questions to modify. Create some first.'));
+            $this->addFlash('error', $this->__('There are no questions to modify. Create some first.'));
 
-            return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
+            return "";
         }
 
         $html = $this->renderView('PaustianQuickcheckModule:Admin:quickcheck_admin_qpart.html.twig', [ 'questions' => $questions,
             'buttons' => $buttons]);
+
 
         return $html;
     }
@@ -803,7 +807,7 @@ class AdminController extends AbstractController {
 
         $questions = $this->_prep_question_list('checkbox');
 
-        $form = $this->createForm(new CategorizeForm());
+        $form = $this->createForm(CategorizeForm::class);
 
         $form->handleRequest($request);
 
@@ -812,7 +816,7 @@ class AdminController extends AbstractController {
 
             $categories = $form->get('categories')->getData();
             $this->_persistQuestionList($questPick, $categories);
-            $this->addFlash('status', __('Questions recategorized.'));
+            $this->addFlash('status', $this->__('Questions recategorized.'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_categorize'));
             return $response;
         }
@@ -890,7 +894,7 @@ class AdminController extends AbstractController {
 //            
 //        }
         if (empty($questions)) {
-            $this->addFlash('error', __("There are no unexplained questions."));
+            $this->addFlash('error', $this->__("There are no unexplained questions."));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
@@ -1032,7 +1036,7 @@ class AdminController extends AbstractController {
             throw new AccessDeniedException();
         }
 
-        $form = $this->createForm(new ImportText());
+        $form = $this->createForm(ImportText::class);
 
         $form->handleRequest($request);
 
@@ -1042,7 +1046,7 @@ class AdminController extends AbstractController {
             //take the xml that is imported, and parse it into an array
             //That array should have filled out a new question entity which it shoudl return
             $questions = $this->_parseImportedQuizXML($xmlQuestionText, $category);
-            $this->addFlash('status', __("Questions imported."));
+            $this->addFlash('status', $this->__("Questions imported."));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_importquiz'));
             return $response;
         }
@@ -1068,7 +1072,7 @@ class AdminController extends AbstractController {
 
         $questions = $this->_prep_question_list('checkbox');
 
-        $form = $this->createForm(new ExportForm());
+        $form = $this->createForm(ExportForm::class);
 
         $form->handleRequest($request);
 
@@ -1122,6 +1126,9 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
     public function upgradeoldquestionsAction() {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
         //walk through all the questions and get rid of serialized data.
         //get the questions
         $em = $this->getDoctrine()->getManager();
@@ -1168,9 +1175,85 @@ class AdminController extends AbstractController {
             }
         }
         $em->flush();
-        $this->addFlash('status', __("Questions updated."));
+        $this->addFlash('status', $this->__("Questions updated."));
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
         return $response;
     }
 
+    /**
+     * @Route("/findmyid")
+     *
+     * Match the ID of a question using the first 250 charaters of the stem. This is useful for students trying to look up the QID,
+     * @return Response
+     * @throws AccessDeniedException
+     *
+     */
+    public function findmyidAction(){
+        // Security check - important to do this as early as possible to avoid
+        // potential security holes or just too much wasted processing
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
+            throw new AccessDeniedException();
+        }
+
+        $em = $this->getDoctrine()->getManager();
+        //get them all
+        $qb = $em->createQueryBuilder();
+        // add select and from params
+        $qb->select('u')
+            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
+            ->where('u.id > ?1' )
+            ->setParameter(1, '1300');
+        $query = $qb->getQuery();
+        // execute query
+        $questions = $query->getResult();
+
+        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_findmyid.html.twig', ['questions' => $questions]);
+    }
+
+    /**
+     * @Route("/cleanCatDupes")
+     *
+     * export the chosen questions. First step. This displays the interface to export the questions
+     * @return Response
+     * @throws AccessDeniedException
+     */
+
+    public function cleanCatDupesAction(){
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
+        //get all the questions
+        $em = $this->getDoctrine()->getManager();
+        // create a QueryBuilder instance
+        $qb = $em->createQueryBuilder();
+
+        // add select and from params
+        $qb->select('u')
+            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
+        // convert querybuilder instance into a Query object
+        $query = $qb->getQuery();
+        // execute query
+        $questions = $query->getResult();
+        $dups = 0;
+        foreach($questions as $question){
+            $qid = $question->getId();
+            //find it in the category table
+            $qb2 = $em->createQueryBuilder();
+            $qb2->select('u')
+                ->from('PaustianQuickcheckModule:QuickcheckQuestionCategory', 'u')
+                ->where('u.entity=:ent' )
+                ->setParameter('ent', $qid);
+            $query2 = $qb2->getQuery();
+            $result = $query2->getResult();
+            if(count($result) > 1){
+                //delete the second category
+                $em->remove($result[1]);
+                $dups++;
+            }
+        }
+        $em->flush();
+        $this->addFlash('status', $dups  . $this->__(" questions removed."));
+        $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
+        return $response;
+    }
 }

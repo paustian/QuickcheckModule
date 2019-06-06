@@ -1,6 +1,85 @@
  # Hook handlers
  
 services:
-    paustian_quickcheck_module.hook_handler.quickcheck:
-        class: Paustian\QuickcheckModule\HookHandler\HookHandler
-        arguments: [@doctrine.entitymanager, @templating]
+    paustian_quickcheck_module.hook_provider.ui_hooks_hooks_provider:
+        class: Paustian\QuickcheckModule\HookHandler\UiHooksProviderHandler
+        arguments:
+          - '@translator.default'
+          - '@zikula_permissions_module.api.permission'
+          - '@templating'
+          - '@doctrine.orm.entity_manager'
+          - '@request_stack'
+        tags:
+        - { name: zikula.hook_provider, areaName: "provider.paustianquickcheckmodule.ui_hooks.quickcheck" }
+
+    paustian_quickcheck_module.form.examform_type:
+        class: Paustian\QuickcheckModule\Form\ExamForm
+        arguments:
+          - "@translator.default"
+        tags:
+          - { name: form.type }
+
+    paustian_quickcheck_module.form.tfquestion_type:
+          class: Paustian\QuickcheckModule\Form\TFQuestion
+          arguments:
+            - "@translator.default"
+          tags:
+            - { name: form.type }
+
+    paustian_quickcheck_module.form.categorizeform_type:
+          class: Paustian\QuickcheckModule\Form\CategorizeForm
+          arguments:
+            - "@translator.default"
+          tags:
+            - { name: form.type }
+
+    paustian_quickcheck_module.form.MAnsQuestion_type:
+          class: Paustian\QuickcheckModule\Form\MAnsQuestion
+          arguments:
+            - "@translator.default"
+          tags:
+            - { name: form.type }
+
+    paustian_quickcheck_module.form.MatchQuestion_type:
+              class: Paustian\QuickcheckModule\Form\MatchQuestion
+              arguments:
+                - "@translator.default"
+              tags:
+                - { name: form.type }
+
+    paustian_quickcheck_module.form.MCQuestion_type:
+            class: Paustian\QuickcheckModule\Form\MCQuestion
+            arguments:
+              - "@translator.default"
+            tags:
+              - { name: form.type }
+
+    paustian_quickcheck_module.form.TextQuestion_type:
+            class: Paustian\QuickcheckModule\Form\TextQuestion
+            arguments:
+              - "@translator.default"
+            tags:
+              - { name: form.type }
+
+    paustian_quickcheck_module.form.ExportForm_type:
+              class: Paustian\QuickcheckModule\Form\ExportForm
+              arguments:
+                - "@translator.default"
+              tags:
+                - { name: form.type }
+
+    paustian_quickcheck_module.form.ImportForm_type:
+              class: Paustian\QuickcheckModule\Form\ImportText
+              arguments:
+                - "@translator.default"
+              tags:
+                - { name: form.type }
+
+    paustian_quickcheck_module.container.link_container:
+        class: Paustian\QuickcheckModule\Container\LinkContainer
+        arguments:
+          - "@translator.default"
+          - "@router"
+          - "@zikula_permissions_module.api.permission"
+        tags:
+          - { name: zikula.link_container }

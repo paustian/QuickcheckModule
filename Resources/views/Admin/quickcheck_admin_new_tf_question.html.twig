@@ -1,5 +1,6 @@
 {% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
 {{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
+{{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.viewquestion.js')) }}
 {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }} 
 <div class="container-fluid">
     <div class="row">
@@ -11,6 +12,7 @@
         {{ showflashes() }}
         {{ form_start(form) }}
         {{ form_errors(form) }}
+        <input id="type" type="hidden" name="type" value="2"> <!- true/false type ->
         <fieldset>
             <legend>{{ __('T/F Question') }}</legend>
             {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
@@ -21,10 +23,14 @@
         <div class="form-group">
             <div class="col-lg-offset-3 col-lg-9">
                 {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
-                {{ form_widget(form.cancel, {'attr': {'class': 'btn btn-success'}}) }}
+                <button id="preview_button" type="button" class="btn btn-success" name="preview" value="preview">
+                    {{ __('Preview Question') }}
+                </button>
             </div>
         </div>
         {{ form_end(form) }}
     </div>
+</div>
+<div id="preview_div" title="Preview Question" style="text-align: left">
 </div>
 {{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}
