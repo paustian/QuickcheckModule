@@ -115,6 +115,9 @@ class LinkContainer implements LinkContainerInterface
             //the import/export menu
             $submenulinks2 = array();
             $submenulinks2[] = array(
+                'url' => $this->router->generate('paustianquickcheckmodule_admin_examinemoderated'),
+                'text' => $this->translator->__('Examine all moderated questions'));
+            $submenulinks2[] = array(
                 'url' => $this->router->generate('paustianquickcheckmodule_admin_importquiz'),
                 'text' => $this->translator->__('Import questions from XML file'));
             $submenulinks2[] = array(

@@ -17,13 +17,13 @@ an example of how the text in the answer box should look") }}</p>
     <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Question") }}</label><div class="col-sm-9"><textarea id="misc" class="qc_question form-control" readonly>{{ __("The most livable mid-size city in America is... ") }}</textarea>
         </div>
     </div>
-    <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Answer") }}</label><div class="col-sm-9"><textarea class="qc_answer form-control" readonly>
+    <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Answer") }}</label>
+        <div class="col-sm-9"><textarea class="qc_answer form-control" readonly>
 Milwaukee, WI|0
 Peoria, IL|0
 Madison, WI|100
 San Bernadino, CA|0
 Newark, NJ|0</textarea>
-        </div>
         {{ showflashes() }}
         {{ form_start(form) }}
         {{ form_errors(form) }}
@@ -34,7 +34,11 @@ Newark, NJ|0</textarea>
             {{ form_row(form.quickcheckqanswer, {'attr': {'class': 'qc_answer'}}) }}
             {{ form_row(form.quickcheckqexpan, {'attr': {'class': 'qc_question'}}) }}
             {{ form_row(form.categories) }}
+            {% if hasPermission('PaustianQuickcheckModule::', '::', 'ACCESS_ADMIN') %}
+            {{ form_row(form.status) }}
+            {% endif %}
         </fieldset>
+        </div>
         <div class="form-group">
             <div class="col-lg-offset-3 col-lg-9">
                 {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}

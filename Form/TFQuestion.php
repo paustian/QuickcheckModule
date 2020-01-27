@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 use Zikula\Common\Translator\TranslatorInterface;
 use Paustian\QuickcheckModule\Controller\AdminController;
+use Zikula\PermissionsModule\Api\PermissionApi;
 
 /**
  * Description of QuiccheckTFQuestion
@@ -28,13 +29,20 @@ class TFQuestion extends AbstractType {
     private $translator;
 
     /**
+     * @var PermissionApi
+     */
+    private $permissionApi;
+
+    /**
      * BlockType constructor.
      * @param TranslatorInterface $translator
      */
     public function __construct(
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        PermissionApi $permissionApi
     ) {
         $this->translator = $translator;
+        $this->permissionApi = $permissionApi;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
@@ -50,6 +58,21 @@ class TFQuestion extends AbstractType {
             'choices_as_values' => true,
             'expanded' => true,
             'multiple' => false));
+        if($this->permissionApi->hasPermission('Quickcheck::', '::', ACCESS_ADMIN)) {
+            $builder->add('status', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
+                'label' => $this->translator->__('Moderation Status', 'paustianquickcheckmodule') . ':',
+                'label_attr' => ['class' => 'radio-inline'],
+                'empty_data' => 'default',
+                'choices' => [
+                    $this->translator->__('Public', 'paustianquickcheckmodule') => '0',
+                    $this->translator->__('Moderated', 'paustianquickcheckmodule') => '1',
+                    $this->translator->__('Hidden for Exam', 'paustianquickcheckmodule') => '2'
+                ],
+                'multiple' => false,
+                'expanded' => true
+            ]);
+        }
+
         $builder->add('quickcheckqtype', HiddenType::class, array('data' => AdminController::_QUICKCHECK_TF_TYPE));
         $id = $options['data']['id'];
         if (isset($id)) {

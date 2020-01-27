@@ -7,6 +7,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Zikula\Common\Translator\TranslatorInterface;
+use Zikula\PermissionsModule\Api\ApiInterface\PermissionApiInterface;
+
 /**
  * Description of QuiccheckTFQuestion
  * Set up the elements for a TF form.
@@ -21,13 +23,20 @@ class MCQuestion extends AbstractType {
     private $translator;
 
     /**
+     * @var PermissionApiInterface
+     */
+    private $permissionApi;
+
+    /**
      * BlockType constructor.
      * @param TranslatorInterface $translator
      */
     public function __construct(
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        PermissionApiInterface $permissionApi
     ) {
         $this->translator = $translator;
+        $this->permissionApi = $permissionApi;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -38,6 +47,21 @@ class MCQuestion extends AbstractType {
             ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Explanation'), 'required' => true))
             ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => $this->translator->__('Save Question')))
             ->add('delete', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Delete Question'));
+        //I only want to show this if admin is looking at it.
+        if($this->permissionApi->hasPermission('Quickcheck::', '::', ACCESS_ADMIN)){
+            $builder->add('status', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
+                'label' => $this->translator->__('Moderation Status', 'paustianquickcheckmodule') . ':',
+                'label_attr' => ['class' => 'radio-inline'],
+                'empty_data' => 'default',
+                'choices' => [
+                    $this->translator->__('Public', 'paustianquickcheckmodule') => '0',
+                    $this->translator->__('Moderated', 'paustianquickcheckmodule') => '1',
+                    $this->translator->__('Hidden for Exam', 'paustianquickcheckmodule') => '2'
+                ],
+                'multiple' => false,
+                'expanded' => true
+            ]);
+        }
         $builder->add('quickcheckqtype', \Symfony\Component\Form\Extension\Core\Type\HiddenType::class, array('data' => AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE));
 
         $builder->add('categories', 'Zikula\CategoriesModule\Form\Type\CategoriesType', [

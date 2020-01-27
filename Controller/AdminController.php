@@ -16,6 +16,7 @@
 namespace Paustian\QuickcheckModule\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Zikula\Core\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -38,6 +39,8 @@ use Paustian\QuickcheckModule\Form\ImportText;
 use Paustian\QuickcheckModule\Form\ExamForm;
 use Paustian\QuickcheckModule\Form\ExportForm;
 use Paustian\QuickcheckModule\Form\CategorizeForm;
+use Zikula\Core\Response\Ajax\FatalResponse;
+use Zikula\Core\Response\Ajax\ForbiddenResponse;
 
 /**
  * The various types of questions. We use defines to make the code
@@ -56,6 +59,11 @@ class AdminController extends AbstractController {
     const _QUICKCHECK_TF_TYPE = 2;
     const _QUICKCHECK_MATCHING_TYPE = 3;
     const _QUICKCHECK_MULTIANSWER_TYPE = 4;
+
+    const _STATUS_VIEWABLE = 0;
+    const _STATUS_MODERATE = 1;
+    const _STATUS_FOREXAM = 2;
+
 
     /**
      * Post initialise.
@@ -407,6 +415,60 @@ class AdminController extends AbstractController {
     }
 
     /**
+     * @Route("/setquestion", options={"expose"=true})
+     * @Method("POST")
+     * @param Request $request
+     * @return JsonResponse|FatalResponse|ForbiddenResponse bid or Ajax error
+     */
+    public function setQuestionAction(Request $request){
+        $id = $request->request->get('id');
+        $text = $request->request->get('qText');
+        $answer = $request->request->get('qAnswer');
+        $explanation = $request->request->get('qExpan');
+        $status = $request->request->get('qStatus');
+        $canSave = isset($id);
+        if($canSave){
+            $em = $this->getDoctrine()->getManager();
+            $question = $em->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity')->findOneBy(['id' => $id]);
+            $question->setQuickcheckqText($text);
+            $question->setQuickcheckqAnswer($answer);
+            $question->setQuickcheckqExpan($explanation);
+            $question->setStatus($status);
+            $em->merge($question);
+            $em->flush();
+        }
+        $jsonReply = ['id' => $id,
+            'cansave' => $canSave,
+            'qText' => $text,
+            'qAnswer' => $answer,
+            'qExpan' => $explanation,
+            'qStatus' => $status];
+
+        return  new JsonResponse($jsonReply);
+    }
+
+    /**
+     * @Route("/javaedit", options={"expose"=true})
+     * @Method("POST")
+     * @param Request $request
+     * @return JsonResponse|FatalResponse|ForbiddenResponse bid or Ajax error
+     */
+    public function javaEditAction(Request $request){
+        $id = $request->request->get('id');
+        if(!isset($id)){
+            new FatalResponse($this->__('That qusetion for some reason does not exist.'));
+        }
+        $em = $this->getDoctrine()->getManager();
+        $question = $em->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity')->findOneBy(['id' => $id]);
+        $jsonReply = [
+            'id' => $question->getId(),
+            'qText' => $question->getQuickcheckqText(),
+            'qAnswer' => $question->getQuickcheckqAnswer(),
+            'qExpan' => $question->getQuickcheckqExpan()
+        ];
+        return  new JsonResponse($jsonReply);
+    }
+    /**
      * @Route("/edittextquest/{question}")
      * form to add new text question
      *
@@ -427,6 +489,7 @@ class AdminController extends AbstractController {
         $doMerge = false;
         if (null === $question) {
             $question = new QuickcheckQuestionEntity();
+            $question->setStatus(self::_STATUS_MODERATE);
         } else {
             $doMerge = true;
         }
@@ -469,6 +532,7 @@ class AdminController extends AbstractController {
         $doMerge = false;
         if (null === $question) {
             $question = new QuickcheckQuestionEntity();
+            $question->setStatus(self::_STATUS_MODERATE);
         } else {
             $doMerge = true;
         }
@@ -518,6 +582,7 @@ class AdminController extends AbstractController {
         $doMerge = false;
         if (null === $question) {
             $question = new QuickcheckQuestionEntity();
+            $question->setStatus(self::_STATUS_MODERATE);
         } else {
             $doMerge = true;
         }
@@ -557,12 +622,13 @@ class AdminController extends AbstractController {
      * HEre is another:0
      */
     public function editMCQuestAction(Request $request, QuickcheckQuestionEntity $question = null) {
-        if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
+        /*if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
             throw new AccessDeniedException();
-        }
+        }*/
         $doMerge = false;
         if (null === $question) {
             $question = new QuickcheckQuestionEntity();
+            $question->setStatus(self::_STATUS_MODERATE);
         } else {
             $doMerge = true;
         }
@@ -612,6 +678,7 @@ class AdminController extends AbstractController {
         $doMerge = false;
         if (null === $question) {
             $question = new QuickcheckQuestionEntity();
+            $question->setStatus(self::_STATUS_MODERATE);
         } else {
             $doMerge = true;
         }
@@ -1255,5 +1322,32 @@ class AdminController extends AbstractController {
         $this->addFlash('status', $dups  . $this->__(" questions removed."));
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
         return $response;
+    }
+
+    /**
+     * @Route("/examinemoderated")
+     * @return Response
+     * @throws AccessDeniedException
+     */
+
+    public function examinemoderatedAction(){
+        // Security check - important to do this as early as possible to avoid
+        // potential security holes or just too much wasted processing
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
+            throw new AccessDeniedException();
+        }
+        $em = $this->getDoctrine()->getManager();
+        //get them all
+        $qb = $em->createQueryBuilder();
+        // add select and from params
+        $qb->select('u')
+            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
+            ->where('u.status = ?1' )
+            ->setParameter(1, '1');
+        $query = $qb->getQuery();
+        // execute query
+        $questions = $query->getResult();
+
+        return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig", ['questions' => $questions]);
     }
 }

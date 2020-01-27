@@ -23,6 +23,7 @@ services:
           class: Paustian\QuickcheckModule\Form\TFQuestion
           arguments:
             - "@translator.default"
+            - '@zikula_permissions_module.api.permission'
           tags:
             - { name: form.type }
 
@@ -37,6 +38,7 @@ services:
           class: Paustian\QuickcheckModule\Form\MAnsQuestion
           arguments:
             - "@translator.default"
+            - '@zikula_permissions_module.api.permission'
           tags:
             - { name: form.type }
 
@@ -44,6 +46,7 @@ services:
               class: Paustian\QuickcheckModule\Form\MatchQuestion
               arguments:
                 - "@translator.default"
+                - '@zikula_permissions_module.api.permission'
               tags:
                 - { name: form.type }
 
@@ -51,6 +54,7 @@ services:
             class: Paustian\QuickcheckModule\Form\MCQuestion
             arguments:
               - "@translator.default"
+              - '@zikula_permissions_module.api.permission'
             tags:
               - { name: form.type }
 
@@ -58,6 +62,7 @@ services:
             class: Paustian\QuickcheckModule\Form\TextQuestion
             arguments:
               - "@translator.default"
+              - '@zikula_permissions_module.api.permission'
             tags:
               - { name: form.type }
 
