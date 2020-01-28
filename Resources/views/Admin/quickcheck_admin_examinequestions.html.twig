@@ -2,10 +2,10 @@
 {{ pageAddAsset('stylesheet', asset('jquery-ui/themes/base/jquery-ui.min.css')) }}
 {{ pageAddAsset('stylesheet', 'https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css') }}
 {{ pageAddAsset('javascript', 'https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js') }}
-{{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/moderatequestions.js')) }}
+{{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.moderatequestions.js')) }}
 {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
 
-<h3> {{ __('Current Comments') }}</h3>
+<h3> {{ __('Current Questions for Moderation') }}</h3>
 <table id="tableToSort" class="table table-striped">
     <thead>
     <tr>
@@ -44,9 +44,11 @@
             <td id="actions">
                 <span id="edit_{{ item.id }}" class="fa fa-pencil" title="Edit Comment"></span>
                 <span id="delete_{{ item.id }}" class="fa fa-trash" title="Delete Comment"></span>
+                //I need to put in a link to actually go to the editing interface if needed.
             </td>
         </tr>
     {% endfor %}
     </tbody>
 </table>
+
 {{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

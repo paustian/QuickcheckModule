@@ -26,31 +26,29 @@
         },
 
         bindEvents: function () {
-            this.$deleteButtons.on('click',  this.deleteComment.bind(this));
-            this.$editButtons.on('click', this.editComment.bind(this));
+            this.$deleteButtons.on('click',  this.deleteQuestion.bind(this));
+            this.$editButtons.on('click', this.editQuestion.bind(this));
         },
 
-        deleteComment: function (evt){
+        deleteQuestion: function (evt){
             var itemName = evt.target.id;
             this.currentId = itemName.substring(7, itemName.length);
             //send a message to delete that item
             this.sendAjax(
-                'paustianquickcheckmodule_admin_delete',
+                'paustianquickcheckmodule_admin_deletequestion',
                 {'id' : this.currentId},
                 {'success': this.itemDeleted.bind(this), method: 'POST'}
             );
         },
 
         itemDeleted: function(result, textStatus, jqXHR){
-            if(result[0].success === true){
+            if(result.success === true){
                 var rowToDelete = this.$table.find("tr[id=" + this.currentId + "]");
                 rowToDelete.remove();
-            } else {
-                window.alert(result[0].message);
             }
         },
 
-        editComment: function(evt){
+        editQuestion: function(evt){
             var itemName = evt.target.id;
             this.currentId = itemName.substring(5, itemName.length);
             //send a message to delete that item
@@ -76,7 +74,7 @@
             this.currentButtons[this.currentId] = buttons.html();
             buttons.empty();
             buttons.html("<span id='submit_" + this.currentId + "' class='fa fa-save'></span>");
-            buttons.on("click", this.saveItem.bind(this));
+            $("#submit_" + this.currentId).on("click", this.saveItem.bind(this));
         },
 
         saveItem: function(evt){
@@ -102,6 +100,17 @@
             if(!result.cansave){
                 return;
             }
+            var qStatus = rowToEdit.find("select[id=qStatus_" + this.currentId + "]");
+            if(result.qStatus === "0"){
+                var rowToDelete = this.$table.find("tr[id=" + this.currentId + "]");
+                rowToDelete.remove();
+                //we are done with this row so we can just leave.
+                return;
+            } else {
+                qStatus.find("option").removeAttr("selected");
+                var option = qStatus.find("option[value=" + result.qStatus + "]");
+                option.attr("selected", "selected");
+            }
             var qText = rowToEdit.find("td[id^=qText_]");
             qText.empty();
             qText.text(result.qText);
@@ -111,13 +120,12 @@
             var qExpan = rowToEdit.find("td[id^=qExpan_]");
             qExpan.empty();
             qExpan.text(result.qExpan);
-            var qStatus = rowToEdit.find("select[id=qStatus_" + this.currentId + "]");
-            qStatus.find("option").removeAttr("selected");
-            qStatus.find("option|value=" + result.qStatus).attr(seletec).val("selected");
 
             var buttons = rowToEdit.find("td[id=actions]");
             buttons.empty();
             buttons.html(this.currentButtons[this.currentId]);
+            $("#delete_" + result.id).on('click',  this.deleteQuestion.bind(this));
+            $("#edit_"+ result.id).on('click', this.editQuestion.bind(this));
             delete this.currentButtons[this.currentId];
         },
 

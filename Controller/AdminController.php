@@ -166,7 +166,7 @@ class AdminController extends AbstractController {
     }
 
     /**
-     * @Route ("/deletequestion/{question}")
+     * @Route ("/deletequestion/{question}", options={"expose"=true})
      * deleteQuestionAction - delete the question.
      * 
      * @param Request $request
@@ -177,17 +177,30 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
             return DataUtil::formatForDisplayHTML($this->__("You do not have permission to delete questions."));
         }
-        $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
-        if ($question == null) {
-            //you want the edit interface, which has a delete option.
-            return $response;
-        }
         $em = $this->getDoctrine()->getManager();
+        $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
+        $json = false;
+        if ($question == null) {
+            $id = $request->request->get('id');
+            if(!isset($id)){
+                //you want the edit interface, which has a delete option.
+                return $response;
+            }
+            $json = true;
+            $question = $em->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity')->findOneBy(['id' => $id]);
+        }
         $id = $question->getId();
         $this->_removeQuestionFromExams($em, $id);
         $em->remove($question);
         $em->flush();
         $this->addFlash('status', $this->__('Question Deleted.'));
+        if($json){
+            $jsonReply = [
+                'id' => $id,
+                'success' => true
+            ];
+            return  new JsonResponse($jsonReply);
+        }
         return $response;
     }
 
@@ -706,7 +719,7 @@ class AdminController extends AbstractController {
     }
 
     /**
-     * @Route ("/modifyquestion")
+     * @Route ("/modifyquestion/{question}")
      * 
      * modifyquestion
      * 
@@ -715,32 +728,32 @@ class AdminController extends AbstractController {
      * @return RedirectResponse
      * @throws AccessDeniedException
      */
-    public function modifyquestionAction(Request $request) {
+    public function modifyquestionAction(Request $request, QuickcheckQuestionEntity $question) {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
-
-        $id = $request->request->get('questions', null);
-        $redirect_url = $this->get('router')->generate('paustianquickcheckmodule_admin_editquestions', array(), RouterInterface::ABSOLUTE_URL);
-
-        if (!isset($id) || !is_numeric($id)) {
-            $request->getSession()->getFlashBag()->add('status', $this->__("You need to pick a question"));
-            return new RedirectResponse($redirect_url);
+        if(null === $question){
+            $id = $request->request->get('questions', null);
+            $redirect_url = $this->get('router')->generate('paustianquickcheckmodule_admin_editquestions', array(), RouterInterface::ABSOLUTE_URL);
+            if (!isset($id) || !is_numeric($id)) {
+                $request->getSession()->getFlashBag()->add('status', $this->__("You need to pick a question"));
+                return new RedirectResponse($redirect_url);
+            }
+            $question = $this->getDoctrine()->getManager()->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
+            if (!$question) {
+                $request->getSession()->getFlashBag()->add('status', $this->__("A question with that id does not exist"));
+                return new RedirectResponse($redirect_url);
+            }
         }
-        //grab the question
-        $item = $this->getDoctrine()->getManager()->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
-        if (!$item) {
-            $request->getSession()->getFlashBag()->add('status', $this->__("A question with that id does not exist"));
-            return new RedirectResponse($redirect_url);
-        }
+        $id = $question->getId();
 
-        $questionType = $item->getQuickcheckqType();
+        $questionType = $question->getQuickcheckqType();
         $button = $request->request->get('edit');
         if (!isset($button)) {
             $button = $request->request->get('delete', null);
         }
         $response = null;
-        if ($button == 'edit') {
+        if (($button == 'edit') || (null === $button)) {
             switch ($questionType) {
                 case self::_QUICKCHECK_TEXT_TYPE:
                     $response = new RedirectResponse($this->generateUrl('paustianquickcheckmodule_admin_edittextquest', array('question' => $id, 'modify' => true)));
@@ -763,7 +776,7 @@ class AdminController extends AbstractController {
                     break;
             }
         } else if ($button == 'delete') {
-            return $this->deleteQuestionAction($request, $item);
+            return $this->deleteQuestionAction($request, $question);
         }
         return $response;
     }
@@ -1330,7 +1343,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
 
-    public function examinemoderatedAction(){
+    public function examinemoderatedAction(Request $request){
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
@@ -1344,6 +1357,33 @@ class AdminController extends AbstractController {
             ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
             ->where('u.status = ?1' )
             ->setParameter(1, '1');
+        $query = $qb->getQuery();
+        // execute query
+        $questions = $query->getResult();
+
+        return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig", ['questions' => $questions]);
+    }
+
+    /**
+     * @Route("/examinehidden")
+     * @return Response
+     * @throws AccessDeniedException
+     */
+
+    public function examinehiddenAction(Request $request){
+        // Security check - important to do this as early as possible to avoid
+        // potential security holes or just too much wasted processing
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
+            throw new AccessDeniedException();
+        }
+        $em = $this->getDoctrine()->getManager();
+        //get them all
+        $qb = $em->createQueryBuilder();
+        // add select and from params
+        $qb->select('u')
+            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
+            ->where('u.status = ?1' )
+            ->setParameter(1, '2');
         $query = $qb->getQuery();
         // execute query
         $questions = $query->getResult();
