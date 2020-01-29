@@ -16,10 +16,10 @@
         },
 
         cacheDom: function () {
-            this.$previewButton = $("button[id=preview_button]");
-            this.$questionText = $("textarea[id*=_quickcheckqtext]");
-            this.$answerText = $("textarea[id*=_quickcheckqanswer]");
-            this.$type = $("input[id=type]");
+            this.$previewButton = $("button[id^=preview_button]");
+            if(this.$previewButton.length ===    0){
+                this.$previewButton = $("span[id^=preview_button]");
+            }
             this.$preview = $("#preview_div");
         },
 
@@ -28,10 +28,23 @@
         },
 
         showPreview: function (evt){
+            var itemName = evt.target.id;
+            var id = itemName.substring(15, itemName.length);
+            var question;
+            var answer;
+            var type;
+            if(id === ""){
+                question = $("textarea[id*=quickcheckqtext]").val();
+                answer = $("textarea[id*=quickcheckqanswer]").val();
+                type = $("input[id=type]").val();
+            } else {
+                question=$("#quickcheckqtext_" + id).html();
+                answer=$("#quickcheckqanswer_" + id).html();
+                type = $("#type_" + id).val();
+            }
+
             //send a message to delete that item
-            var question = this.$questionText.val();
-            var answer = this.$answerText.val();
-            var type = this.$type.val();
+
 
             this.sendAjax(
                 "paustianquickcheckmodule_user_getpreviewhtml",

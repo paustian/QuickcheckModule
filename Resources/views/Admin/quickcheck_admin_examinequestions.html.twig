@@ -3,6 +3,7 @@
 {{ pageAddAsset('stylesheet', 'https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css') }}
 {{ pageAddAsset('javascript', 'https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js') }}
 {{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.moderatequestions.js')) }}
+{{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.viewquestion.js')) }}
 {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
 
 <h3> {{ __('Current Questions for Moderation') }}</h3>
@@ -10,6 +11,7 @@
     <thead>
     <tr>
         <th id="id">{{ __('id') }}</th>
+        <th id="category">{{ __('Category') }}</th>
         <th id="qText">{{ __('Question Stem') }}</th>
         <th id="qAnswer">{{ __('Question Answer') }}</th>
         <th id="qExpan">{{ __('Question Explanation') }}</th>
@@ -20,9 +22,10 @@
     <tbody>
     {% for item in questions %}
         <tr id="{{ item.id }}">
-            <td id="id_{{ item.id }}">{{ item.id }}</td>
-            <td id="qText_{{ item.id }}">{{ item.quickcheckqtext }}</td>
-            <td id="qAnswer_{{ item.id }}">{{ item.quickcheckqanswer }}</td>
+            <td id="id_{{ item.id }}">{{ item.id }}<input id="type_{{ item.id }}" type="hidden" value="{{ item.quickcheckqtype }}" /></td>
+            <td id="category_{{ item.id }}">{{ categories[item.id] }}</td>
+            <td id="quickcheckqtext_{{ item.id }}">{{ item.quickcheckqtext }}</td>
+            <td id="quickcheckqanswer_{{ item.id }}">{{ item.quickcheckqanswer }}</td>
             <td id="qExpan_{{ item.id }}">{{ item.quickcheckqexpan}}</td>
             <td id="qStatus_{{ item.id }}"><select id="qStatus_{{ item.id }}">
                     {% if item.status is same as(0) %}
@@ -43,12 +46,14 @@
                 </select></td>
             <td id="actions">
                 <span id="edit_{{ item.id }}" class="fa fa-pencil" title="Edit in place"></span>
+                <span id="preview_button_{{ item.id }}" class="fa fa-eye" title="Preview Question"></span>
+                <a href="{{ path('paustianquickcheckmodule_admin_modifyquestion', {"question": item.id, "modify": 2}) }}"><span id="link_{{ item.id }}" class="fa fa-edit" title="Edit in interface."></span></a>
                 <span id="delete_{{ item.id }}" class="fa fa-trash" title="Delete question"></span>
-                <a href="{{ path('paustianquickcheckmodule_admin_modifyquestion', {"question": item.id}) }}"><span id="link_{{ item.id }}" class="fa fa-edit" title="Edit in interface."></span></a>
             </td>
         </tr>
     {% endfor %}
     </tbody>
 </table>
-
+<div id="preview_div" title="Preview Question" style="text-align: left">
+</div>
 {{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

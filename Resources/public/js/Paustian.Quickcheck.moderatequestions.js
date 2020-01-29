@@ -61,15 +61,15 @@
 
         doEdit: function(result, textStatus, jqXHR){
             var rowToEdit = this.$table.find("tr[id=" + this.currentId + "]");
-            var qText = rowToEdit.find("td[id=qText_" +  this.currentId + "]");
+            var qText = rowToEdit.find("td[id=quickcheckqtext_" +  this.currentId + "]");
             qText.empty();
-            qText.html("<textarea id='qText_" + this.currentId + "' rows='10' cols='40'>" + result.qText + "</textarea>");
-            var qAnswer = rowToEdit.find("td[id=qAnswer_" +  this.currentId + "]");
+            qText.html("<textarea id='quickcheckqtext_" + this.currentId + "' rows='10' cols='20'>" + result.qText + "</textarea>");
+            var qAnswer = rowToEdit.find("td[id=quickcheckqanswer_" +  this.currentId + "]");
             qAnswer.empty();
-            qAnswer.html("<textarea id='qAnswer_" + this.currentId + "' rows='10' cols='40'>" + result.qAnswer + "</textarea>");
+            qAnswer.html("<textarea id='quickcheckqanswer_" + this.currentId + "' rows='10' cols='20'>" + result.qAnswer + "</textarea>");
             var qExpan = rowToEdit.find("td[id=qExpan_" +  this.currentId + "]");
             qExpan.empty();
-            qExpan.html("<textarea id='qExpan_" + this.currentId + "' rows='10' cols='40'>" + result.qExpan + "</textarea>");
+            qExpan.html("<textarea id='qExpan_" + this.currentId + "' rows='10' cols='20'>" + result.qExpan + "</textarea>");
             var buttons = rowToEdit.find("td[id=actions]");
             this.currentButtons[this.currentId] = buttons.html();
             buttons.empty();
@@ -83,8 +83,8 @@
             //we need to update the cached dom because it has changed upon save
             this.$table = $("#tableToSort");
             var rowToEdit = this.$table.find("tr[id=" + this.currentId + "]");
-            var qText = rowToEdit.find("textarea[id=qText_" +  this.currentId + "]").val();
-            var qAnswer = rowToEdit.find("textarea[id=qAnswer_" +  this.currentId + "]").val();
+            var qText = rowToEdit.find("textarea[id=quickcheckqtext_" +  this.currentId + "]").val();
+            var qAnswer = rowToEdit.find("textarea[id=quickcheckqanswer_" +  this.currentId + "]").val();
             var qExpan = rowToEdit.find("textarea[id=qExpan_" +  this.currentId + "]").val();
             var qStatus = rowToEdit.find("select[id=qStatus_" + this.currentId + "]").val();
 
@@ -111,10 +111,10 @@
                 var option = qStatus.find("option[value=" + result.qStatus + "]");
                 option.attr("selected", "selected");
             }
-            var qText = rowToEdit.find("td[id^=qText_]");
+            var qText = rowToEdit.find("td[id^=quickcheckqtext_]");
             qText.empty();
             qText.text(result.qText);
-            var qAnswer = rowToEdit.find("td[id^=qAnswer_]");
+            var qAnswer = rowToEdit.find("td[id^=quickcheckqanswer_]");
             qAnswer.empty();
             qAnswer.text(result.qAnswer);
             var qExpan = rowToEdit.find("td[id^=qExpan_]");
