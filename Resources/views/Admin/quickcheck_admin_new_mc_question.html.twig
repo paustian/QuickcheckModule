@@ -14,7 +14,11 @@
         <p>{{ __("Write your new Multiple-Choice question in the text box. Write the answers in the textbox. One choice per line, followed by a | charcter.
 After the | put the percent correct for that anwer. One of the answers should be set to 100 and the others set to 0. Finally explain the correct answer in the explanation box. Here is
 an example of how the text in the answer box should look") }}</p>
-    <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Question") }}</label><div class="col-sm-9"><textarea id="misc" class="qc_question form-control" readonly>{{ __("The most livable mid-size city in America is... ") }}</textarea>
+    <fieldset>
+        <legend>{{ __('Example Question Format') }}</legend>
+    <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Question") }}</label>
+        <div class="col-sm-9">
+            <textarea id="misc" class="qc_question form-control" readonly>{{ __("The most livable mid-size city in America is... ") }}</textarea>
         </div>
     </div>
     <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Answer") }}</label>
@@ -24,6 +28,9 @@ Peoria, IL|0
 Madison, WI|100
 San Bernadino, CA|0
 Newark, NJ|0</textarea>
+        </div>
+    </div>
+    </fieldset>
         {{ showflashes() }}
         {{ form_start(form) }}
         {{ form_errors(form) }}

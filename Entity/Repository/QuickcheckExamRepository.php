@@ -5,7 +5,7 @@ namespace Paustian\QuickcheckModule\Entity\Repository;
 use Doctrine\ORM\EntityRepository;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Paustian\QuickcheckModule\Controller\AdminController;
-use DataUtil;
+
 
 class QuickcheckExamRepository extends EntityRepository {
    

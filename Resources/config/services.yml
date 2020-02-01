@@ -88,3 +88,8 @@ services:
           - "@zikula_permissions_module.api.permission"
         tags:
           - { name: zikula.link_container }
+
+    paustian_quickcheck_module.question_repository:
+      class: Paustian\QuickcheckModule\Entity\Repository\QuickcheckQuestionRepository
+      factory: ["@doctrine.orm.default_entity_manager", getRepository]
+      arguments: ["PaustianQuickcheckModule:QuickcheckQuestionEntity"]

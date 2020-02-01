@@ -28,7 +28,7 @@
                 "user": {"route": "paustianquickcheckmodule_user_index"}
             },
             "securityschema": {
-                "PaustianQuickcheckModule::": "exam::quiz"
+                "PaustianQuickcheckModule::": "examid::questionid"
             }
         }
     }
