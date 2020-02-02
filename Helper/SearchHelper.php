@@ -13,7 +13,8 @@ namespace Paustian\QuickcheckModule\Helper;
 
 
 
-use Paustian\QuickcheckModule\Entity\QuickcheckQuestionRepository;
+use Paustian\QuickcheckModule\Entity\Repository\QuickcheckQuestionRepository;
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -34,6 +35,9 @@ class SearchHelper implements SearchableInterface
      */
     private $session;
 
+    /**
+     * @var QuickcheckQuestionRepository
+     */
     private $questionRepository;
 
     /**
@@ -76,9 +80,9 @@ class SearchHelper implements SearchableInterface
             //No need for permisison here, restricted to admin already. We only want Admins to be able to
             //search for questions to use. I may change this in the future.
             $result = new SearchResultEntity();
-            $result->setTitle("Question ID: " . $question->getId())
+            $result->setTitle("Question ID: " . $question['id'])
                 ->setModule('PaustianBookModule')
-                ->setText($this->shorten_text($question->getQuickcheckqText()))
+                ->setText($this->shorten_text($question['quickcheckqtext']))
                 ->setSesid($sessionID)
                 ->setUrl($url);
             $returnArray[] = $result;
@@ -86,23 +90,23 @@ class SearchHelper implements SearchableInterface
         return $returnArray;
     }
 
-    private function _determineRoute(QuickcheckQuestionEntity $question){
+    private function _determineRoute($question){
         $url = "";
-        switch($question->getQuickcheckqType()){
+        switch($question['quickcheckqtype']){
             case AdminController::_QUICKCHECK_TEXT_TYPE:
-                $url = new RouteUrl('paustianquickcheckmodule_admin_edittextquest', ['id' => $question->getId()]);
+                $url = new RouteUrl('paustianquickcheckmodule_admin_edittextquest', ['question' => $question['id']]);
                 break;
             case AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE:
-                $url = new RouteUrl('paustianquickcheckmodule_admin_editmcquest', ['id' => $question->getId()]);
+                $url = new RouteUrl('paustianquickcheckmodule_admin_editmcquest', ['question' => $question['id']]);
                 break;
             case AdminController::_QUICKCHECK_TF_TYPE:
-                $url = new RouteUrl('paustianquickcheckmodule_admin_edittfquest', ['id' => $question->getId()]);
+                $url = new RouteUrl('paustianquickcheckmodule_admin_edittfquest', ['question' => $question['id']]);
                 break;
             case AdminController::_QUICKCHECK_MATCHING_TYPE:
-                $url = new RouteUrl('paustianquickcheckmodule_admin_editmatchquest', ['id' => $question->getId()]);
+                $url = new RouteUrl('paustianquickcheckmodule_admin_editmatchquest', ['question' => $question['id']]);
                 break;
             case AdminController::_QUICKCHECK_MULTIANSWER_TYPE:
-                $url = new RouteUrl('paustianquickcheckmodule_admin_editmansquest', ['id' => $question->getId()]);
+                $url = new RouteUrl('paustianquickcheckmodule_admin_editmansquest', ['question' => $question['id']]);
                 break;
         }
         return $url;

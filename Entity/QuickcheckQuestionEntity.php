@@ -20,16 +20,17 @@ use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory as QuickcheckCat
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Zikula\Core\Doctrine\EntityAccess;
 
 /**
  * Quickcheck entity class.
  *
  * We use annotations to define the entity mappings to database (see http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/basic-mapping.html).
  *
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Paustian\QuickcheckModule\Entity\Repository\QuickcheckQuestionRepository")
  * @ORM\Table(name="quickcheck_quest")
  */
-class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
+class QuickcheckQuestionEntity extends EntityAccess {
 
     /**
      * question id
