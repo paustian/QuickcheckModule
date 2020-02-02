@@ -1254,6 +1254,25 @@ class AdminController extends AbstractController {
     }
 
     /**
+     * Add the category name to each question.
+     * @param $questions
+     * @return array
+     */
+
+    private function _categorizeQuestions($questions){
+        $returnQuestions = [];
+        foreach($questions as $question){
+            $cat = $question->getCategories()->first();
+            $name = "Uncategorized";
+            if($cat !== false){
+                $name = $cat->getCategory()->getName();
+            }
+            $returnQuestions[$question->getId()] = $name;
+        }
+        return $returnQuestions;
+    }
+
+    /**
      * @Route("/examinemoderated")
      * @return Response
      * @throws AccessDeniedException
@@ -1276,10 +1295,7 @@ class AdminController extends AbstractController {
         $query = $qb->getQuery();
         // execute query
         $questions = $query->getResult();
-        $qCategories = [];
-        foreach($questions as $question){
-            $qCategories[$question->getId()] = $question->getCategories()->first()->getCategory()->getName();
-        }
+        $qCategories = $this->_categorizeQuestions($questions);
 
         return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
             ['questions' => $questions,
@@ -1308,10 +1324,7 @@ class AdminController extends AbstractController {
         $query = $qb->getQuery();
         // execute query
         $questions = $query->getResult();
-        $qCategories = [];
-        foreach($questions as $question){
-            $qCategories[$question->getId()] = $question->getCategories()->first()->getCategory()->getName();
-        }
+        $qCategories = $this->_categorizeQuestions($questions);
 
         return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
             ['questions' => $questions,
@@ -1342,10 +1355,7 @@ class AdminController extends AbstractController {
         $query = $qb->getQuery();
         // execute query
         $questions = $query->getResult();
-        $qCategories = [];
-        foreach($questions as $question){
-            $qCategories[$question->getId()] = $question->getCategories()->first()->getCategory()->getName();
-        }
+        $qCategories = $this->_categorizeQuestions($questions);
 
         return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
             ['questions' => $questions,
