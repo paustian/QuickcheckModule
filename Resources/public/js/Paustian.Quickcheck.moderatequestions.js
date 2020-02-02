@@ -23,6 +23,8 @@
             this.$deleteButtons = $('span[id^=delete_]');
             this.$editButtons = $('span[id^=edit_]');
             this.$table = $("#tableToSort");
+            var divDeleteRowsExists = $('#delete_rows');
+            this.$deleteRows = (divDeleteRowsExists.length !== 0);
         },
 
         bindEvents: function () {
@@ -101,7 +103,9 @@
                 return;
             }
             var qStatus = rowToEdit.find("select[id=qStatus_" + this.currentId + "]");
-            if(result.qStatus === "0"){
+            //the number 0 signifies its a public question. If it is a public
+            //questions, we remove it. Since this is in the moderation or hidden question interface.
+            if((result.qStatus === "0") && this.$deleteRows){
                 var rowToDelete = this.$table.find("tr[id=" + this.currentId + "]");
                 rowToDelete.remove();
                 //we are done with this row so we can just leave.

@@ -54,6 +54,9 @@
     {% endfor %}
     </tbody>
 </table>
+{%  if deleteRows %}
+<div id="delete_rows"></div>
+{% endif %}
 <div id="preview_div" title="Preview Question" style="text-align: left">
 </div>
 {{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

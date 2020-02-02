@@ -1262,7 +1262,7 @@ class AdminController extends AbstractController {
     public function examinemoderatedAction(Request $request){
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
-        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
         $em = $this->getDoctrine()->getManager();
@@ -1283,7 +1283,40 @@ class AdminController extends AbstractController {
 
         return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
             ['questions' => $questions,
-             'categories' => $qCategories]);
+             'categories' => $qCategories,
+                'deleteRows' => true]);
+    }
+
+    /**
+     * @Route("/examineall")
+     * @return Response
+     * @throws AccessDeniedException
+     */
+
+    public function examineallAction(Request $request){
+        // Security check - important to do this as early as possible to avoid
+        // potential security holes or just too much wasted processing
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
+        $em = $this->getDoctrine()->getManager();
+        //get them all
+        $qb = $em->createQueryBuilder();
+        // add select and from params
+        $qb->select('u')
+            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
+        $query = $qb->getQuery();
+        // execute query
+        $questions = $query->getResult();
+        $qCategories = [];
+        foreach($questions as $question){
+            $qCategories[$question->getId()] = $question->getCategories()->first()->getCategory()->getName();
+        }
+
+        return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
+            ['questions' => $questions,
+                'categories' => $qCategories,
+                'deleteRows' => false]);
     }
 
     /**
@@ -1295,7 +1328,7 @@ class AdminController extends AbstractController {
     public function examinehiddenAction(Request $request){
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
-        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
         $em = $this->getDoctrine()->getManager();
@@ -1316,6 +1349,7 @@ class AdminController extends AbstractController {
 
         return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
             ['questions' => $questions,
-                'categories' => $qCategories]);
+                'categories' => $qCategories,
+                'deleteRows' => true]);
     }
 }
