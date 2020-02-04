@@ -79,6 +79,9 @@ class AdminController extends AbstractController {
      */
     public function indexAction(Request $request) {
 
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
+            throw new AccessDeniedException();
+        }
         // Return a page of menu items.
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig');
     }

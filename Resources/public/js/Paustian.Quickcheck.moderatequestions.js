@@ -15,21 +15,27 @@
         },
 
         init: function () {
+            $("#tableToSort").on("draw.dt", this.cacheDomAndBindEvents.bind(this));
+            this.cacheDomAndBindEvents();
+        },
+
+        cacheDomAndBindEvents: function(){
             this.cacheDom();
             this.bindEvents();
         },
 
         cacheDom: function () {
-            this.$deleteButtons = $('span[id^=delete_]');
-            this.$editButtons = $('span[id^=edit_]');
+            this.$deleteButtons = $("span[id^=delete_]");
+            this.$editButtons = $("span[id^=edit_]");
             this.$table = $("#tableToSort");
-            var divDeleteRowsExists = $('#delete_rows');
+            var divDeleteRowsExists = $("#delete_rows");
             this.$deleteRows = (divDeleteRowsExists.length !== 0);
         },
 
         bindEvents: function () {
             this.$deleteButtons.on('click',  this.deleteQuestion.bind(this));
             this.$editButtons.on('click', this.editQuestion.bind(this));
+
         },
 
         deleteQuestion: function (evt){
