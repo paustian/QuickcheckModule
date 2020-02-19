@@ -11,6 +11,11 @@
         },
 
         init: function () {
+            $("#tableToSort").on("draw.dt", this.cacheDomAndBindEvents.bind(this));
+            this.cacheDomAndBindEvents();
+        },
+
+        cacheDomAndBindEvents: function(){
             this.cacheDom();
             this.bindEvents();
         },
