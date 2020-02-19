@@ -124,6 +124,9 @@ class LinkContainer implements LinkContainerInterface
                 'url' => $this->router->generate('paustianquickcheckmodule_admin_examineall'),
                 'text' => $this->translator->__('Examine all questions'));
             $submenulinks2[] = array(
+                'url' => $this->router->generate('paustianquickcheckmodule_admin_hiddentopublic'),
+                'text' => $this->translator->__('Move Hidden Questions to Public'));
+            $submenulinks2[] = array(
                 'url' => $this->router->generate('paustianquickcheckmodule_admin_importquiz'),
                 'text' => $this->translator->__('Import questions from XML file'));
             $submenulinks2[] = array(

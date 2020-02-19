@@ -1336,6 +1336,36 @@ class AdminController extends AbstractController {
     }
 
     /**
+     * @Route("/hiddentopublic")
+     * @return Response
+     * @throws AccessDeniedException
+     */
+    public function hiddentopublicAction(Request $request){
+        // Security check - important to do this as early as possible to avoid
+        // potential security holes or just too much wasted processing
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
+        $em = $this->getDoctrine()->getManager();
+        //get them all
+        $qb = $em->createQueryBuilder();
+        // add select and from params
+        $qb->select('u')
+            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
+            ->where('u.status = ?1' )
+            ->setParameter(1, '2');
+        $query = $qb->getQuery();
+        // execute query
+        $questions = $query->getResult();
+        foreach ($questions as $question){
+            $question->setStatus(AdminController::_STATUS_VIEWABLE);
+            $em->merge($question);
+        }
+        $em->flush();
+        $this->addFlash('status', $this->__('Hidden questions added to public database.'));
+        return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
+    }
+    /**
      * @Route("/examinehidden")
      * @return Response
      * @throws AccessDeniedException
