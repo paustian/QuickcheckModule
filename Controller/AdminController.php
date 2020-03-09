@@ -16,6 +16,7 @@
 namespace Paustian\QuickcheckModule\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Paustian\QuickcheckModule\Form\ExamineAllForm;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Zikula\Core\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -1262,7 +1263,7 @@ class AdminController extends AbstractController {
      * @return array
      */
 
-    private function _categorizeQuestions($questions){
+    private function _categorizeQuestions($questions, $category='all'){
         $returnQuestions = [];
         foreach($questions as $question){
             $cat = $question->getCategories()->first();
@@ -1270,7 +1271,14 @@ class AdminController extends AbstractController {
             if($cat !== false){
                 $name = $cat->getCategory()->getName();
             }
-            $returnQuestions[$question->getId()] = $name;
+            if($category === 'all'){
+                $returnQuestions[$question->getId()] = $name;
+            } else {
+                if($name === $category){
+                    $returnQuestions[$question->getId()] = $name;
+                }
+            }
+
         }
         return $returnQuestions;
     }
@@ -1318,21 +1326,58 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
-        $em = $this->getDoctrine()->getManager();
-        //get them all
-        $qb = $em->createQueryBuilder();
-        // add select and from params
-        $qb->select('u')
-            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
-        $query = $qb->getQuery();
-        // execute query
-        $questions = $query->getResult();
-        $qCategories = $this->_categorizeQuestions($questions);
 
-        return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
-            ['questions' => $questions,
-                'categories' => $qCategories,
-                'deleteRows' => false]);
+        $form = $this->createForm(ExamineAllForm::class);
+
+        $form->handleRequest($request);
+
+        if ($form->isValid()) {
+
+            $formData = $form->getData();
+            $searchText = explode(' ', $formData['searchtext']);
+            $catCollection = $formData['categories'];
+            $category = "";
+            if(!$catCollection->isEmpty()){
+                $category = $catCollection->first();
+            }
+            $em = $this->getDoctrine()->getManager();
+            $repo = $em->getRepository("PaustianQuickcheckModule:QuickcheckQuestionEntity");
+            $questions = [];
+            if($searchText !== ''){
+                $questions = $repo->getSearchResults($searchText, 'AND', true);
+            } else {
+                //get them all
+                $qb = $em->createQueryBuilder();
+                // add select and from params
+                $qb->select('u')
+                    ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
+                $query = $qb->getQuery();
+                // execute query
+                $questions = $query->getResult();
+            }
+
+            //filter out only one category if $category != ""
+            if($category !== ""){
+                $catName = $category->getCategory()->getName();
+                $questions = array_filter($questions, function($element) use ($catName){
+                    $cat = $element->getCategories()->first();
+                    $name = $cat->getCategory()->getName();
+                    return ($catName === $name);
+                });
+            }
+            $qCategories = $this->_categorizeQuestions($questions);
+
+            return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
+                ['questions' => $questions,
+                    'categories' => $qCategories,
+                    'deleteRows' => false]);
+        }
+        return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_searchallquestions.html.twig",
+                ['form' => $form->createView()]);
+    }
+
+    public function _filterQuestionCategory($category){
+
     }
 
     /**

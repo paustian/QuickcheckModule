@@ -80,6 +80,13 @@ services:
               tags:
                 - { name: form.type }
 
+    paustian_quickcheck_module.form.examineallform_type:
+      class: Paustian\QuickcheckModule\Form\ExamineAllForm
+      arguments:
+        - "@translator.default"
+      tags:
+        - { name: form.type }
+
     paustian_quickcheck_module.container.link_container:
         class: Paustian\QuickcheckModule\Container\LinkContainer
         arguments:

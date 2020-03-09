@@ -7,11 +7,15 @@ use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 
 class QuickcheckQuestionRepository extends EntityRepository {
 
-    public function getSearchResults($words, $searchType){
+    public function getSearchResults($words, $searchType, $full=false){
         $qb = $this->_em->createQueryBuilder();
-        $qb->select('a.id', 'a.quickcheckqtype', 'a.quickcheckqtext')
-            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'a');
+        if($full){
+            $qb->select('a');
+        } else {
+            $qb->select('a.id', 'a.quickcheckqtype', 'a.quickcheckqtext');
+        }
 
+        $qb->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'a');
         $count = count($words);
         switch($searchType){
             case 'AND':
@@ -49,6 +53,10 @@ class QuickcheckQuestionRepository extends EntityRepository {
         $query = $qb->getQuery();
         $results = $query->getResult();
         return $results;
+    }
+
+    public function getTextAndCategory($words){
+
     }
 }
 
