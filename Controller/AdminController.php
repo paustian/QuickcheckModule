@@ -1376,8 +1376,22 @@ class AdminController extends AbstractController {
                 ['form' => $form->createView()]);
     }
 
-    public function _filterQuestionCategory($category){
-
+    /**
+     * _findHidden
+     * @return mixed -- A collection of results that are hidden from view.
+     */
+    public function _findHidden(){
+        $em = $this->getDoctrine()->getManager();
+        //get them all
+        $qb = $em->createQueryBuilder();
+        // add select and from params
+        $qb->select('u')
+            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
+            ->where('u.status = ?1' )
+            ->setParameter(1, '2');
+        $query = $qb->getQuery();
+        // execute query
+        return $query->getResult();
     }
 
     /**
@@ -1391,17 +1405,8 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
+        $questions = $this->_findHidden();
         $em = $this->getDoctrine()->getManager();
-        //get them all
-        $qb = $em->createQueryBuilder();
-        // add select and from params
-        $qb->select('u')
-            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
-            ->where('u.status = ?1' )
-            ->setParameter(1, '2');
-        $query = $qb->getQuery();
-        // execute query
-        $questions = $query->getResult();
         foreach ($questions as $question){
             $question->setStatus(AdminController::_STATUS_VIEWABLE);
             $em->merge($question);
@@ -1410,6 +1415,40 @@ class AdminController extends AbstractController {
         $this->addFlash('status', $this->__('Hidden questions added to public database.'));
         return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
     }
+
+    /**
+     * @Route("createexamfromhidden")
+     * @return RedirectResponse
+     * @throws AccessDeniedException
+     * @param Request $request
+     *
+     */
+    public function createexamfromhiddenAction(Request $request){
+        // Security check - important to do this as early as possible to avoid
+        // potential security holes or just too much wasted processing
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
+        //get all the hidden question, create an exam.
+        $questions = $this->_findHidden();
+        $questionIds = [];
+
+        foreach($questions as $question){
+            $questionIds[] = $question->getId();
+        }
+        $newExam = new QuickcheckExamEntity();
+        $newExam->setQuickcheckquestions($questionIds);
+        $newExam->setQuickcheckname($this->__("New Exam from Hidden Questions"));
+        $newExam->setQuickcheckrefid(0);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($newExam);
+        $em->flush();
+        //now redirect to the new exam
+        $id = $newExam->getId();
+        $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edit', ['exam' => $id]));
+        return $response;
+    }
+
     /**
      * @Route("/examinehidden")
      * @return Response
@@ -1422,17 +1461,8 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
-        $em = $this->getDoctrine()->getManager();
-        //get them all
-        $qb = $em->createQueryBuilder();
-        // add select and from params
-        $qb->select('u')
-            ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
-            ->where('u.status = ?1' )
-            ->setParameter(1, '2');
-        $query = $qb->getQuery();
-        // execute query
-        $questions = $query->getResult();
+
+        $questions = $this->_findHidden();
         $qCategories = $this->_categorizeQuestions($questions);
 
         return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
