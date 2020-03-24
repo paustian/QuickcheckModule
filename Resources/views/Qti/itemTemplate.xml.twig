@@ -1,0 +1,49 @@
+<item ident="{{ itemId }}" title="Question">
+    <itemmetadata>
+        <qtimetadata>
+            <qtimetadatafield>
+                <fieldlabel>question_type</fieldlabel>
+                <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+                <fieldlabel>points_possible</fieldlabel>
+                <fieldentry>1.0</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+                <fieldlabel>original_answer_ids</fieldlabel>
+                <fieldentry>{{ answerIds }}</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+                <fieldlabel>assessment_question_identifierref</fieldlabel>
+                <fieldentry>{{ assessId }}</fieldentry>
+            </qtimetadatafield>
+        </qtimetadata>
+    </itemmetadata>
+    <presentation>
+        <material>
+            <mattext texttype="text">{{ quickchecktext }}</mattext>
+        </material>
+        <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+                {% for item in items %}
+                <response_lable ident="{{ item.ident }}">
+                    <material>
+                        <mattext texttype="text/plain">{{ item.response }}</mattext>
+                    </material>
+                </response_lable>
+                {% endfor %}
+            </render_choice>
+        </response_lid>
+    </presentation>
+    <resprocessing>
+        <outcomes>
+            <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+        </outcomes>
+        <respcondition continue="No">
+            <conditionvar>
+                <varequal respident="response1">{{ correctAnswerId }}</varequal>
+            </conditionvar>
+            <setvar action="Set" varname="SCORE">100</setvar>
+        </respcondition>
+    </resprocessing>
+</item>

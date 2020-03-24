@@ -136,6 +136,9 @@ class LinkContainer implements LinkContainerInterface
                 'url' => $this->router->generate('paustianquickcheckmodule_admin_exportquiz'),
                 'text' => $this->translator->__('Export questions to XML file'));
             $submenulinks2[] = array(
+                'url' => $this->router->generate('paustianquickcheckmodule_qti_export', ["id" => 1]),
+                'text' => $this->translator->__('Export questions to Qti file'));
+            $submenulinks2[] = array(
                 'url' => $this->router->generate('paustianquickcheckmodule_admin_categorize'),
                 'text' => $this->translator->__('Recategorize questions'));
             $submenulinks2[] = array(
