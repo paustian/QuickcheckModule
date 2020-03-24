@@ -16,6 +16,8 @@ use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
  * @Route("/qti")
  *
  * export controllers for the quickcheck module
+ * This controller is unfinished as it does not import correctly into Canvas
+ * I need to find a synthax checker to figure out why (3/23/2020)
  */
 
 class QtiController extends AbstractController{
