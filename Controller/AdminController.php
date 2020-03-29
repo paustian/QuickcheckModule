@@ -40,6 +40,7 @@ use Paustian\QuickcheckModule\Form\ExportForm;
 use Paustian\QuickcheckModule\Form\CategorizeForm;
 use Zikula\Core\Response\Ajax\FatalResponse;
 use Zikula\Core\Response\Ajax\ForbiddenResponse;
+use Zikula\Bundle\HookBundle\FormAwareHook\FormAwareHook;
 
 /**
  * The various types of questions. We use defines to make the code
@@ -153,7 +154,7 @@ class AdminController extends AbstractController {
      */
     public function deleteAction(Request $request, QuickcheckExamEntity $exam = null) {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
-            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to delete exams."));
+            throw new AccessDeniedException();;
         }
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_modify'));
         if ($exam == null) {
@@ -177,7 +178,7 @@ class AdminController extends AbstractController {
      */
     public function deleteQuestionAction(Request $request, QuickcheckQuestionEntity $question = null) {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
-            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to delete questions."));
+            throw new AccessDeniedException();
         }
         $em = $this->getDoctrine()->getManager();
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
@@ -252,7 +253,7 @@ class AdminController extends AbstractController {
      */
     public function modifyAction(Request $request) {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
-            return DataUtil::formatForDisplayHTML($this->__("You do not have permission to edit questions."));
+            throw new AccessDeniedException();
         }
         // create a QueryBuilder instance
         $qb = $this->getDoctrine()->getManager()->createQueryBuilder();
@@ -502,6 +503,7 @@ class AdminController extends AbstractController {
         ];
         return  new JsonResponse($jsonReply);
     }
+
     /**
      * @Route("/edittextquest/{question}")
      * form to add new text question
@@ -529,7 +531,8 @@ class AdminController extends AbstractController {
         }
         //I need to add the use declaration for this class. 
         $form = $this->createForm(TextQuestion::class, $question);
-
+        $formHook = new FormAwareHook($form);
+        $this->get('hook_dispatcher')->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
 
         if ($form->isValid()) {
@@ -538,7 +541,8 @@ class AdminController extends AbstractController {
         }
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_text_question.html.twig', array(
-                    'form' => $form->createView(),
+            'form' => $form->createView(),
+            'hook_templates' => $formHook->getTemplates()
         ));
     }
 
@@ -566,7 +570,9 @@ class AdminController extends AbstractController {
         }
         //I need to add the use declaration for this class. 
         $form = $this->createForm(MatchQuestion::class, $question);
-
+        //Add form hooks. For example Scribyte
+        $formHook = new FormAwareHook($form);
+        $this->get('hook_dispatcher')->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -578,6 +584,7 @@ class AdminController extends AbstractController {
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_match_question.html.twig', array(
                     'form' => $form->createView(),
+                    'hook_templates' => $formHook->getTemplates()
         ));
     }
 
@@ -610,7 +617,9 @@ class AdminController extends AbstractController {
         }
         //I need to add the use declaration for this class. 
         $form = $this->createForm(TFQuestion::class, $question);
-
+        //Add form hooks. For example Scribyte
+        $formHook = new FormAwareHook($form);
+        $this->get('hook_dispatcher')->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -621,6 +630,7 @@ class AdminController extends AbstractController {
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_tf_question.html.twig', array(
                     'form' => $form->createView(),
+            'hook_templates' => $formHook->getTemplates()
         ));
     }
 
@@ -648,7 +658,9 @@ class AdminController extends AbstractController {
         }
         //I need to add the use declaration for this class. 
         $form = $this->createForm(MCQuestion::class, $question);
-
+        //Add form hooks. For example Scribyte
+        $formHook = new FormAwareHook($form);
+        $this->get('hook_dispatcher')->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -663,6 +675,7 @@ class AdminController extends AbstractController {
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_mc_question.html.twig', array(
                     'form' => $form->createView(),
+            'hook_templates' => $formHook->getTemplates()
         ));
     }
 
@@ -692,9 +705,10 @@ class AdminController extends AbstractController {
         }
         //I need to add the use declaration for this class. 
         $form = $this->createForm(MAnsQuestion::class, $question);
-
+        //Add form hooks. For example Scribyte
+        $formHook = new FormAwareHook($form);
+        $this->get('hook_dispatcher')->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
-
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
@@ -704,6 +718,7 @@ class AdminController extends AbstractController {
 
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_mans_question.html.twig', array(
                     'form' => $form->createView(),
+            'hook_templates' => $formHook->getTemplates()
         ));
     }
 

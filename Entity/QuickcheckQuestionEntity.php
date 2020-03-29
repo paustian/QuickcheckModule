@@ -147,7 +147,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
     }
 
     public function setQuickcheckqText($quickcheckqtext) {
-        $this->quickcheckqtext = $quickcheckqtext;
+        $this->quickcheckqtext = \Paustian\QuickcheckModule\Helper\TagHelper::stripFrontAndBackPTags($quickcheckqtext);
     }
 
     public function setQuickcheckqAnswer($quickcheckqanswer) {
@@ -155,7 +155,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
     }
 
     public function setQuickcheckqExpan($quickcheckqexpan) {
-        $this->quickcheckqexpan = $quickcheckqexpan;
+        $this->quickcheckqexpan = \Paustian\QuickcheckModule\Helper\TagHelper::stripFrontAndBackPTags($quickcheckqexpan);
     }
 
     public function setQuickcheckqParam($quickcheckqparam) {
@@ -271,5 +271,4 @@ class QuickcheckQuestionEntity extends EntityAccess {
                 break;
         }
     }
-
 }
