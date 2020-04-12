@@ -8,7 +8,25 @@ use Paustian\QuickcheckModule\Controller\AdminController;
 
 
 class QuickcheckExamRepository extends EntityRepository {
-   
+
+    /**
+     * get_all_exams
+     * return all the exams in the database
+     *
+     * @return array
+     */
+
+    public function get_all_exams(){
+        // create a QueryBuilder instance
+        $qb = $this->_em->createQueryBuilder();
+
+        // add select and from params
+        $qb->select('u')
+            ->from('PaustianQuickcheckModule:QuickcheckExamEntity', 'u');
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
     /**
      * get the exam object for the referring id
      * 

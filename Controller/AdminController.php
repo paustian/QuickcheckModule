@@ -16,7 +16,9 @@
 namespace Paustian\QuickcheckModule\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Paustian\QuickcheckModule\API\UUID;
 use Paustian\QuickcheckModule\Form\ExamineAllForm;
+use Paustian\QuickcheckModule\PaustianQuickcheckModule;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Zikula\Core\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -255,22 +257,14 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
-        // create a QueryBuilder instance
-        $qb = $this->getDoctrine()->getManager()->createQueryBuilder();
+        $exams = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity')->get_all_exams();
 
-        // add select and from params
-        $qb->select('u')
-                ->from('PaustianQuickcheckModule:QuickcheckExamEntity', 'u');
-        // convert querybuilder instance into a Query object
-        $query = $qb->getQuery();
-
-        // execute query
-        $exams = $query->getResult();
         if (!$exams) {
             $this->addFlash('error', $this->__('There are no exams to edit'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
+
         return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_modify.html.twig', ['exams' => $exams]);
     }
 

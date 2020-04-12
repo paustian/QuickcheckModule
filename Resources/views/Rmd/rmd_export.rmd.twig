@@ -1,0 +1,25 @@
+Question
+========
+{{question}}
+
+Answerlist
+----------
+{% for item in items %}
+* {{ item }}
+{%  endfor %}
+
+Solution
+========
+
+Answerlist
+----------
+{% for solution in solutions %}
+* {{ solution }}
+{% endfor %}
+
+Meta-information
+================
+exname: {{ exname }}
+extype: mchoice
+exsolution: {{exsolution}}
+exshuffle: {{qnum}}
