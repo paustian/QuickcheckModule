@@ -32,6 +32,7 @@
                 <button id="preview_button" type="button" class="btn btn-success" name="preview" value="preview">
                     {{ __('Preview Question') }}
                 </button>
+                {{ form_widget(form.delete, {'attr': {'class': 'btn btn-danger'}}) }}
             </div>
         </div>
         {{ form_end(form) }}

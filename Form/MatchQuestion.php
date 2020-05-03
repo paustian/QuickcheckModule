@@ -45,8 +45,8 @@ class MatchQuestion extends AbstractType {
             ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Question'), 'required' => true))
             ->add('quickcheckqanswer', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Answer'), 'required' => true))
             ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Explanation'), 'required' => true))
-            ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Save Question'));
-        
+            ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Save Question'))
+            ->add('delete', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Delete Question'));
         $builder->add('quickcheckqtype', \Symfony\Component\Form\Extension\Core\Type\HiddenType::class, array('data' => AdminController::_QUICKCHECK_MATCHING_TYPE));
         if($this->permissionApi->hasPermission('Quickcheck::', '::', ACCESS_ADMIN)) {
             $builder->add('status', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [

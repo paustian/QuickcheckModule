@@ -1,7 +1,7 @@
 <?php
 
 namespace Paustian\QuickcheckModule\Controller;
-
+use ZipArchive;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
@@ -10,7 +10,7 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Zikula\Core\Controller\AbstractController;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
-use ZipArchive;
+
 
 /**
  * @Route("/rmd")
@@ -87,7 +87,9 @@ class RmdController extends AbstractController{
         foreach($questions as $qId) {
             $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $qId);
             //right now only exporting MCQs. I will expand later
-            if($question->getQuickcheckqType() !== AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE){
+            $type = $question->getQuickcheckqType();
+            if( ($type !== AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE) &&
+                ($type !== AdminController::_QUICKCHECK_MULTIANSWER_TYPE)){
                 continue;
             }
             $this->_writeQuestionFile($question, $qId);

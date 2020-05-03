@@ -49,8 +49,8 @@ class TFQuestion extends AbstractType {
         $builder
                 ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => $this->translator->__('Question'), 'required' => true))
                 ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' => $this->translator->__('Explanation'), 'required' => true))
-                ->add('save', SubmitType::class, array('label' => 'Save Question'));
-
+                ->add('save', SubmitType::class, array('label' => 'Save Question'))
+                ->add('delete', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Delete Question'));
         $builder->add('quickcheckqanswer', ChoiceType::class, array(
             'choices' => array('True' => '1', 'False' => '0'),
             'required' => true,

@@ -183,7 +183,8 @@ class AdminController extends AbstractController {
             throw new AccessDeniedException();
         }
         $em = $this->getDoctrine()->getManager();
-        $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
+        $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_editquestions');
+            //$this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
         $json = false;
         if ($question == null) {
             $id = $request->request->get('id');
@@ -530,6 +531,9 @@ class AdminController extends AbstractController {
         $form->handleRequest($request);
 
         if ($form->isValid()) {
+            if($form->get('delete')->isClicked()){
+                return $this->deleteQuestionAction($request, $question);
+            }
             $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_edittextquest');
             return $this->_persistQuestion($question, $doMerge, $this->__('Text question saved!'), $response);
         }
@@ -572,6 +576,9 @@ class AdminController extends AbstractController {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
+            if($form->get('delete')->isClicked()){
+                return $this->deleteQuestionAction($request, $question);
+            }
             $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_editmatchquest');
             return $this->_persistQuestion($question, $doMerge, $this->__('Matching question saved!'), $response);
         }
@@ -618,6 +625,9 @@ class AdminController extends AbstractController {
 
         /** @var \Doctrine\ORM\EntityManager $em */
         if ($form->isValid()) {
+            if($form->get('delete')->isClicked()){
+                return $this->deleteQuestionAction($request, $question);
+            }
             $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_edittfquest');
             return $this->_persistQuestion($question, $doMerge, $this->__('True/False question saved!'), $response);
         }
@@ -706,6 +716,9 @@ class AdminController extends AbstractController {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         if ($form->isValid()) {
+            if($form->get('delete')->isClicked()){
+                return $this->deleteQuestionAction($request, $question);
+            }
             $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_editmansquest');
             return $this->_persistQuestion($question, $doMerge, $this->__('Multiple-Answer question saved!'), $response);
         }

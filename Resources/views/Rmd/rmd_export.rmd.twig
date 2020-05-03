@@ -1,11 +1,11 @@
 Question
 ========
-{{question}}
+{{ question|raw }}
 
 Answerlist
 ----------
 {% for item in items %}
-* {{ item }}
+* {{ item|raw }}
 {%  endfor %}
 
 Solution
@@ -14,7 +14,7 @@ Solution
 Answerlist
 ----------
 {% for solution in solutions %}
-* {{ solution }}
+* {{ solution|raw }}
 {% endfor %}
 
 Meta-information
