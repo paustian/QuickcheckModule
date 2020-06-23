@@ -1,6 +1,6 @@
 {
     "name": "paustian/quickcheck-module",
-    "version": "3.0",
+    "version": "3.2",
     "description": "Module for creating quizzes that you can attach to other modules",
     "type": "zikula-module",
     "license": "LGPL-3.0+",
@@ -28,7 +28,7 @@
                 "user": {"route": "paustianquickcheckmodule_user_index"}
             },
             "securityschema": {
-                "PaustianQuickcheckModule::": "exam::quiz"
+                "PaustianQuickcheckModule::": "examid::questionid"
             }
         }
     }

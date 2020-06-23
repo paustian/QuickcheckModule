@@ -115,6 +115,21 @@ class LinkContainer implements LinkContainerInterface
             //the import/export menu
             $submenulinks2 = array();
             $submenulinks2[] = array(
+                'url' => $this->router->generate('paustianquickcheckmodule_admin_examinemoderated'),
+                'text' => $this->translator->__('Examine all moderated questions'));
+            $submenulinks2[] = array(
+                'url' => $this->router->generate('paustianquickcheckmodule_admin_examinehidden'),
+                'text' => $this->translator->__('Examine all hidden questions for exam'));
+            $submenulinks2[] = array(
+                'url' => $this->router->generate('paustianquickcheckmodule_admin_createexamfromhidden'),
+                'text' => $this->translator->__('Create an Exam from Hidden Questions'));
+            $submenulinks2[] = array(
+                'url' => $this->router->generate('paustianquickcheckmodule_admin_examineall'),
+                'text' => $this->translator->__('Examine all questions'));
+            $submenulinks2[] = array(
+                'url' => $this->router->generate('paustianquickcheckmodule_admin_hiddentopublic'),
+                'text' => $this->translator->__('Move Hidden Questions to public'));
+            $submenulinks2[] = array(
                 'url' => $this->router->generate('paustianquickcheckmodule_admin_importquiz'),
                 'text' => $this->translator->__('Import questions from XML file'));
             $submenulinks2[] = array(

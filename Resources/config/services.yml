@@ -12,6 +12,13 @@ services:
         tags:
         - { name: zikula.hook_provider, areaName: "provider.paustianquickcheckmodule.ui_hooks.quickcheck" }
 
+    paustian_quickcheck_module.hook_subscriber.form_aware_hook.messages:
+      class: Paustian\QuickcheckModule\HookHandler\FormAwareHookSubscriber
+      arguments:
+        - "@translator.default"
+      tags:
+        - { name: zikula.hook_subscriber, areaName: 'subscriber.quickcheck_module.form_aware_hook.messages' }
+
     paustian_quickcheck_module.form.examform_type:
         class: Paustian\QuickcheckModule\Form\ExamForm
         arguments:
@@ -23,6 +30,7 @@ services:
           class: Paustian\QuickcheckModule\Form\TFQuestion
           arguments:
             - "@translator.default"
+            - '@zikula_permissions_module.api.permission'
           tags:
             - { name: form.type }
 
@@ -37,6 +45,7 @@ services:
           class: Paustian\QuickcheckModule\Form\MAnsQuestion
           arguments:
             - "@translator.default"
+            - '@zikula_permissions_module.api.permission'
           tags:
             - { name: form.type }
 
@@ -44,6 +53,7 @@ services:
               class: Paustian\QuickcheckModule\Form\MatchQuestion
               arguments:
                 - "@translator.default"
+                - '@zikula_permissions_module.api.permission'
               tags:
                 - { name: form.type }
 
@@ -51,6 +61,7 @@ services:
             class: Paustian\QuickcheckModule\Form\MCQuestion
             arguments:
               - "@translator.default"
+              - '@zikula_permissions_module.api.permission'
             tags:
               - { name: form.type }
 
@@ -58,6 +69,7 @@ services:
             class: Paustian\QuickcheckModule\Form\TextQuestion
             arguments:
               - "@translator.default"
+              - '@zikula_permissions_module.api.permission'
             tags:
               - { name: form.type }
 
@@ -74,6 +86,13 @@ services:
                 - "@translator.default"
               tags:
                 - { name: form.type }
+
+    paustian_quickcheck_module.form.examineallform_type:
+      class: Paustian\QuickcheckModule\Form\ExamineAllForm
+      arguments:
+        - "@translator.default"
+      tags:
+        - { name: form.type }
 
     paustian_quickcheck_module.container.link_container:
         class: Paustian\QuickcheckModule\Container\LinkContainer

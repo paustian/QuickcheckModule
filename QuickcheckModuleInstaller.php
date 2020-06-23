@@ -111,6 +111,14 @@ class QuickcheckModuleInstaller extends AbstractExtensionInstaller {
      * @return       bool       true on success, false otherwise
      */
     public function upgrade($oldversion) {
+        switch ($oldversion){
+            case 3.0:
+                //install status member into QuickcheckQuestion Entity
+                $sql = "ALTER TABLE `quickcheck_quest` ADD `status` SMALLINT DEFAULT 0";
+                $this->entityManager->getConnection()->exec($sql);
+            case 3.1:
+                //future upgrades
+        }
         return true;
     }
 

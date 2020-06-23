@@ -1,0 +1,9 @@
+services:
+  paustian_quickcheck_module.helper.search_helper:
+    class: Paustian\QuickcheckModule\Helper\SearchHelper
+    arguments:
+      - '@zikula_permissions_module.api.permission'
+      - '@session'
+      - '@paustian_quickcheck_module.question_repository'
+    tags:
+      - { name: zikula.searchable_module, bundleName: PaustianQuickcheckModule }

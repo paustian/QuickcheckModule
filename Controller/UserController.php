@@ -31,8 +31,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\RouterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
-use CategoryUtil;
-use DataUtil;
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Zikula\Core\Response\Ajax\ForbiddenResponse;
@@ -103,7 +101,9 @@ class UserController extends AbstractController {
                     ->from('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', 'p')
                     ->join('p.categories', 'c')
                     ->where('c.category = :categories')
-                    ->setParameter('categories', $category);
+                    ->setParameter('categories', $category)
+                    ->andWhere('p.status = ?1' )
+                    ->setParameter(1, '0');
 
             return $qb->getQuery()->getSingleScalarResult();
         }
@@ -136,7 +136,9 @@ class UserController extends AbstractController {
         $qb = $em->createQueryBuilder();
         // add select and from params
         $qb->select('u')
-                ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
+                ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
+                ->where('u.status = ?1' )
+                ->setParameter(1, '0');
         // convert querybuilder instance into a Query object
         $query = $qb->getQuery();
         $questions = $query->getResult();

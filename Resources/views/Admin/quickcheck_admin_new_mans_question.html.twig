@@ -17,16 +17,23 @@ After the | put the percent correct for that anwer. These points can be distribu
         <fieldset>
             <legend>{{ __('Multiple-Answer Question') }}</legend>
             {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
-            {{ form_row(form.quickcheckqanswer, {'attr': {'class': 'qc_answer'}}) }}
+            {{ form_row(form.quickcheckqanswer, {'attr': {'class': 'qc_answer noeditor'}}) }}
             {{ form_row(form.quickcheckqexpan, {'attr': {'class': 'qc_question'}}) }}
             {{ form_row(form.categories) }}
+            {% if hasPermission('PaustianQuickcheckModule::', '::', 'ACCESS_ADMIN') %}
+                {{ form_row(form.status) }}
+            {% endif %}
         </fieldset>
+        {% for hook_template in hook_templates %}
+            {{ include(hook_template.0, hook_template.1, ignore_missing = true) }}
+        {% endfor %}
         <div class="form-group">
             <div class="col-lg-offset-3 col-lg-9">
                 {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
                 <button id="preview_button" type="button" class="btn btn-success" name="preview" value="preview">
                     {{ __('Preview Question') }}
                 </button>
+                {{ form_widget(form.delete, {'attr': {'class': 'btn btn-danger'}}) }}
             </div>
         </div>
         {{ form_end(form) }}

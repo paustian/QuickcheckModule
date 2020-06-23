@@ -171,30 +171,4 @@ class UiHooksProviderHandler  implements HookProviderInterface
         $this->requestStack->getMasterRequest()->getSession()->getFlashBag()->add('success', 'Ui hook edit properly processed!');
     }
 }
-/*class UiHooksProviderHandler extends AbstractHookListener {
 
-
-    public function display_view(DisplayHook $hook) {
-
-
-    }
-
-    public function process_delete(ProcessHook $hook) {
-        // Security check
-        if (!SecurityUtil::checkPermission('Quickcheck::', '::', ACCESS_DELETE)) {
-            return;
-        }
-        $id = $hook->getId();
-        if ($id) {
-            $repo = $this->entityManager->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
-            $exam = $repo->get_exam($id);
-            if (false !== $exam) {
-                //set the refid to -1 so that we know no document is attached to this exam.
-                $exam->setQuickcheckrefid(-1); 
-                $this->entityManager->merge($exam);
-                $this->entityManager->flush();
-            }
-        }
-    }
-
-}*/

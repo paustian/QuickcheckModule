@@ -11,10 +11,11 @@
                 <tr>
                     <td>{{ item.quickcheckname }}</td>
                     <td class="actions">
-                        <a href="{{ path('paustianquickcheckmodule_user_print') }}/{{ item.id }}" class="fa fa-print"></a>
-                        <a href="{{ path('paustianquickcheckmodule_user_display') }}/{{ item.id }}" class="fa fa-eye"></a>
-                        <a href="{{ path('paustianquickcheckmodule_admin_edit') }}/{{ item.id }}" class="fa fa-pencil"></a>
-                        <a href="{{ path('paustianquickcheckmodule_admin_delete') }}/{{ item.id }}" class="fa fa-trash-o" onclick="return confirm('Are you sure you want to delete the exam?')"></a>
+                        <a href="{{ path('paustianquickcheckmodule_user_print') }}/{{ item.id }}" class="fa fa-print" title="{{ __('Make a printable exam') }}"></a>
+                        <a href="{{ path('paustianquickcheckmodule_user_display') }}/{{ item.id }}" class="fa fa-eye" title="{{ __('Exam Preview') }}"></a>
+                        <a href="{{ path('paustianquickcheckmodule_rmd_export', {"exam": item.id}) }}" class="fa fa-arrow-circle-down" title="{{ __('Download rmd export') }}"></a>
+                        <a href="{{ path('paustianquickcheckmodule_admin_edit') }}/{{ item.id }}" class="fa fa-pencil" title="{{ __('Edit exam') }}"></a>
+                        <a href="{{ path('paustianquickcheckmodule_admin_delete') }}/{{ item.id }}" class="fa fa-trash-o" title="{{ __('Delete Exam') }}" onclick="return confirm('Are you sure you want to delete the exam?')"></a>
                     </td>
                 </tr>
             {% endfor %}

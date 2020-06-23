@@ -2,7 +2,7 @@
 {{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
 {{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.viewquestion.js')) }}
 {% if hasPermission('PaustianQuickcheckModule::', '::', 'ACCESS_ADMIN') %}
-{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}   
+    {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
 {% endif %}
 <div class="container-fluid">
     <div class="row">
@@ -11,42 +11,56 @@
             {{ __("New Multiple-Choice Question") }}
         </h3>
     </div>
-        <p>{{ __("Write your new Multiple-Choice question in the text box. Write the answers in the textbox. One choice per line, followed by a | charcter.
+    <p>{{ __("Write your new Multiple-Choice question in the text box. Write the answers in the textbox. One choice per line, followed by a | charcter.
 After the | put the percent correct for that anwer. One of the answers should be set to 100 and the others set to 0. Finally explain the correct answer in the explanation box. Here is
 an example of how the text in the answer box should look") }}</p>
-    <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Question") }}</label><div class="col-sm-9"><textarea id="misc" class="qc_question form-control" readonly>{{ __("The most livable mid-size city in America is... ") }}</textarea>
+    <fieldset>
+        <legend>{{ __('Example Question Format') }}</legend>
+        <div class="form-group"><label class="col-sm-3 control-label required">{{ __("Question") }}</label>
+            <div class="col-sm-9">
+                <textarea id="misc" class="qc_question form-control noeditor"
+                          readonly>{{ __("The most livable mid-size city in America is... ") }}</textarea>
+            </div>
         </div>
-    </div>
-    <div class="form-group"><label class="col-sm-3 control-label required">{{  __("Answer") }}</label><div class="col-sm-9"><textarea class="qc_answer form-control" readonly>
+        <div class="form-group"><label class="col-sm-3 control-label required">{{ __("Answer") }}</label>
+            <div class="col-sm-9"><textarea class="qc_answer form-control noeditor" readonly>
 Milwaukee, WI|0
 Peoria, IL|0
 Madison, WI|100
 San Bernadino, CA|0
 Newark, NJ|0</textarea>
-        </div>
-        {{ showflashes() }}
-        {{ form_start(form) }}
-        {{ form_errors(form) }}
-        <input id="type" type="hidden" name="type" value="1"> <!- multiple choice type ->
-        <fieldset>
-            <legend>{{ __('Multiple-Choice Question') }}</legend>
-            {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
-            {{ form_row(form.quickcheckqanswer, {'attr': {'class': 'qc_answer'}}) }}
-            {{ form_row(form.quickcheckqexpan, {'attr': {'class': 'qc_question'}}) }}
-            {{ form_row(form.categories) }}
-        </fieldset>
-        <div class="form-group">
-            <div class="col-lg-offset-3 col-lg-9">
-                {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
-                <button id="preview_button" type="button" class="btn btn-success" name="preview" value="preview">
-                    {{ __('Preview Question') }}
-                </button>
-                {{ form_widget(form.delete, {'attr': {'class': 'btn btn-danger'}}) }}
             </div>
         </div>
-        {{ form_end(form) }}
+    </fieldset>
+    {{ showflashes() }}
+    {{ form_start(form) }}
+    {{ form_errors(form) }}
+    <input id="type" type="hidden" name="type" value="1"> <!- multiple choice type ->
+    <fieldset>
+        <legend>{{ __('Multiple-Choice Question') }}</legend>
+        {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
+        {{ form_row(form.quickcheckqanswer, {'attr': {'class': 'qc_answer noeditor'}}) }}
+        {{ form_row(form.quickcheckqexpan, {'attr': {'class': 'qc_question'}}) }}
+        {{ form_row(form.categories) }}
+        {% if hasPermission('PaustianQuickcheckModule::', '::', 'ACCESS_ADMIN') %}
+            {{ form_row(form.status) }}
+        {% endif %}
+    </fieldset>
+    {% for hook_template in hook_templates %}
+        {{ include(hook_template.0, hook_template.1, ignore_missing = true) }}
+    {% endfor %}
+    <div class="form-group">
+        <div class="col-lg-offset-3 col-lg-9">
+            {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
+            <button id="preview_button" type="button" class="btn btn-success" name="preview" value="preview">
+                {{ __('Preview Question') }}
+            </button>
+            {{ form_widget(form.delete, {'attr': {'class': 'btn btn-danger'}}) }}
+        </div>
     </div>
+    {{ form_end(form) }}
 </div>
+
 <div id="preview_div" title="Preview Question" style="text-align: left">
 </div>
 {{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

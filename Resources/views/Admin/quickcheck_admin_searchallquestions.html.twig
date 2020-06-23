@@ -1,0 +1,27 @@
+{% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
+{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
+<div class="container-fluid">
+    <div class="row">
+        <h3>
+            <span class="fa fa-edit"></span>
+            {{ __("Define Categories and Text for Example Questions") }}
+        </h3>
+        <p>{{ __("Choose the category and/or and search text you want for the question") }}</p>
+        {{ showflashes() }}
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+        <fieldset>
+            <legend>{{ __('Text Question') }}</legend>
+            {{ form_row(form.searchtext) }}
+            {{ form_row(form.categories) }}
+        </fieldset>
+        <div class="form-group">
+            <div class="col-lg-offset-3 col-lg-9">
+                {{ form_widget(form.list, {'attr': {'class': 'btn btn-success'}}) }}
+                {{ form_widget(form.cancel, {'attr': {'class': 'btn btn-cancel'}}) }}
+            </div>
+        </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

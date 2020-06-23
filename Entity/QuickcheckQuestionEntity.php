@@ -20,16 +20,17 @@ use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory as QuickcheckCat
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Zikula\Core\Doctrine\EntityAccess;
 
 /**
  * Quickcheck entity class.
  *
  * We use annotations to define the entity mappings to database (see http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/basic-mapping.html).
  *
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Paustian\QuickcheckModule\Entity\Repository\QuickcheckQuestionRepository")
  * @ORM\Table(name="quickcheck_quest")
  */
-class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
+class QuickcheckQuestionEntity extends EntityAccess {
 
     /**
      * question id
@@ -37,7 +38,7 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
      * @ORM\Id
      * @ORM\Column(type="integer", length=20)
      * @ORM\GeneratedValue(strategy="AUTO")
-     * 
+     *
      */
     private $id;
 
@@ -50,28 +51,28 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
 
     /**
      * question text
-     * 
+     *
      * @ORM\Column(type="text")
      */
     private $quickcheckqtext;
 
     /**
      * question answer
-     * 
+     *
      * @ORM\Column(type="text")
      */
     private $quickcheckqanswer;
 
     /**
      * question explanation
-     * 
+     *
      * @ORM\Column(type="text")
      */
     private $quickcheckqexpan;
 
     /**
      * question extra paramaters
-     * 
+     *
      * @ORM\Column(type="text")
      */
     private $quickcheckqparam;
@@ -83,6 +84,13 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
      */
     private $categories;
 
+    /**
+     * moderation status
+     *
+     * @ORM\Column(type="integer", length=2)
+     */
+    private $status;
+
     public function __construct() {
         $this->id = 0;
         $this->quickcheckqtype = 0;
@@ -91,6 +99,7 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
         $this->quickcheckqexpan = '';
         $this->quickcheckqparam = '';
         $this->categories = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->status = 0;
     }
 
     public function getId() {
@@ -116,7 +125,6 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
     public function getQuickcheckqParam() {
         return $this->quickcheckqparam;
     }
-
     /**
      * Get page categories
      *
@@ -124,6 +132,10 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
      */
     public function getCategories() {
         return $this->categories;
+    }
+
+    public function getStatus(){
+        return $this->status;
     }
 
     public function setId($id) {
@@ -135,7 +147,7 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
     }
 
     public function setQuickcheckqText($quickcheckqtext) {
-        $this->quickcheckqtext = $quickcheckqtext;
+        $this->quickcheckqtext = \Paustian\QuickcheckModule\Helper\TagHelper::stripFrontAndBackPTags($quickcheckqtext);
     }
 
     public function setQuickcheckqAnswer($quickcheckqanswer) {
@@ -143,7 +155,7 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
     }
 
     public function setQuickcheckqExpan($quickcheckqexpan) {
-        $this->quickcheckqexpan = $quickcheckqexpan;
+        $this->quickcheckqexpan = \Paustian\QuickcheckModule\Helper\TagHelper::stripFrontAndBackPTags($quickcheckqexpan);
     }
 
     public function setQuickcheckqParam($quickcheckqparam) {
@@ -164,12 +176,15 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
                 $categories->remove($key);
             }
         }
-        
+
         foreach ($categories as $category) {
             $this->categories->add($category);
         }
     }
-    
+
+    public function setStatus($status){
+        $this->status = $status;
+    }
     /**
      * Check if a collection contains an element based only on two criteria (categoryRegistryId, categoy).
      * @param $collection
@@ -193,21 +208,21 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
 
     /**
      * @Assert\Callback
-     * 
+     *
      */
     public function validate(ExecutionContextInterface $context) {
 
         //Check to make sure the question has an answer
         if ($this->getQuickcheckqText() == "") {
             $context->buildViolation('The question text cannot be empty')
-                    ->atPath('quickcheckqtext')
-                    ->addViolation();
+                ->atPath('quickcheckqtext')
+                ->addViolation();
         }
         //Check to make sure there is an explanation
         if ($this->getQuickcheckqExpan() == "") {
             $context->buildViolation('The question explanation cannot be empty')
-                    ->atPath('quickcheckqexpan')
-                    ->addViolation();
+                ->atPath('quickcheckqexpan')
+                ->addViolation();
         }
         //Grab the answer for analysis.
         $answer = $this->getQuickcheckqAnswer();
@@ -218,8 +233,8 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
             case AdminController::_QUICKCHECK_MATCHING_TYPE:
                 if ($answer == "") {
                     $context->buildViolation('The answer to the question cannot be empty')
-                            ->atPath('quickcheckqanswer')
-                            ->addViolation();
+                        ->atPath('quickcheckqanswer')
+                        ->addViolation();
                 }
                 break;
             case AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE:
@@ -236,8 +251,8 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
                 if ($total_percent != 100 || !$hasOneAnswer) {
                     //It has to add to 100% if not, there is an error
                     $context->buildViolation('Your answer must have one response that is set to 100% and the others set to 0%')
-                            ->atPath('quickcheckqanswer')
-                            ->addViolation();
+                        ->atPath('quickcheckqanswer')
+                        ->addViolation();
                 }
                 break;
             case AdminController::_QUICKCHECK_MULTIANSWER_TYPE:
@@ -250,13 +265,10 @@ class QuickcheckQuestionEntity extends \Zikula\Core\Doctrine\EntityAccess {
                 if ($total_percent != 100) {
                     //It has to add to 100% if not, there is an error
                     $context->buildViolation('Your answer does not add up to 100%')
-                            ->atPath('quickcheckqanswer')
-                            ->addViolation();
+                        ->atPath('quickcheckqanswer')
+                        ->addViolation();
                 }
                 break;
         }
-
-        //I need to add other validations for the other fields.
     }
-
 }
