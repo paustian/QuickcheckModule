@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Paustian\QuickcheckModule\DependencyInjection;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -13,12 +15,10 @@ class PaustianQuickcheckExtension extends Extension
     /**
      * {@inheritdoc}
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container) : void
     {
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
-        $loader->load('doctrine.yml');
-        $loader->load('helpers.yml');
     }
 }
 

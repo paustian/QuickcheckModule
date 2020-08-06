@@ -1,31 +1,23 @@
-{% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
-
-{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
-<div class="container-fluid">
-    <div class="row">
-        <h3>
-            <span class="fa fa-edit"></span>
-            {{ __("Categorize Questions") }}
-        </h3>
-        <p>{{ __("Pick the questions that you would like and then pick the categories you want.") }}</p>
-        {{ showflashes() }}
-        {{ form_start(form) }}
-        {{ form_errors(form) }}
-        <fieldset>
-            <legend>{{ __('Questions') }}</legend>
-            {{ questions|raw }}
-        </fieldset>
-        <fieldset>
-            <legend>{{ __('Categories') }}</legend>
-            {{ form_row(form.categories) }}
-        </fieldset>
-        <div class="form-group">
-            <div class="col-lg-offset-3 col-lg-9">
-                {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
-                {{ form_widget(form.cancel, {'attr': {'class': 'btn btn-success'}}) }}
-            </div>
-        </div>
-        {{ form_end(form) }}
+<h3>
+    <span class="fa fa-edit"></span>
+    {{ "Categorize Questions"|trans }}
+</h3>
+<p>{{ "Pick the questions that you would like and then pick the categories you want."|trans }}</p>
+{{ showflashes() }}
+{{ form_start(form) }}
+{{ form_errors(form) }}
+<fieldset>
+    <legend>{{ 'Questions'|trans }}</legend>
+    {{ questions|raw }}
+</fieldset>
+<fieldset>
+    <legend>{{ 'Categories'|trans }}</legend>
+    {{ form_row(form.categories) }}
+</fieldset>
+<div class="form-group">
+    <div class="col-lg-offset-3 col-lg-9">
+        {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
+        {{ form_widget(form.cancel, {'attr': {'class': 'btn btn-success'}}) }}
     </div>
-    </div>
-{{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}
+</div>
+{{ form_end(form) }}

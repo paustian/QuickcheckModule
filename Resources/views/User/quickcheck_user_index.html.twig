@@ -1,39 +1,41 @@
 {{ pageSetVar('title', 'Create a practice exam') }}
-<div class="container-fluid">
-    <h3>
-        <span class="fa fa-book"></span>
-        {{ __("Create a practice exam") }}  
-    </h3>
-    <p>{{ __("Choose the number of questions you want from each category and then hit the create button") }}</p>
-    <form action="{{ path('paustianquickcheckmodule_user_createexam') }}" method="post" enctype="application/x-www-form-urlencoded">
-        <input type="hidden" id="csrftoken" name="csrftoken" value="{insert name='csrftoken'}" />
-        <fieldset>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>{{ __('Category') }}</th>
-                        <th> {{ __('Number of Questions') }} </th></tr>
-                </thead>
-                <tbody>
-                    {% for category in categories %}
-                        <tr>
-                            <td>
-                                {{ category.name }}
-                            </td>
-                            <td>
-                                <input type='number' name='num_questions[{{ category.id }}]' max='{{ attribute(counts, category.id) }}' min='0' value='0' />
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </fieldset>
-        <div class="form-group">
-            <div class="col-lg-offset-3 col-lg-9">
-                <button class="btn btn-success" type="submit" name="create" value="create">
-                    {{ __('Create Exam') }}
-                </button>
-            </div>
+
+<h3>
+    <span class="fa fa-book"></span>
+    {{ __("Create a practice exam") }}
+</h3>
+<p>{{ __("Choose the number of questions you want from each category and then hit the create button") }}</p>
+<form action="{{ path('paustianquickcheckmodule_user_createexam') }}" method="post"
+      enctype="application/x-www-form-urlencoded">
+    <input type="hidden" id="csrftoken" name="csrftoken" value="{insert name='csrftoken'}"/>
+    <fieldset>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>{{ __('Category') }}</th>
+                <th> {{ __('Number of Questions') }} </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for category in categories %}
+                <tr>
+                    <td>
+                        {{ category.name }}
+                    </td>
+                    <td>
+                        <input type='number' name='num_questions[{{ category.id }}]'
+                               max='{{ attribute(counts, category.id) }}' min='0' value='0'/>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </fieldset>
+    <div class="form-group">
+        <div class="col-lg-offset-3 col-lg-9">
+            <button class="btn btn-success" type="submit" name="create" value="create">
+                {{ __('Create Exam') }}
+            </button>
         </div>
-    </form>
-</div>
+    </div>
+</form>

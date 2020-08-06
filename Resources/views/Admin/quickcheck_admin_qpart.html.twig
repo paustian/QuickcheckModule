@@ -2,7 +2,7 @@
 {{ pageAddAsset('stylesheet', asset('jquery-ui/themes/base/jquery-ui.min.css')) }}
 {{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/highlighting.css')) }}
 {# I struggled for hours trying to get the accordian interface to work. Only after realizing it was not including the jquery-ui.js did it fix #}
-<h3>{{ __('Questions') }}</h3>
+<h3>{{ 'Questions'|trans }}</h3>
 <div id="QuestionList">
     {% for category, question in questions %}
         <h3>{{ category }}</h3>

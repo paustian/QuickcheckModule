@@ -1,0 +1,14 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+    bind
+      $extension: '@Paustian\QuickcheckModule\PaustianQuickcheckModule'
+
+    Paustian\QuickcheckModule\:
+      resource: '../../*'
+
+    Paustian\QuickcheckModule\Helper:
+      resource: '../../Helper/*'
+      lazy: true

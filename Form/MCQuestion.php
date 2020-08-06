@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Paustian\QuickcheckModule\Form;
 
 use Symfony\Component\Form\AbstractType;
@@ -39,7 +41,7 @@ class MCQuestion extends AbstractType {
         $this->permissionApi = $permissionApi;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options) : void
     {
         $builder
             ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Question'), 'required' => true))
@@ -73,7 +75,7 @@ class MCQuestion extends AbstractType {
         ]);
     }
 
-    public function getPrefixName()
+    public function getPrefixName() : string
     {
         return 'paustianquickcheckmodule_mcquesiton';
     }
@@ -84,7 +86,7 @@ class MCQuestion extends AbstractType {
      *
      * @param OptionsResolver $resolver
      */
-    public function setDefaultOptions(OptionsResolver $resolver)
+    public function setDefaultOptions(OptionsResolver $resolver) : void
     {
         $resolver->setDefaults(array(
             'data_class' => 'Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity',

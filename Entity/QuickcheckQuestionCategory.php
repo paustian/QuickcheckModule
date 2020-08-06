@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Paustian\QuickcheckModule\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Zikula\CategoriesModule\Entity\AbstractCategoryAssignment;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use Zikula\CategoriesModule\Entity\CategoryEntity;
 
 /**
  * @ORM\Entity
@@ -26,7 +29,7 @@ class QuickcheckQuestionCategory extends AbstractCategoryAssignment
      *
      * @return \Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity
      */
-    public function getEntity()
+    public function getEntity() : \Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity
     {
         return $this->entity;
     }
@@ -34,7 +37,7 @@ class QuickcheckQuestionCategory extends AbstractCategoryAssignment
      /**
      * Set entity
      *
-     * @param \Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity $entity
+     * @param $entity
      */
     public function setEntity($entity)
     {

@@ -1,10 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Paustian\QuickcheckModule\API;
+/**
+ * Class UUID
+ * @package Paustian\QuickcheckModule\API
+ * July 30, 2020
+ * Currently this is not being used. If I ever get QTI figured out
+ * I may start using it again, so I am leaving it for now
+ */
 
 class UUID {
-    public static function v3($namespace, $name) {
-        if(!self::is_valid($namespace)) return false;
+    public static function v3($namespace, $name) : string {
+        if(!self::is_valid($namespace)) return "";
 
         // Get hexadecimal components of namespace
         $nhex = str_replace(array('-','{','}'), '', $namespace);
@@ -43,7 +52,7 @@ class UUID {
     }
 
     //I messed with this to get rid of the dashes and add a g at the beginning.
-    public static function v4() {
+    public static function v4() : string {
         return sprintf('g%04x%04x%04x%04x%04x%04x%04x%04x',
 
             // 32 bits for "time_low"
@@ -66,8 +75,8 @@ class UUID {
         );
     }
 
-    public static function v5($namespace, $name) {
-        if(!self::is_valid($namespace)) return false;
+    public static function v5($namespace, $name) : string {
+        if(!self::is_valid($namespace)) return "";
 
         // Get hexadecimal components of namespace
         $nhex = str_replace(array('-','{','}'), '', $namespace);
@@ -105,9 +114,8 @@ class UUID {
         );
     }
 
-    public static function is_valid($uuid) {
-        return preg_match('/^\{?[0-9a-f]{8}\-?[0-9a-f]{4}\-?[0-9a-f]{4}\-?'.
-                '[0-9a-f]{4}\-?[0-9a-f]{12}\}?$/i', $uuid) === 1;
+    public static function is_valid($uuid) : bool {
+        return preg_match('/^\{?[0-9a-f]{8}\-?[0-9a-f]{4}\-?[0-9a-f]{4}\-? [0-9a-f]{4}\-?[0-9a-f]{12}\}?$/i', $uuid) === 1;
     }
 }
 

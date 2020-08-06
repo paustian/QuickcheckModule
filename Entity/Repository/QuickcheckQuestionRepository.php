@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Paustian\QuickcheckModule\Entity\Repository;
 
 use Doctrine\ORM\EntityRepository;
@@ -7,7 +9,13 @@ use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 
 class QuickcheckQuestionRepository extends EntityRepository {
 
-    public function getSearchResults($words, $searchType, $full=false){
+    /**
+     * @param array $words
+     * @param string $searchType
+     * @param bool $full
+     * @return array
+     */
+    public function getSearchResults(array $words, string $searchType, bool $full=false) :array {
         $qb = $this->_em->createQueryBuilder();
         if($full){
             $qb->select('a');

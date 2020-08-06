@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Paustian\QuickcheckModule\Controller;
 
 use ZipArchive;
@@ -30,8 +32,11 @@ class QtiController extends AbstractController{
      *
      * Set up a form to present all the exams and let the user choose
      * The one to modify
+     *
+     * @param Request $request
+     * @return Response
      */
-    public function indexAction(Request $request){
+    public function indexAction(Request $request) : Response {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -49,8 +54,12 @@ class QtiController extends AbstractController{
      * @Route("/export/{exam}")
      *
      * Export an exam
+     *
+     * @param Request $request
+     * @param QuickcheckExamEntity|null $exam
+     * @return Response
      */
-    public function exportAction(Request $request, QuickcheckExamEntity $exam = null){
+    public function exportAction(Request $request, QuickcheckExamEntity $exam = null) : Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
@@ -110,7 +119,11 @@ class QtiController extends AbstractController{
 
     }
 
-    private function _createQuestionXml($exam){
+    /**
+     * @param $exam
+     * @return string
+     */
+    private function _createQuestionXml(QuickcheckExamEntity $exam) : string {
         $questions = $exam->getQuickcheckquestions();
         $em = $this->getDoctrine()->getManager();
         $items = [];

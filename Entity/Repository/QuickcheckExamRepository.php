@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Paustian\QuickcheckModule\Entity\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Paustian\QuickcheckModule\Controller\AdminController;
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 
 
 class QuickcheckExamRepository extends EntityRepository {
@@ -16,7 +19,7 @@ class QuickcheckExamRepository extends EntityRepository {
      * @return array
      */
 
-    public function get_all_exams(){
+    public function get_all_exams() : array {
         // create a QueryBuilder instance
         $qb = $this->_em->createQueryBuilder();
 
@@ -29,16 +32,11 @@ class QuickcheckExamRepository extends EntityRepository {
 
     /**
      * get the exam object for the referring id
-     * 
-     * @param number $art_id
-     * @return QuickcheckExamEntity
-     */
-    public function get_exam($art_id){
+     * @param $art_id
+     * @return array
+      */
+    public function get_exam($art_id) : array {
         $result = $this->findOneByQuickcheckrefid($art_id);
-        //don't fail if we don't find it. a null result is ok
-        if(!isset($result)){
-            return false;
-        }
         return $result;
     }
     
@@ -47,18 +45,18 @@ class QuickcheckExamRepository extends EntityRepository {
      * _render_quiz
      *
      * A function that calculates all the data for displaying the quiz.
-     * Date: 016
-     * @author Timothy Paustian
-     * 
-     * @param the exam to prep questions for
-     * @param array questions the questions to render
-     * @param array sq_ids
-     * 
-     * @return the text of the quiz.
+     *
+     * @param array $examQuestions
+     * @param array $questions
+     * @param array $sq_ids
+     * @param array $letters
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
      */
     
    
-    public function render_quiz($examQuestions, &$questions, &$sq_ids, &$letters) {
+    public function render_quiz(array $examQuestions, array &$questions, array &$sq_ids, array &$letters) : void {
 
         //grab the questions
         $em = $this->_em;
@@ -89,8 +87,15 @@ class QuickcheckExamRepository extends EntityRepository {
 
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
     }
-    
-    public function unpackQuestion($in_question, $shuffle = true) {
+
+    /**
+     * unpackQuestion - Unpack the question and prepare it for display.
+     *
+     * @param QuickcheckQuestionEntity $in_question
+     * @param bool $shuffle
+     * @return QuickcheckQuestionEntity
+     */
+    public function unpackQuestion(QuickcheckQuestionEntity $in_question, bool $shuffle = true) : QuickcheckQuestionEntity {
         $type = $in_question->getQuickcheckqType();
         //We need to unpack this a bit to prepare it for display
         //We parse out the correct answer and put those in the param variable of the class

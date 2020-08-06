@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Paustian\QuickcheckModule\Controller;
+use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 use ZipArchive;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -33,8 +36,11 @@ class RmdController extends AbstractController{
      *
      * Set up a form to present all the exams and let the user choose
      * The one to modify
+     * @param Request $request
+     * @return Response
+     * @throws AccessDeniedException
      */
-    public function indexAction(Request $request){
+    public function indexAction(Request $request) : Response {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -52,8 +58,12 @@ class RmdController extends AbstractController{
      * @Route("/export/{exam}")
      *
      * Export an exam
+     *
+     * @param Request $request
+     * @param QuickcheckExamEntity|null $exam
+     * @return Response
      */
-    public function exportAction(Request $request, QuickcheckExamEntity $exam = null){
+    public function exportAction(Request $request, QuickcheckExamEntity $exam = null) : Response{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
@@ -109,7 +119,12 @@ class RmdController extends AbstractController{
         return $response;
     }
 
-    private function _writeQuestionFile($question, $qId){
+    /**
+     * _writeQuestionFile - write out each question in rmd format
+     * @param $question
+     * @param $qId
+     */
+    private function _writeQuestionFile(QuickcheckQuestionEntity $question, int $qId) : void{
         $items = [];
         $answers = $question->getQuickcheckqAnswer();
         preg_match_all("|(.*)\|(.*)|", $answers, $matches);

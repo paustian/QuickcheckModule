@@ -1,26 +1,19 @@
-{% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
-{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
-<div class="container-fluid">
-    <div class="row">
-        <h3>
-            <span class="fa fa-edit"></span>
-            {{ __("Export Questions") }}
-        </h3>
-        <p>{{ __("Pick the questions that you would like to export.") }}</p>
-        {{ showflashes() }}
+<h3>
+    <span class="fa fa-edit"></span>
+    {{ "Export Questions"|trans }}
+</h3>
+<p>{{ "Pick the questions that you would like to export."|trans }}</p>
+{{ showflashes() }}
         {{ form_start(form) }}
         {{ form_errors(form) }}
-        <fieldset>
-            <legend>{{ __('Questions') }}</legend>
-            {{ questions|raw }}
-        </fieldset>
-        <div class="form-group">
-            <div class="col-lg-offset-3 col-lg-9">
-                {{ form_widget(form.export, {'attr': {'class': 'btn btn-success'}}) }}
-                {{ form_widget(form.exportall, {'attr': {'class': 'btn btn-success'}}) }}
-            </div>
-        </div>
-        {{ form_end(form) }}
+<fieldset>
+    <legend>{{ 'Questions'|trans }}</legend>
+    {{ questions|raw }}
+</fieldset>
+<div class="form-group">
+    <div class="col-lg-offset-3 col-lg-9">
+        {{ form_widget(form.export, {'attr': {'class': 'btn btn-success'}}) }}
+        {{ form_widget(form.exportall, {'attr': {'class': 'btn btn-success'}}) }}
     </div>
-    </div>
-{{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}
+</div>
+{{ form_end(form) }}

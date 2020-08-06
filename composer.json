@@ -1,6 +1,6 @@
 {
     "name": "paustian/quickcheck-module",
-    "version": "3.2.1",
+    "version": "4.0.0",
     "description": "Module for creating quizzes that you can attach to other modules",
     "type": "zikula-module",
     "license": "LGPL-3.0+",
@@ -14,13 +14,14 @@
         "psr-4": { "Paustian\\QuickcheckModule\\": "" }
     },
     "require": {
-        "php": ">5.4.0"
+        "php": ">7.2.5"
     },
     "extra": {
         "zikula": {
             "url": "quickcheck",
             "class": "Paustian\\QuickcheckModule\\PaustianQuickcheckModule",
-            "core-compatibility": ">=1.4.3",
+            "icon": "fas fa-book-open",
+            "core-compatibility": ">=3.0.0",
             "displayname": "Quickcheck Module",
             "oldnames": [],
             "capabilities": {

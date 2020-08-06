@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Copyright Timothy Paustian 2015
  *
@@ -14,6 +16,7 @@
 
 namespace Paustian\QuickcheckModule\Entity;
 
+use Entity\Category;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory as QuickcheckCategoryRelation;
@@ -102,27 +105,27 @@ class QuickcheckQuestionEntity extends EntityAccess {
         $this->status = 0;
     }
 
-    public function getId() {
+    public function getId() : int {
         return $this->id;
     }
 
-    public function getQuickcheckqType() {
+    public function getQuickcheckqType() :int {
         return $this->quickcheckqtype;
     }
 
-    public function getQuickcheckqText() {
+    public function getQuickcheckqText() : string{
         return $this->quickcheckqtext;
     }
 
-    public function getQuickcheckqAnswer() {
+    public function getQuickcheckqAnswer() : string {
         return $this->quickcheckqanswer;
     }
 
-    public function getQuickcheckqExpan() {
+    public function getQuickcheckqExpan() : string {
         return $this->quickcheckqexpan;
     }
 
-    public function getQuickcheckqParam() {
+    public function getQuickcheckqParam() :string {
         return $this->quickcheckqparam;
     }
     /**
@@ -130,35 +133,35 @@ class QuickcheckQuestionEntity extends EntityAccess {
      *
      * @return \Doctrine\Common\Collections\ArrayCollection
      */
-    public function getCategories() {
+    public function getCategories() : ArrayCollection {
         return $this->categories;
     }
 
-    public function getStatus(){
+    public function getStatus() : int {
         return $this->status;
     }
 
-    public function setId($id) {
+    public function setId(int $id) : void {
         $this->id = $id;
     }
 
-    public function setQuickcheckqType($quickcheckqtype) {
+    public function setQuickcheckqType(int $quickcheckqtype) : void {
         $this->quickcheckqtype = $quickcheckqtype;
     }
 
-    public function setQuickcheckqText($quickcheckqtext) {
+    public function setQuickcheckqText(string $quickcheckqtext) : void {
         $this->quickcheckqtext = \Paustian\QuickcheckModule\Helper\TagHelper::stripFrontAndBackPTags($quickcheckqtext);
     }
 
-    public function setQuickcheckqAnswer($quickcheckqanswer) {
+    public function setQuickcheckqAnswer(string $quickcheckqanswer): void  {
         $this->quickcheckqanswer = $quickcheckqanswer;
     }
 
-    public function setQuickcheckqExpan($quickcheckqexpan) {
+    public function setQuickcheckqExpan(string $quickcheckqexpan): void  {
         $this->quickcheckqexpan = \Paustian\QuickcheckModule\Helper\TagHelper::stripFrontAndBackPTags($quickcheckqexpan);
     }
 
-    public function setQuickcheckqParam($quickcheckqparam) {
+    public function setQuickcheckqParam(string $quickcheckqparam) : void {
         //I need to somehow make this string sql safe.
         $this->quickcheckqparam = $quickcheckqparam;
     }
@@ -168,7 +171,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
      * I wonder if I can just set this for 1.4.2
      * @param $categories
      */
-    public function setCategories(ArrayCollection $categories) {
+    public function setCategories(ArrayCollection $categories) : void {
         foreach ($this->categories as $categoryAssignment) {
             if (false === $key = $this->collectionContains($categories, $categoryAssignment)) {
                 $this->categories->removeElement($categoryAssignment);
@@ -182,19 +185,18 @@ class QuickcheckQuestionEntity extends EntityAccess {
         }
     }
 
-    public function setStatus($status){
+    public function setStatus(int $status) : void {
         $this->status = $status;
     }
     /**
      * Check if a collection contains an element based only on two criteria (categoryRegistryId, categoy).
      * @param $collection
      * @param $element
-     * @return bool|int
+     * @return int
      */
-    private function collectionContains($collection, $element)
+    private function collectionContains(ArrayCollection $collection, QuickcheckQuestionCategory $element)
     {
         foreach ($collection as $key => $collectionAssignment) {
-            /** @var \Zikula\PagesModule\Entity\CategoryEntity $collectionAssignment */
             if ($collectionAssignment->getCategoryRegistryId() == $element->getCategoryRegistryId()
                 && $collectionAssignment->getCategory() == $element->getCategory()
             ) {
@@ -203,7 +205,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
             }
         }
 
-        return false;
+        return 0;
     }
 
     /**

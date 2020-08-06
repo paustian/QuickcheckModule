@@ -1,10 +1,8 @@
-{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
-<div class="container-fluid">
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>{{ __('Question') }}</th>
-            <th> {{ __('Actions') }} </th></tr>
+            <th>{{ 'Question'|trans }}</th>
+            <th> {{ 'Actions'|trans }} </th></tr>
     </thead>
     <tbody>
         {% for item in questions %}
@@ -33,5 +31,3 @@
         {% endfor %}
     </tbody>
 </table>
-</div>
-{{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

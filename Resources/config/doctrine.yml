@@ -1,5 +1,0 @@
-services:
-    paustian_quickcheck_module.question_repository:
-        class: Paustian\QuickcheckModule\Entity\Repository\QuickcheckQuestionRepository
-        factory: ["@doctrine.orm.default_entity_manager", getRepository]
-        arguments: ["PaustianQuickcheckModule:QuickcheckQuestionEntity"]

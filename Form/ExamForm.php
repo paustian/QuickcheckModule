@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 namespace Paustian\QuickcheckModule\Form;
 
 use Symfony\Component\Form\AbstractType;
@@ -31,7 +33,7 @@ class ExamForm extends AbstractType {
         TranslatorInterface $translator)   {
         $this->translator = $translator;
     }
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options) : void
     {
         $builder
             ->add('quickcheckname', TextType::class, array('label' => $this->translator->__('Exam Name'), 'required' => true))
@@ -40,7 +42,7 @@ class ExamForm extends AbstractType {
         
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix() : string
     {
         return 'paustianquickcheckmodule_examform';
     }
@@ -51,7 +53,7 @@ class ExamForm extends AbstractType {
      *
      * @param OptionsResolver $resolver
      */
-    public function setDefaultOptions(OptionsResolver $resolver)
+    public function setDefaultOptions(OptionsResolver $resolver) : void
     {
         $resolver->setDefaults(array(
             'data_class' => 'Paustian\QuickcheckModule\Entity\QuickcheckExamEntity',

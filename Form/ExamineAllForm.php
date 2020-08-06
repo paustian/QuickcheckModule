@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 namespace Paustian\QuickcheckModule\Form;
 
 use Symfony\Component\Form\AbstractType;
@@ -30,7 +32,7 @@ class ExamineAllForm extends AbstractType {
         $this->translator = $translator;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options) : void
     {
         $builder
             ->add('list', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => $this->translator->__('List Questions')))
@@ -48,7 +50,7 @@ class ExamineAllForm extends AbstractType {
         $builder->add('searchtext', \Symfony\Component\Form\Extension\Core\Type\TextType::class, array('label' => $this->translator->__('Search Text'), 'required' => false));
     }
 
-    public function getPrefixName()
+    public function getPrefixName() : string
     {
         return 'paustianquickcheckmodule_categorizeform';
     }

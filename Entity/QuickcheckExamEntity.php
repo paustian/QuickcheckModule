@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Copyright Timothy Paustian 2015
  *
@@ -68,35 +70,35 @@ class QuickcheckExamEntity extends EntityAccess {
         $this->quickcheckref_id = 0;
     }
     
-    public function getId() {
+    public function getId() : int {
         return $this->id;
     }
 
-    public function getQuickcheckname() {
+    public function getQuickcheckname() : string {
         return $this->quickcheckname;
     }
 
-    public function getQuickcheckquestions() {
+    public function getQuickcheckquestions() : array {
         return $this->quickcheckquestions;
     }
 
-    public function getQuickcheckrefid() {
+    public function getQuickcheckrefid() : int {
         return $this->quickcheckref_id;
     }
 
-    public function setId($id) {
+    public function setId(int $id): void  {
         $this->id = $id;
     }
 
-    public function setQuickcheckname($quickcheckname) {
+    public function setQuickcheckname(string $quickcheckname) : void{
         $this->quickcheckname = $quickcheckname;
     }
 
-    public function setQuickcheckquestions($quickcheckquestions) {
+    public function setQuickcheckquestions(array $quickcheckquestions): void {
         $this->quickcheckquestions = $quickcheckquestions;
     }
 
-    public function setQuickcheckrefid($quickcheckrefid) {
+    public function setQuickcheckrefid(int $quickcheckrefid) : void {
         $this->quickcheckrefid = $quickcheckrefid;
     }
 

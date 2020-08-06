@@ -1,17 +1,16 @@
-<div class="container-fluid">
-    <table class="table table-striped">
-        <thead>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>{{ 'Question ID'|trans }}</th>
+        <th> {{ 'Question Stem Text'|trans }} </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in questions %}
         <tr>
-            <th>{{ __('Question ID') }}</th>
-            <th> {{ __('Question Stem Text') }} </th></tr>
-        </thead>
-        <tbody>
-        {% for item in questions %}
-            <tr>
-                <td>{{ item.id }}</td>
-                <td>{{ item.quickcheckqtext|slice(0,100) }}&hellip;</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
+            <td>{{ item.id }}</td>
+            <td>{{ item.quickcheckqtext|slice(0,100) }}&hellip;</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

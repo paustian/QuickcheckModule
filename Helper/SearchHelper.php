@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Paustian\QuickcheckModule\Helper;
 /**
  *
@@ -58,7 +60,7 @@ class SearchHelper implements SearchableInterface
     /**
      * {@inheritdoc}
      */
-    public function amendForm(FormBuilderInterface $form)
+    public function amendForm(FormBuilderInterface $form) : void
     {
         // not needed because `active` child object is already added and that is all that is needed.
     }
@@ -66,7 +68,7 @@ class SearchHelper implements SearchableInterface
     /**
      * {@inheritdoc}
      */
-    public function getResults(array $words, $searchType = 'AND', $modVars = null)
+    public function getResults(array $words, string $searchType = 'AND', ?array $modVars = []) : array
     {
         //return an empty array if you don't have permission to be able to search questions
         if (!$this->permissionApi->hasPermission('Book::',"::", ACCESS_ADMIN)){
@@ -90,7 +92,13 @@ class SearchHelper implements SearchableInterface
         return $returnArray;
     }
 
-    private function _determineRoute($question){
+    public function getBundleName(): string
+    {
+        return 'PaustianQuickcheckModule';
+    }
+
+    private function _determineRoute(QuickcheckQuestionEntity $question) : RouteUrl
+    {
         $url = "";
         switch($question['quickcheckqtype']){
             case AdminController::_QUICKCHECK_TEXT_TYPE:
@@ -111,7 +119,7 @@ class SearchHelper implements SearchableInterface
         }
         return $url;
     }
-    public function getErrors()
+    public function getErrors() : array
     {
         return [];
     }
@@ -121,7 +129,8 @@ class SearchHelper implements SearchableInterface
      * I think the search display stuff should be doing this
      * but it is not
      */
-    private function shorten_text($text) {
+    private function shorten_text(string $text) : string
+    {
 // Change to the number of characters you want to display
         $chars = 200;
         if(strlen($text) < $chars){

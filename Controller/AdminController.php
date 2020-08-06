@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * quickcheck Module
  *
@@ -72,16 +74,17 @@ class AdminController extends AbstractController {
      *
      * @return void
      */
-    protected function postInitialize() {
+    protected function postInitialize() : void {
         // In this controller we do not want caching.
         $this->view->setCaching(Zikula_View::CACHE_DISABLED);
     }
 
     /**
      * @Route("")
-     * 
+     * @param Request $request
+     * @return Response
      */
-    public function indexAction(Request $request) {
+    public function indexAction(Request $request) : Response {
 
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
@@ -97,10 +100,11 @@ class AdminController extends AbstractController {
      *
      * Create a new exam
      *
-     * @author       Timothy Paustian
-     * @return       The form for creating a new exam response object
+     * @param Request $request
+     * @param QuickcheckExamEntity|null $exam
+     * @return mixed The form for creating a new exam response object
      */
-    public function editAction(Request $request, QuickcheckExamEntity $exam = null) {
+    public function editAction(Request $request, QuickcheckExamEntity $exam = null) : mixed {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
@@ -173,19 +177,19 @@ class AdminController extends AbstractController {
     /**
      * @Route ("/deletequestion/{question}", options={"expose"=true})
      * deleteQuestionAction - delete the question.
-     * 
+     *
      * @param Request $request
-     * @param QuickcheckQuestionEntity $question
-     * 
+     * @param QuickcheckQuestionEntity|null $question
+     * @return JsonResponse
      */
-    public function deleteQuestionAction(Request $request, QuickcheckQuestionEntity $question = null) {
+    public function deleteQuestionAction(Request $request, QuickcheckQuestionEntity $question = null) : JsonResponse {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
             throw new AccessDeniedException();
         }
         $em = $this->getDoctrine()->getManager();
         $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_editquestions');
             //$this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
-        $json = false;
+        $json = null;
         if ($question == null) {
             $id = $request->request->get('id');
             if(!isset($id)){
@@ -216,7 +220,8 @@ class AdminController extends AbstractController {
      * @param  $em the entity manager   
      * @return true if successful
      */
-    private function _removeQuestionFromExams($em, $id) {
+
+    private function _removeQuestionFromExams($em, $id) : bool {
         $qb = $em->createQueryBuilder();
         // add select and from params
         $qb->select('u')
@@ -253,8 +258,12 @@ class AdminController extends AbstractController {
      *
      * Set up a form to present all the exams and let the user choose
      * The one to modify
+     *
+     * @param Request $request
+     * @return Response
+     * @throws AccessDeniedException
      */
-    public function modifyAction(Request $request) {
+    public function modifyAction(Request $request) : Response{
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -273,15 +282,16 @@ class AdminController extends AbstractController {
      * @Route ("/attach/")
      * @Method("POST")
      * @param Request $request
-     * 
+     * @throws AccessDeniedException
+     * @return RedirectResponse
+     *
      * Parameters of the request are:
      *  ret_url the URL to return to after being done
      *  art_id the article Id of the item that the exam is being attached to
      *  exam the exam that is being attached to the article
-     * 
-     * @return RedirectResponse
+     *
      */
-    public function attachAction(Request $request) {
+    public function attachAction(Request $request) : RedirectResponse {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
@@ -327,11 +337,11 @@ class AdminController extends AbstractController {
 
     /**
      * _build_question_list.
-     * @return array. Listing the text, id and type of each question and the
      * category it is in.
-     * 
+     * @param array|null $ckList
+     * @return array Listing the text, id and type of each question and the
      */
-    private function _build_questions_list($ckList = null) {
+    private function _build_questions_list(array $ckList = null) : array {
         $em = $this->getDoctrine()->getManager();
         // create a QueryBuilder instance
         $qb = $em->createQueryBuilder();
@@ -344,7 +354,7 @@ class AdminController extends AbstractController {
         // execute query
         $items = $query->getResult();
         if (!$items) {
-            return false;
+            return [];
         }
 
         $questions = array();
@@ -380,15 +390,14 @@ class AdminController extends AbstractController {
 
     /**
      * _persistQustion save a question to the databse, set the announcement and then save.
-     * 
-     * @param type $question the question entity to save to the database
-     * @param type $doMerge whether this is a merge (edit) or persist (new)
-     * @param type $flashText the text to put in the flash area
-     * @param type $redirect what url to redirect to
-     * 
+     *
+     * @param QuickcheckQuestionEntity $question
+     * @param bool $doMerge
+     * @param string $flashText
+     * @param Response $redirect
      * @return Response
      */
-    private function _persistQuestion($question, $doMerge, $flashText, $redirect) {
+    private function _persistQuestion(QuickcheckQuestionEntity $question, bool $doMerge, string $flashText, Response $redirect) :Response {
         $em = $this->getDoctrine()->getManager();
         if ($doMerge) {
             $em->merge($question);
@@ -408,7 +417,7 @@ class AdminController extends AbstractController {
      * have changed.
      * @param type $questionList - the list of questions to save
      */
-    private function _persistQuestionList($questionList, $categories) {
+    private function _persistQuestionList($questionList, $categories) : void {
         $em = $this->getDoctrine()->getManager();
         $catElement = $categories->first();
         
@@ -425,7 +434,12 @@ class AdminController extends AbstractController {
         $em->flush();
     }
 
-    private function _determineRedirect(Request $request, $path){
+    /**
+     * @param Request $request
+     * @param $path
+     * @return Response
+     */
+    private function _determineRedirect(Request $request, string $path) : Response{
         $fromModifyForm = $request->query->get('modify');
         if(!isset($fromModifyForm)){
             $fromModifyForm = 0;
@@ -448,9 +462,9 @@ class AdminController extends AbstractController {
      * @Route("/setquestion", options={"expose"=true})
      * @Method("POST")
      * @param Request $request
-     * @return JsonResponse|FatalResponse|ForbiddenResponse bid or Ajax error
+     * @return JsonResponse
      */
-    public function setQuestionAction(Request $request){
+    public function setQuestionAction(Request $request) :JsonResponse{
         $id = $request->request->get('id');
         $text = $request->request->get('qText');
         $answer = $request->request->get('qAnswer');
@@ -481,9 +495,9 @@ class AdminController extends AbstractController {
      * @Route("/javaedit", options={"expose"=true})
      * @Method("POST")
      * @param Request $request
-     * @return JsonResponse|FatalResponse|ForbiddenResponse bid or Ajax error
+     * @return JsonResponse
      */
-    public function javaEditAction(Request $request){
+    public function javaEditAction(Request $request) : JsonResponse{
         $id = $request->request->get('id');
         if(!isset($id)){
             new FatalResponse($this->__('That qusetion for some reason does not exist.'));
@@ -507,9 +521,10 @@ class AdminController extends AbstractController {
      *
      * @param Request $request
      * @param QuickcheckQuestionEntity $question
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse|Response
+     * @return Response
      */
-    public function editTextQuestAction(Request $request, QuickcheckQuestionEntity $question = null) {
+
+    public function editTextQuestAction(Request $request, QuickcheckQuestionEntity $question = null) :Response{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
@@ -551,11 +566,11 @@ class AdminController extends AbstractController {
      * form to add new matching question
      *
      * Create a new quick_check question
-     *
-     * @author       Timothy Paustian
-     * @return       Response
+     * @param Request $request
+     * @param QuickcheckQuestionEntity|null $question
+     * @return Response
      */
-    public function editMatchQuestAction(Request $request, QuickcheckQuestionEntity $question = null) {
+    public function editMatchQuestAction(Request $request, QuickcheckQuestionEntity $question = null) :Response {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
@@ -594,14 +609,11 @@ class AdminController extends AbstractController {
      * form to add new TF question
      *
      * Create a new quick_check question
-     *
-     * @author       Timothy Paustian
-     *  
      * @param Request $request
      * @param QuickcheckQuestionEntity $question
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse|Response
+     * @return Response
      */
-    public function editTFQuestAction(Request $request, QuickcheckQuestionEntity $question = null) {
+    public function editTFQuestAction(Request $request, QuickcheckQuestionEntity $question = null) : Response {
 
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
@@ -642,14 +654,15 @@ class AdminController extends AbstractController {
      * @Route("/editmcquest/{question}")
      * 
      * Form to add a new multiple choice question
-     * @param array $args
+     * * @param Request $request
+     * @param QuickcheckQuestionEntity|null $question
      * @return Response
      *
      * Test data
      * HEre is an answer|100
      * HEre is another|0
      */
-    public function editMCQuestAction(Request $request, QuickcheckQuestionEntity $question = null) {
+    public function editMCQuestAction(Request $request, QuickcheckQuestionEntity $question = null) : Response{
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
@@ -685,17 +698,14 @@ class AdminController extends AbstractController {
 
     /**
      * @Route ("/editmansquest/{question}")
-     * @param   $request the requst coming in
-     * @param   $question the potential quesiton to edit.
-     *  
-     * form to add new multiple answer question
      *
-     * edit a multiple answer question
+     * Edit a multiple answer question.
      *
-     * @author       Timothy Paustian
-     * @return       The form for creating a new multiple answer question
+     * @param Request $request
+     * @param QuickcheckQuestionEntity|null $question
+     * @return Response
      */
-    public function editMANSQuestAction(Request $request, QuickcheckQuestionEntity $question = null) {
+    public function editMANSQuestAction(Request $request, QuickcheckQuestionEntity $question = null) : Response {
 
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
             throw new AccessDeniedException();
@@ -735,11 +745,14 @@ class AdminController extends AbstractController {
      * modifyquestion
      * 
      * Take the form data from editquestionsAction and dispatch it to the right question interface.
-     * 
-     * @return RedirectResponse
+     *
      * @throws AccessDeniedException
+     * @param Request $request
+     * @param QuickcheckQuestionEntity|null $question
+     * @return RedirectResponse
+     *
      */
-    public function modifyquestionAction(Request $request, QuickcheckQuestionEntity $question = null) {
+    public function modifyquestionAction(Request $request, QuickcheckQuestionEntity $question = null) :RedirectResponse {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -806,12 +819,13 @@ class AdminController extends AbstractController {
      *  This is the interface for modifying and deleting questions. I combined the
      *  two to make it more accessible to the user. The function displays a list of
      *  questions, and from there a user can edit or delete a question.
-     * 
+     * @param Request $request
      * @return Response
      * @throws AccessDeniedException
      * 
      */
-    public function editquestionsAction(Request $request) {
+
+    public function editquestionsAction(Request $request) :Response{
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -827,11 +841,12 @@ class AdminController extends AbstractController {
      * form array of questions. From there you can render how you please in a response
      * I may just want it to return the array (could just get rid of this funciton
      * and then add it as part of a form. I will have to see.
-     * 
-     * @param type $buttons
-     * @return html
+     *
+     * @param string $buttons
+     * @param array $ckquestions
+     * @return string
      */
-    private function _prep_question_list($buttons = 'radio', $ckquestions = null) {
+    private function _prep_question_list(string $buttons = 'radio', array $ckquestions = null) : string {
 
         $questions = $this->_build_questions_list($ckquestions);
 
@@ -856,7 +871,7 @@ class AdminController extends AbstractController {
      * @param Request $request
      * @return Response
      */
-    public function categorizeAction(Request $request) {
+    public function categorizeAction(Request $request) : Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
@@ -895,7 +910,7 @@ class AdminController extends AbstractController {
      *  @return Response
      *  @throws AccessDeniedException
      */
-    public function findunansweredAction() {
+    public function findunansweredAction() : Response {
         //you have to have edit access to do this
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
@@ -926,13 +941,11 @@ class AdminController extends AbstractController {
 
     /**
      * 
-     * @param type $xmlQuestionText - the xml text to parse
+     * @param string $xmlQuestionText - the xml text to parse
      * @param type $category - the categories to assign it.
      * 
      */
-    private function _parseImportedQuizXML($xmlQuestionText, $category) {
-        
-        
+    private function _parseImportedQuizXML(string $xmlQuestionText, ArrayCollection $category) {
         //An awesome function for parsing simple xml.
         //First we need to scrumb out our xml tags before doing this magic
         $tagsSearch1 = ["|<questiondoc>|", "|</questiondoc>|", 
@@ -1052,7 +1065,7 @@ class AdminController extends AbstractController {
      * @return Response
      * @throws AccessDeniedException
      */
-    public function importquizAction(Request $request) {
+    public function importquizAction(Request $request) :Response {
         //you have to have edit access to do this
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
@@ -1085,7 +1098,7 @@ class AdminController extends AbstractController {
      * @return Response
      * @throws AccessDeniedException
      */
-    public function exportquizAction(Request $request) {
+    public function exportquizAction(Request $request) :Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
@@ -1116,14 +1129,15 @@ class AdminController extends AbstractController {
 
     /**
      * _prepExportText - given a list of question ids, grab them and make an array of questions.
-     * 
-     * @param type $qIds
+     *
+     * @param array|null $qIds
+     * @return array
      */
-    private function _prepExportText($qIds = null) {
+    private function _prepExportText(array $qIds = null) :array {
         $questions = array();
         $em = $this->getDoctrine()->getManager();
         //if this is null, we want all the questions
-        if ($qIds == null) {
+        if (null === $qIds) {
             //get them all
             $qb = $em->createQueryBuilder();
             // add select and from params
@@ -1147,7 +1161,7 @@ class AdminController extends AbstractController {
      * @return Response
      * @throws AccessDeniedException
      */
-    public function upgradeoldquestionsAction() {
+    public function upgradeoldquestionsAction() : Response {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
@@ -1210,7 +1224,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      *
      */
-    public function findmyidAction(){
+    public function findmyidAction() : Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
@@ -1240,7 +1254,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
 
-    public function cleanCatDupesAction(){
+    public function cleanCatDupesAction() : Response {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
@@ -1281,11 +1295,12 @@ class AdminController extends AbstractController {
 
     /**
      * Add the category name to each question.
-     * @param $questions
+     * @param array $questions
+     * @param string $category
      * @return array
      */
 
-    private function _categorizeQuestions($questions, $category='all'){
+    private function _categorizeQuestions(array $questions, string $category='all') : array {
         $returnQuestions = [];
         foreach($questions as $question){
             $cat = $question->getCategories()->first();
@@ -1311,7 +1326,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
 
-    public function examinemoderatedAction(Request $request){
+    public function examinemoderatedAction(Request $request) : Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
@@ -1342,7 +1357,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
 
-    public function examineallAction(Request $request){
+    public function examineallAction(Request $request) :Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
@@ -1400,9 +1415,9 @@ class AdminController extends AbstractController {
 
     /**
      * _findHidden
-     * @return mixed -- A collection of results that are hidden from view.
+     * @return array
      */
-    public function _findHidden(){
+    public function _findHidden() : array {
         $em = $this->getDoctrine()->getManager();
         //get them all
         $qb = $em->createQueryBuilder();
@@ -1418,10 +1433,13 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/hiddentopublic")
-     * @return Response
+     *
+     * @param Request $request
+     * @return RedirectResponse
      * @throws AccessDeniedException
      */
-    public function hiddentopublicAction(Request $request){
+
+    public function hiddentopublicAction(Request $request) : RedirectResponse{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
@@ -1445,7 +1463,7 @@ class AdminController extends AbstractController {
      * @param Request $request
      *
      */
-    public function createexamfromhiddenAction(Request $request){
+    public function createexamfromhiddenAction(Request $request) : RedirectResponse{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
@@ -1477,7 +1495,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
 
-    public function examinehiddenAction(Request $request){
+    public function examinehiddenAction(Request $request) : Response{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {

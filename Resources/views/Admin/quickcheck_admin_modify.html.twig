@@ -1,25 +1,29 @@
-{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
-<div class="container-fluid">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>{{ __('Exam') }}</th>
-                <th> {{ __('Actions') }} </th></tr>
-        </thead>
-        <tbody>
-            {% for item in exams %}
-                <tr>
-                    <td>{{ item.quickcheckname }}</td>
-                    <td class="actions">
-                        <a href="{{ path('paustianquickcheckmodule_user_print') }}/{{ item.id }}" class="fa fa-print" title="{{ __('Make a printable exam') }}"></a>
-                        <a href="{{ path('paustianquickcheckmodule_user_display') }}/{{ item.id }}" class="fa fa-eye" title="{{ __('Exam Preview') }}"></a>
-                        <a href="{{ path('paustianquickcheckmodule_rmd_export', {"exam": item.id}) }}" class="fa fa-arrow-circle-down" title="{{ __('Download rmd export') }}"></a>
-                        <a href="{{ path('paustianquickcheckmodule_admin_edit') }}/{{ item.id }}" class="fa fa-pencil" title="{{ __('Edit exam') }}"></a>
-                        <a href="{{ path('paustianquickcheckmodule_admin_delete') }}/{{ item.id }}" class="fa fa-trash-o" title="{{ __('Delete Exam') }}" onclick="return confirm('Are you sure you want to delete the exam?')"></a>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>{{ 'Exam'|trans }}</th>
+        <th> {{ 'Actions'|trans }} </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in exams %}
+        <tr>
+            <td>{{ item.quickcheckname }}</td>
+            <td class="actions">
+                <a href="{{ path('paustianquickcheckmodule_user_print') }}/{{ item.id }}" class="fa fa-print"
+                   title="{{ 'Make a printable exam'|trans }}"></a>
+                <a href="{{ path('paustianquickcheckmodule_user_display') }}/{{ item.id }}" class="fa fa-eye"
+                   title="{{ 'Exam Preview'|trans }}"></a>
+                <a href="{{ path('paustianquickcheckmodule_rmd_export', {"exam": item.id}) }}"
+                   class="fa fa-arrow-circle-down" title="{{ 'Download rmd export'|trans }}"></a>
+                <a href="{{ path('paustianquickcheckmodule_admin_edit') }}/{{ item.id }}" class="fa fa-pencil"
+                   title="{{ 'Edit exam'|trans }}"></a>
+                <a href="{{ path('paustianquickcheckmodule_admin_delete') }}/{{ item.id }}" class="fa fa-trash-o"
+                   title="{{ 'Delete Exam'|trans }}"
+                   onclick="return confirm('Are you sure you want to delete the exam?')"></a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+

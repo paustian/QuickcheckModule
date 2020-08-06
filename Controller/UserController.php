@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * quickcheck Module
  *
@@ -23,6 +25,7 @@
 namespace Paustian\QuickcheckModule\Controller;
 
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Zikula\Core\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,10 +50,9 @@ class UserController extends AbstractController {
      * Using all (or a subset of) the questions available, create a multiple choice
      * quiz.
      *
-     * Params: none
-     * Returns: the quiz. This can be graded by the gradequiz funciton below
+     * @return Response
      */
-    public function indexAction() {
+    public function indexAction() : Response {
         //securtiy check first
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
             throw new AccessDeniedException();
@@ -74,7 +76,7 @@ class UserController extends AbstractController {
      *
      * @return array
      */
-    private function _getCategories() {
+    private function _getCategories() : array {
         $em = $this->getDoctrine()->getManager();
         $registryRepository = $em->getRepository('ZikulaCategoriesModule:CategoryRegistryEntity');
         $categoryRegistries = $registryRepository->findBy(['modname' => 'PaustianQuickcheckModule']);
@@ -85,12 +87,10 @@ class UserController extends AbstractController {
 
     /**
      * utility function to count the number of items held by this module
-     *
-     * @param array $args Arguments.
-     *
-     * @return integer number of items held by this module
+     * @param int $category
+     * @return int
      */
-    private function _countItems($category) {
+    private function _countItems(int $category) : int {
 
         $em = $this->getDoctrine()->getManager();
 
@@ -120,7 +120,7 @@ class UserController extends AbstractController {
      * @param $request
      * @return Response
      */
-    public function createExamAction(Request $request) {
+    public function createExamAction(Request $request) : Response {
         //you have to have edit access to do this
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_OVERVIEW)) {
             throw new AccessDeniedException();
@@ -192,10 +192,10 @@ class UserController extends AbstractController {
     /**
      * _binQuestionCategories - Given an array of questions bin them into categories based upon their category id.
      * 
-     * @param type $questions
+     * @param array $questions
      * @return array
      */
-    private function _binQuestionCategories($questions) {
+    private function _binQuestionCategories(array $questions) : array {
         $binned_questions = array();
         foreach ($questions as $question) {
             $perCollect = $question->getCategories();
@@ -209,7 +209,14 @@ class UserController extends AbstractController {
         return $binned_questions;
     }
 
-    private function _fetch_cat_questions($in_questions, $in_cat_id) {
+    /**
+     * _fetch_cat_questions Sort all the questions and put in them into category ids
+     *
+     * @param array $in_questions
+     * @param int $in_cat_id
+     * @return array
+     */
+    private function _fetch_cat_questions(array $in_questions, int $in_cat_id) {
         $ret_questions = array();
         $started = false;
         foreach ($in_questions as $question) {
@@ -230,15 +237,15 @@ class UserController extends AbstractController {
      * 
      * This displays an quiz from the database, or it displays a quiz set up by 
      * the student for self study.
-     * 
-     * Date: November 3 2015
-     * @author Timothy Paustian
-     * 
-     * @param Request the exam info that holds the questions* 
-     * @return Response
      *
+     * @param Request $request
+     * @param QuickcheckExamEntity|null $exam
+     * @param string $return_url
+     * @param bool $print
+     * @return Response
+     * @throws AccessDeniedException
      */
-    public function displayAction(Request $request, QuickcheckExamEntity $exam = null, $return_url = "", $print = false) {
+    public function displayAction(Request $request, QuickcheckExamEntity $exam = null, string $return_url = "", bool $print = false) : Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
@@ -253,7 +260,7 @@ class UserController extends AbstractController {
         } else {
             $examData = $request->request->get('exam', null);
             if (!isset($examData)) {
-                return null;
+                throw InvalidParameterException();
             }
             $examQuestions = $examData['questions'];
             $examName = $exam['name'];
@@ -279,15 +286,12 @@ class UserController extends AbstractController {
      * 
      * This displays an quiz from the database, or it displays a quiz set up by 
      * the student for self study.
-     * 
-     * Date: November 3 2015
-     * @author Timothy Paustian
-     * 
-     * @param Request the exam info that holds the questions* 
-     * @return Response
      *
+     * @param Request $request
+     * @param QuickcheckExamEntity|null $exam
+     * @return Response
      */
-    public function printAction(Request $request, QuickcheckExamEntity $exam = null) {
+    public function printAction(Request $request, QuickcheckExamEntity $exam = null) : Response {
         return $this->displayAction($request, $exam, "", true);
     }
     /**
@@ -301,7 +305,11 @@ class UserController extends AbstractController {
      * the question id. We can then compare this to the correct answer for each type.
      * @param $request
      */
-    public function gradeexamAction(Request $request) {
+    /**
+     * @param Request $request
+     * @return Response
+     */
+    public function gradeexamAction(Request $request) : Response {
 
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
             throw AccessDeniedException();
@@ -415,14 +423,15 @@ class UserController extends AbstractController {
     /**
      * @Route("/getpreviewhtml", options={"expose"=true})
      * @Method("POST")
-     * @param Request $request
-     * @return JsonResponse|FatalResponse|ForbiddenResponse bid or Ajax error
      *
      * Grab all comments associated with this module and item ID and return them to the caller
      * The caller is a javascript, see the javascripts in Resources/public/js directory
+     *
+     * @param Request $request
+     * @return Response
      */
 
-    public function getpreviewhtmlAction(Request $request){
+    public function getpreviewhtmlAction(Request $request) :Response {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_READ)) {
             return new ForbiddenResponse($this->__('Access forbidden since you cannot read questions.'));
         }

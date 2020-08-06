@@ -1,38 +1,34 @@
+<form action="{{ path('paustianquickcheckmodule_admin_attach') }}" method="post"
+      enctype="application/x-www-form-urlencoded">
+    <input type="hidden" name="art_id" value="{{ art_id }}">
+    <input type="hidden" name="return_url" value="{{ return_url }}">
+    <h3>{{ __('Choose an exam to attach') }}</h3>
 
-<div class="container-fluid">
-    <div class="row">
-        
-            <form action="{{ path('paustianquickcheckmodule_admin_attach') }}" method="post" enctype="application/x-www-form-urlencoded">
-                <input type="hidden" name="art_id" value="{{ art_id }}">
-                <input type="hidden" name="return_url" value="{{ return_url }}">
-                <h3>{{ __('Choose an exam to attach') }}</h3>
-                
-                <table class="table table-striped exams">
-                    <thead class="exams">
-                        <tr>
-                            <th class="col-xs-1">{{ __('Add Exam') }}</th>
-                            <th class="col-xs-11">{{ __('Exam Name') }}</th></tr>
-                    </thead>
-                    <tbody class="exams">
-                        {% for item in exams %}
-                            <tr class="exams">
-                                <td class="exams col-xs-1"><input type="radio" name="exam" value="{{ item.id }}"></td>
-                                <td class="exams col-xs-11">
-                                    {{ item.quickcheckname }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <div class="form-group">
-                        <button class="btn btn-success" type="submit" name="attach" value="attach">
-                            {{ __('Attach') }}
-                        </button>
-                        <button class="btn btn-success" type="submit" name="delete" value="delete">
-                            {{ __('Remove') }}
-                        </button>
-                    
-                </div>   
-            </form>
-    </div><!-- row -->
-</div><!-- container-fluid -->
+    <table class="table table-striped exams">
+        <thead class="exams">
+        <tr>
+            <th class="col-xs-1">{{ __('Add Exam') }}</th>
+            <th class="col-xs-11">{{ __('Exam Name') }}</th>
+        </tr>
+        </thead>
+        <tbody class="exams">
+        {% for item in exams %}
+            <tr class="exams">
+                <td class="exams col-xs-1"><input type="radio" name="exam" value="{{ item.id }}"></td>
+                <td class="exams col-xs-11">
+                    {{ item.quickcheckname }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div class="form-group">
+        <button class="btn btn-success" type="submit" name="attach" value="attach">
+            {{ __('Attach') }}
+        </button>
+        <button class="btn btn-success" type="submit" name="delete" value="delete">
+            {{ __('Remove') }}
+        </button>
+
+    </div>
+</form>
