@@ -9,7 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Zikula\Common\Translator\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * Description of ExamForm
  * Set up the elements for a Exam form.
@@ -27,7 +27,6 @@ class ExamForm extends AbstractType {
     /**
      * BlockType constructor.
      * @param TranslatorInterface $translator
-     * @param LocaleApiInterface $localeApi
      */
     public function __construct(
         TranslatorInterface $translator)   {
@@ -36,9 +35,9 @@ class ExamForm extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) : void
     {
         $builder
-            ->add('quickcheckname', TextType::class, array('label' => $this->translator->__('Exam Name'), 'required' => true))
-            ->add('save', SubmitType::class, array('label' => $this->translator->__('Save Exam')))
-            ->add('cancel', ButtonType::class, array('label' => $this->translator->__('Cancel')));
+            ->add('quickcheckname', TextType::class, array('label' => $this->translator->trans('Exam Name'), 'required' => true))
+            ->add('save', SubmitType::class, array('label' => $this->translator->trans('Save Exam')))
+            ->add('cancel', ButtonType::class, array('label' => $this->translator->trans('Cancel')));
         
     }
 

@@ -6,7 +6,7 @@
     <span class="fa fa-book"></span>
     {{ exam_name }}
 </h3>
-<p>{{ __("Answer the questions below and then hit the Grade Exam button") }}</p>
+<p>{{("Answer the questions below and then hit the Grade Exam button"|trans) }}</p>
 <form action="{{ path('paustianquickcheckmodule_user_gradeexam') }}" method="post"
       enctype="application/x-www-form-urlencoded">
     {% if print==false %}<input type="hidden" name="q_ids" value="{{ q_ids }}" />{% endif %}
@@ -41,9 +41,9 @@
         {% if question.quickcheckqtype == 2 %} {# true/false #}
             <ol class="upper-alpha">
                 <li>{% if print==false %}<input type="radio" name="{{ question.id }}" value="1"
-                                                required>{% endif %} {{ __('True') }}</li>
+                                                required>{% endif %} {{('True'|trans) }}</li>
                 <li>{% if print==false %}<input type="radio" name="{{ question.id }}" value="0"
-                                                required>{% endif %} {{ __('False') }}</li>
+                                                required>{% endif %} {{('False'|trans) }}</li>
             </ol>
         {% endif %}
         {% if question.quickcheckqtype == 3 %} {# matching #}
@@ -80,7 +80,7 @@
     <div class="form-group">
         <div class="col-lg-offset-3 col-lg-9">
             <button class="btn btn-success" type="submit" name="create" value="create">
-                {{ __('Grade Exam') }}
+                {{('Grade Exam'|trans) }}
             </button>
         </div>
     </div>

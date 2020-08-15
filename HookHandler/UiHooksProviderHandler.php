@@ -5,19 +5,18 @@ declare(strict_types=1);
 namespace Paustian\QuickcheckModule\HookHandler;
 
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Twig\Environment;
 use Zikula\Bundle\HookBundle\Category\UiHooksCategory;
 use Zikula\Bundle\HookBundle\Hook\DisplayHook;
 use Zikula\Bundle\HookBundle\Hook\DisplayHookResponse;
 use Zikula\Bundle\HookBundle\Hook\ProcessHook;
 use Zikula\Bundle\HookBundle\HookProviderInterface;
-use Zikula\Bundle\HookBundle\ServiceIdTrait;
-use Zikula\Common\Translator\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Zikula\PermissionsModule\Api\ApiInterface\PermissionApiInterface;
 use Paustian\QuickcheckModule\Entity\Repository\QuickcheckExamRepository;
-use Symfony\Component\Templating\EngineInterface;
-use Zikula\Core\UrlInterface;
+use Zikula\Bundle\CoreBundle\UrlInterface;
 
 
 /**
@@ -30,7 +29,6 @@ use Zikula\Core\UrlInterface;
 
 class UiHooksProviderHandler  implements HookProviderInterface
 {
-    use ServiceIdTrait;
 
     /**
      * @var TranslatorInterface
@@ -43,12 +41,12 @@ class UiHooksProviderHandler  implements HookProviderInterface
     private $permissionApi;
 
     /**
-     * @var EngineInterface
+     * @var Environment
      */
-    private $templating;
+    private $twig;
 
     /**
-     * @var EntityManager
+     * @var EntityManagerInterface
      */
     private $entityManager;
 
@@ -64,33 +62,33 @@ class UiHooksProviderHandler  implements HookProviderInterface
      */
     public function __construct(TranslatorInterface $translator,
                                 PermissionApiInterface $permissionApi,
-                                EngineInterface $templating,
-                                EntityManager $entityManager,
+                                Environment $twig,
+                                EntityManagerInterface $entityManager,
                                 RequestStack $requestStack)
     {
         $this->translator = $translator;
         $this->permissionApi = $permissionApi;
-        $this->templating = $templating;
+        $this->twig = $twig;
         $this->entityManager = $entityManager;
         $this->requestStack = $requestStack;
     }
 
-    public function getOwner()
+    public function getOwner() : string
     {
         return 'PaustianQuickcheckModule';
     }
 
-    public function getTitle()
+    public function getTitle() : string
     {
-        return $this->translator->__('Quickcheck Display Provider');
+        return $this->translator->trans('Quickcheck Display Provider');
     }
 
-    public function getCategory()
+    public function getCategory() : string
     {
         return UiHooksCategory::NAME;
     }
 
-    public function getProviderTypes()
+    public function getProviderTypes() : array
     {
         return [
             UiHooksCategory::TYPE_DISPLAY_VIEW => 'uiView',
@@ -125,7 +123,7 @@ class UiHooksProviderHandler  implements HookProviderInterface
                 ->from('PaustianQuickcheckModule:QuickcheckExamEntity', 'u', 'u.quickcheckname');
             $query2 = $qb2->getQuery();
             $exams = $query2->getResult();
-            $admininterface = $this->templating->render('PaustianQuickcheckModule:Hook:quickcheck.addquiz.html.twig', [
+            $admininterface = $this->twig->render('PaustianQuickcheckModule:Hook:quickcheck.addquiz.html.twig', [
                 'exams' => $exams,
                 'art_id' => $id,
                 'return_url' => $return_url]);
@@ -150,7 +148,7 @@ class UiHooksProviderHandler  implements HookProviderInterface
             if (!$is_admin) {
                 $admininterface = "";
             }
-            $content = $this->templating->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
+            $content = $this->twig->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                 'q_ids' => $sq_ids,
                 'questions' => $questions,
                 'return_url' => $return_url,
@@ -158,7 +156,7 @@ class UiHooksProviderHandler  implements HookProviderInterface
                 'admininterface' => $admininterface,
                 'print' => false]);
         }
-        $response = new DisplayHookResponse($this->getServiceId(), $content);
+        $response = new DisplayHookResponse($this->getAreaName(), $content);
         $hook->setResponse($response);
     }
 
@@ -171,6 +169,11 @@ class UiHooksProviderHandler  implements HookProviderInterface
     public function processEdit(ProcessHook $hook)
     {
         $this->requestStack->getMasterRequest()->getSession()->getFlashBag()->add('success', 'Ui hook edit properly processed!');
+    }
+
+    public function getAreaName(): string
+    {
+        return 'subscriber.quickcheck.ui_hook.messages';
     }
 }
 

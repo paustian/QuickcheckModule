@@ -26,7 +26,7 @@ namespace Paustian\QuickcheckModule\Controller;
 
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
-use Zikula\Core\Controller\AbstractController;
+use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,7 +36,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotatio
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
-use Zikula\Core\Response\Ajax\ForbiddenResponse;
+use Zikula\Bundle\CoreBundle\Response\Ajax\ForbiddenResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class UserController extends AbstractController {
@@ -66,7 +66,7 @@ class UserController extends AbstractController {
 
         //$categoryData = $propertiesdata[0]['subcategories'];
 
-        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_index.html.twig',
+        return $this->render('@PaustianQuickcheckModule/User/quickcheck_user_index.html.twig',
                 ['categories' => $categoryData,
                     'counts' => $counts]);
     }
@@ -168,7 +168,7 @@ class UserController extends AbstractController {
             }
         }
         if (count($quiz_questions) == 0) {
-            $request->getSession()->getFlashBag()->add('error', $this->__('You need to pick the number of questions.'));
+            $request->getSession()->getFlashBag()->add('error', $this->trans('You need to pick the number of questions.'));
             return new RedirectResponse($ret_url);
         }
         //shuffle the array to randomize the order in which they get asked.
@@ -181,12 +181,12 @@ class UserController extends AbstractController {
         //I need to change this so that it sends back it's own response. What this entails is just getting the data that it
         //needs and then sending it back.
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
-        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
+        return $this->render('@PaustianQuickcheckModule/User/quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                     'q_ids' => \serialize($sq_ids),
                     'questions' => $quiz_questions,
                     'return_url' => $ret_url,
                     'print' => false,
-                    'exam_name' => $this->__('Practice Exam')]);
+                    'exam_name' => $this->trans('Practice Exam')]);
     }
 
     /**
@@ -272,7 +272,7 @@ class UserController extends AbstractController {
         $repo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
         $repo->render_quiz($examQuestions, $questions, $sq_ids, $letters);
 
-        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
+        return $this->render('@PaustianQuickcheckModule/User/quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                     'q_ids' => $sq_ids,
                     'questions' => $questions,
                     'return_url' => $return_url,
@@ -412,7 +412,7 @@ class UserController extends AbstractController {
         $percent = $score / count($q_ids) * 100;
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
 
-        return $this->render('PaustianQuickcheckModule:User:quickcheck_user_gradeexam.html.twig', [
+        return $this->render('@PaustianQuickcheckModule/User/quickcheck_user_gradeexam.html.twig', [
                     'questions' => $display_questions,
                     'score' => $score,
                     'percent' => $percent,
@@ -433,7 +433,7 @@ class UserController extends AbstractController {
 
     public function getpreviewhtmlAction(Request $request) :Response {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_READ)) {
-            return new ForbiddenResponse($this->__('Access forbidden since you cannot read questions.'));
+            return new ForbiddenResponse($this->trans('Access forbidden since you cannot read questions.'));
         }
         //fetch the parameters for the question
         $questionText = $request->get('question');
@@ -447,7 +447,7 @@ class UserController extends AbstractController {
         $repo = $this->getDoctrine()->getManager()->getRepository("Paustian\QuickcheckModule\Entity\QuickcheckExamEntity");
         $question = $repo->unpackQuestion($question);
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
-        $response = $this->render('PaustianQuickcheckModule:User:quickcheck_user_preview.html.twig', ['letters' => $letters,
+        $response = $this->render('@PaustianQuickcheckModule/User/quickcheck_user_preview.html.twig', ['letters' => $letters,
             'question' => $question]);
         $jsonReply = ['html' => $response->getContent()];
 

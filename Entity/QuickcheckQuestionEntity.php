@@ -23,7 +23,7 @@ use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory as QuickcheckCat
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Zikula\Core\Doctrine\EntityAccess;
+use Zikula\Bundle\CoreBundle\Doctrine\EntityAccess;
 
 /**
  * Quickcheck entity class.

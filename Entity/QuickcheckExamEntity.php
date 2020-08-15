@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Paustian\QuickcheckModule\Entity;
 
-use Zikula\Core\Doctrine\EntityAccess;
+use Zikula\Bundle\CoreBundle\Doctrine\EntityAccess;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 

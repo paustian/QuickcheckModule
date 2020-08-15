@@ -7,7 +7,7 @@ namespace Paustian\QuickcheckModule\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Zikula\Common\Translator\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Zikula\PermissionsModule\Api\PermissionApi;
 
@@ -44,21 +44,21 @@ class MatchQuestion extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) : void
     {
         $builder
-            ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Question'), 'required' => true))
-            ->add('quickcheckqanswer', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Answer'), 'required' => true))
-            ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->__('Explanation'), 'required' => true))
+            ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->trans('Question'), 'required' => true))
+            ->add('quickcheckqanswer', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->trans('Answer'), 'required' => true))
+            ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->trans('Explanation'), 'required' => true))
             ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Save Question'))
             ->add('delete', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Delete Question'));
         $builder->add('quickcheckqtype', \Symfony\Component\Form\Extension\Core\Type\HiddenType::class, array('data' => AdminController::_QUICKCHECK_MATCHING_TYPE));
         if($this->permissionApi->hasPermission('Quickcheck::', '::', ACCESS_ADMIN)) {
             $builder->add('status', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
-                'label' => $this->translator->__('Moderation Status', 'paustianquickcheckmodule') . ':',
+                'label' => $this->translator->trans('Moderation Status', 'paustianquickcheckmodule') . ':',
                 'label_attr' => ['class' => 'radio-inline'],
                 'empty_data' => 'default',
                 'choices' => [
-                    $this->translator->__('Public', 'paustianquickcheckmodule') => '0',
-                    $this->translator->__('Moderated', 'paustianquickcheckmodule') => '1',
-                    $this->translator->__('Hidden for Exam', 'paustianquickcheckmodule') => '2'
+                    $this->translator->trans('Public', 'paustianquickcheckmodule') => '0',
+                    $this->translator->trans('Moderated', 'paustianquickcheckmodule') => '1',
+                    $this->translator->trans('Hidden for Exam', 'paustianquickcheckmodule') => '2'
                 ],
                 'multiple' => false,
                 'expanded' => true

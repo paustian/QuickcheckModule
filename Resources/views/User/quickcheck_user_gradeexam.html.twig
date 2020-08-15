@@ -4,17 +4,17 @@
 {{ pageAddAsset('stylesheet', asset('jquery-ui/themes/base/jquery-ui.min.css')) }}
 <h3>
     <span class="fa fa-book"></span>
-    {{ __('Results of Exam') }}
+    {{('Results of Exam'|trans) }}
 </h3>
-<p>{{ __("Your total score was ") }}{{ score }}{{ __(', which is ') }} {{ percent }}{{ __('% correct. Here are the correct answers to the quiz you took and your answers.') }}</p>
+<p>{{("Your total score was "|trans) }}{{ score }}{{(', which is '|trans) }} {{ percent }}{{('% correct. Here are the correct answers to the quiz you took and your answers.'|trans) }}</p>
 
 {% for question in questions %}
     <div class='qc_question_group'>
         <p>{{ loop.index }}. {{ question.quickcheckqtext }}</p>
         {% if question.quickcheckqtype == 0 %} {# text #}
-            <h4>{{ __("Correct Answer") }}</h4>
+            <h4>{{("Correct Answer"|trans) }}</h4>
             <p>{{ question.quickcheckqanswer|raw }}</p>
-            <h4>{{ __("Your Answer") }}</h4>
+            <h4>{{("Your Answer"|trans) }}</h4>
             <p>{{ student_answers[loop.index0] }}</p>
         {% endif %}
         {% if question.quickcheckqtype == 1 %} {# multiple choice #}
@@ -25,15 +25,15 @@
                 {% for answer in answers %}
                     {% if params[loop.index0] == 100 %}
                         {% if uranswer == loop.index0 %}
-                            <li><span class="fa fa-thumbs-o-up"></span> {{ answer|raw }} - {{ __('correct') }}
-                                - {{ __('Your answer') }}</li>
+                            <li><span class="fa fa-thumbs-o-up"></span> {{ answer|raw }} - {{('correct'|trans) }}
+                                - {{('Your answer'|trans) }}</li>
                         {% else %}
-                            <li><span class="fa fa-asterisk"></span>{{ answer|raw }} - <b>{{ __('correct') }}</b></li>
+                            <li><span class="fa fa-asterisk"></span>{{ answer|raw }} - <b>{{('correct'|trans) }}</b></li>
                         {% endif %}
                     {% else %}
                         {% if uranswer == loop.index0 %}
                             <li><span class="fa fa-thumbs-o-down"></span>{{ answer|raw }} -
-                                <b>{{ __('Your answer') }}</b></li>
+                                <b>{{('Your answer'|trans) }}</b></li>
                         {% else %}
                             <li>{{ answer|raw }}</li>
                         {% endif %}
@@ -44,19 +44,19 @@
         {% if question.quickcheckqtype == 2 %} {# true/false #}
             {% if question.quickcheckqanswer == student_answers[loop.index0] %}
                 {% if question.quickcheckqanswer == 'yes' %}
-                    <p><span class="fa fa-thumbs-o-up"></span>{{ __('True') }} {{ __('- Correct - Your answer') }}</p>
-                    <p>{{ __('False') }}</p>
+                    <p><span class="fa fa-thumbs-o-up"></span>{{('True'|trans) }} {{('- Correct - Your answer'|trans) }}</p>
+                    <p>{{('False'|trans) }}</p>
                 {% else %}
-                    <p>{{ __('True') }}</p>
-                    <p><span class="fa fa-thumbs-o-up"></span>{{ __('False') }} {{ __('Correct - Your answer') }}</p>
+                    <p>{{('True'|trans) }}</p>
+                    <p><span class="fa fa-thumbs-o-up"></span>{{('False'|trans) }} {{('Correct - Your answer'|trans) }}</p>
                 {% endif %}
             {% else %}
                 {% if question.quickcheckqanswer == 'yes' %}
-                    <p><span class="fa fa-thumbs-o-up"></span>{{ __('True') }} <b>{{ __('Correct answer') }}</b></p>
-                    <p><span class="fa fa-thumbs-o-down"></span>{{ __('False') }} <b>{{ __('Your answer') }}</b></p>
+                    <p><span class="fa fa-thumbs-o-up"></span>{{('True'|trans) }} <b>{{('Correct answer'|trans) }}</b></p>
+                    <p><span class="fa fa-thumbs-o-down"></span>{{('False'|trans) }} <b>{{('Your answer'|trans) }}</b></p>
                 {% else %}
-                    <p><span class="fa fa-thumbs-o-down"></span>{{ __('True') }} <b>{{ __('Your answer') }}</b></p>
-                    <p><span class="fa fa-thumbs-o-up"></span>{{ __('False') }} <b>{{ __('Correct answer') }}</b></p>
+                    <p><span class="fa fa-thumbs-o-down"></span>{{('True'|trans) }} <b>{{('Your answer'|trans) }}</b></p>
+                    <p><span class="fa fa-thumbs-o-up"></span>{{('False'|trans) }} <b>{{('Correct answer'|trans) }}</b></p>
                 {% endif %}
             {% endif %}
         {% endif %}
@@ -64,9 +64,9 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
-                    <th>{{ __('Item') }}</th>
-                    <th>{{ __('Matching Item') }}</th>
-                    <th>{{ __('Your Answer') }}</th>
+                    <th>{{('Item'|trans) }}</th>
+                    <th>{{('Matching Item'|trans) }}</th>
+                    <th>{{('Your Answer'|trans) }}</th>
                 </tr>
                 </thead>
                 {% set answers = question.quickcheckqanswer %}
@@ -92,15 +92,15 @@
                 {% for answer in answers %}
                     {% if params[loop.index0] > 0 %}
                         {% if uranswer[loop.index0] == loop.index0 %}
-                            <li><span class="fa fa-thumbs-o-up"></span>{{ answer|raw }} - {{ __('Correct') }}
-                                - {{ __('Your answer') }}</li>
+                            <li><span class="fa fa-thumbs-o-up"></span>{{ answer|raw }} - {{('Correct'|trans) }}
+                                - {{('Your answer'|trans) }}</li>
                         {% else %}
-                            <li><span class="fa fa-asterisk"></span>{{ answer|raw }} - <b>{{ __('Correct') }}</b></li>
+                            <li><span class="fa fa-asterisk"></span>{{ answer|raw }} - <b>{{('Correct'|trans) }}</b></li>
                         {% endif %}
                     {% else %}
                         {% if uranswer[loop.index0] == loop.index0 %}
                             <li>
-                                <span class="fa fa-thumbs-o-down"><span>{{ answer|raw }} - <b>{{ __('Your answer') }}</b>
+                                <span class="fa fa-thumbs-o-down"><span>{{ answer|raw }} - <b>{{('Your answer'|trans) }}</b>
                             </li>
                         {% else %}
                             <li>{{ answer|raw }}</li>

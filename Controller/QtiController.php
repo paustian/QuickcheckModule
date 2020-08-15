@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Zikula\Core\Controller\AbstractController;
+use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Paustian\QuickcheckModule\API\UUID;
 
@@ -43,11 +43,11 @@ class QtiController extends AbstractController{
         $exams = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity')->get_all_exams();
 
         if (!$exams) {
-            $this->addFlash('error', $this->__('There are no exams to export'));
+            $this->addFlash('error', $this->trans('There are no exams to export'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_modify.html.twig', ['exams' => $exams]);
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_modify.html.twig', ['exams' => $exams]);
     }
 
     /**
@@ -72,7 +72,7 @@ class QtiController extends AbstractController{
             $id = $request->query->get('id');
             $exam = $em->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity')->findOneBy(['id' => $id]);
             if(null === $exam){
-                $this->addFlash('status', $this->__('You must specify an exam to export.'));
+                $this->addFlash('status', $this->trans('You must specify an exam to export.'));
                 return $response;
             }
         }
@@ -86,19 +86,19 @@ class QtiController extends AbstractController{
         $directory = $directory . '/' . $examTitle;
 
         //create the manifest template
-        $manifest = $this->renderView("PaustianQuickcheckModule:Qti:imsmanifest.xml.twig",
+        $manifest = $this->renderView("@PaustianQuickcheckModule/Qti/imsmanifest.xml.twig",
             ['manifestId' => $manifestId,
                 'examQuestionId' => $examQuestionId,
                 'resourceId' => $resourceId]);
         //create the assessment meta data file
-        $assessmentMetaData = $this->renderView("PaustianQuickcheckModule:Qti:assessment_meta.xml.twig",
+        $assessmentMetaData = $this->renderView("@PaustianQuickcheckModule/Qti/assessment_meta.xml.twig",
             ['examQuestionId' => $examQuestionId,
                 'examTitle' => $examTitle,
                 'examDescription' => 'An exam exported from the Quickcheckmodule']);
 
         //create the item question data file.
         $questionText = $this->_createQuestionXml($exam);
-        $assessmentText = $this->renderView("PaustianQuickcheckModule:Qti:assessment.xml.twig",
+        $assessmentText = $this->renderView("@PaustianQuickcheckModule/Qti/assessment.xml.twig",
             ['examQuestionId' => $examQuestionId,
                 'quesitonText' => $questionText,
                 'examTitle' => $examTitle]);
@@ -107,14 +107,14 @@ class QtiController extends AbstractController{
         $archive = new ZipArchive();
         $result = $archive->open($directory . '.zip', ZipArchive::CREATE);
         if($result !== true){
-            $this->addFlash('error', $this->__('Unable to create a the zip archive'));
+            $this->addFlash('error', $this->trans('Unable to create a the zip archive'));
             return $response;
         }
         $archive->addFromString($examTitle . '/imsmanifest.xml', $manifest);
         $archive->addFromString($examTitle . '/'. $examQuestionId. '/' . $examQuestionId . '.xml', $assessmentText);
         $archive->addFromString($examTitle . '/'. $examQuestionId. '/asessment_meta.xml', $assessmentMetaData);
         $archive->close();
-        $this->addFlash('status', $this->__('Archive Created'));
+        $this->addFlash('status', $this->trans('Archive Created'));
         return $response;
 
     }
@@ -153,7 +153,7 @@ class QtiController extends AbstractController{
                     $correctAnswerId = $items[$i]['ident'];
                 }
             }
-            $returnText .= $this->renderView("PaustianQuickcheckModule:Qti:itemTemplate.xml.twig",
+            $returnText .= $this->renderView("@PaustianQuickcheckModule/Qti/itemTemplate.xml.twig",
             ['itemId' => UUID::v4(),
             'answerIds' => $answerIds,
             'assessId' => UUID::v4(),

@@ -56,11 +56,12 @@ class ExtensionMenu implements ExtensionMenuInterface
 
         //Quickcheck functions
         $menu->addChild('Create New Exam', [
-            'route' => $this->router->generate('paustianquickcheckmodule_admin_edit'),
+            'route' => 'paustianquickcheckmodule_admin_edit',
         ])->setAttribute('icon', 'fas fa-plus');
 
+
         $menu->addChild('Modify Exam', [
-            'route' => $this->router->generate('paustianquickcheckmodule_admin_modify'),
+            'route' => 'paustianquickcheckmodule_admin_modify',
         ])->setAttribute('icon', 'fas fa-list');
 
         //Question menu
@@ -71,7 +72,7 @@ class ExtensionMenu implements ExtensionMenuInterface
 
         $menu['Questions']->addChild('Modify Questions', [
             'route' => 'paustianquickcheckmodule_admin_editquestions'
-            ])->setAttribute('icon', 'fas fa-edit');
+        ])->setAttribute('icon', 'fas fa-edit');
 
         $menu['Questions']->addChild('Create Text Question', [
             'route' => 'paustianquickcheckmodule_admin_edittextquest'
@@ -99,7 +100,7 @@ class ExtensionMenu implements ExtensionMenuInterface
 
         //the import/export menu
         $menu->addChild('Processing', [
-            'route' => $this->router->generate('paustianquickcheckmodule_admin_modify'),
+            'route' => 'paustianquickcheckmodule_admin_modify',
         ])->setAttribute('icon', 'fas fa-microchip');
 
         $menu['Processing']->addChild('Examine all moderated questions', [
@@ -142,15 +143,15 @@ class ExtensionMenu implements ExtensionMenuInterface
     }
 
     private function getAccount() : ?ItemInterface {
-
+        return null;
     }
 
     private function getUser() : ?ItemInterface {
-
+        return null;
     }
 
     public function getBundleName(): string
     {
-        return 'PaustianBookModule';
+        return 'PaustianQuickcheckModule';
     }
 }

@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Zikula\Core\Controller\AbstractController;
+use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 
 
@@ -47,11 +47,11 @@ class RmdController extends AbstractController{
         $exams = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity')->get_all_exams();
 
         if (!$exams) {
-            $this->addFlash('error', $this->__('There are no exams to export'));
+            $this->addFlash('error', $this->trans('There are no exams to export'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_modify.html.twig', ['exams' => $exams]);
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_modify.html.twig', ['exams' => $exams]);
     }
 
     /**
@@ -76,7 +76,7 @@ class RmdController extends AbstractController{
             $id = $request->query->get('id');
             $exam = $em->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity')->findOneBy(['id' => $id]);
             if(null === $exam){
-                $this->addFlash('status', $this->__('You must specify an exam to export.'));
+                $this->addFlash('status', $this->trans('You must specify an exam to export.'));
                 return $response;
             }
         }
@@ -89,7 +89,7 @@ class RmdController extends AbstractController{
         $zipName = $this->directory . '.zip';
         $result = $this->archive->open($zipName, ZipArchive::CREATE);
         if($result !== true){
-            $this->addFlash('error', $this->__('Unable to create a the zip archive'));
+            $this->addFlash('error', $this->trans('Unable to create a the zip archive'));
             return $response;
         }
         $questions = $exam->getQuickcheckquestions();
@@ -105,7 +105,7 @@ class RmdController extends AbstractController{
             $this->_writeQuestionFile($question, $qId);
         }
         $this->rcommand .= ")\n exams2canvas(myexam)";
-        $this->addFlash('status', $this->__('Use the R command ' . $this->rcommand));
+        $this->addFlash('status', $this->trans('Use the R command ' . $this->rcommand));
         $this->archive->addFromString("rcommand.txt", $this->rcommand);
         $this->archive->close();
 
@@ -142,7 +142,7 @@ class RmdController extends AbstractController{
                 $exsolution .= "0";
             }
         }
-        $questionText = $this->renderView("PaustianQuickcheckModule:Rmd:rmd_export.rmd.twig",
+        $questionText = $this->renderView("@PaustianQuickcheckModule/Rmd/rmd_export.rmd.twig",
             [  'question' => $question->getQuickcheckqText(),
                 'items' => $items,
                 'solutions' => $solutions,

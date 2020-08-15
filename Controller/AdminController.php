@@ -18,18 +18,18 @@ declare(strict_types=1);
 namespace Paustian\QuickcheckModule\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Persistence\ObjectManager;
 use Paustian\QuickcheckModule\API\UUID;
 use Paustian\QuickcheckModule\Form\ExamineAllForm;
 use Paustian\QuickcheckModule\PaustianQuickcheckModule;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Zikula\Core\Controller\AbstractController;
+use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
@@ -42,8 +42,7 @@ use Paustian\QuickcheckModule\Form\ImportText;
 use Paustian\QuickcheckModule\Form\ExamForm;
 use Paustian\QuickcheckModule\Form\ExportForm;
 use Paustian\QuickcheckModule\Form\CategorizeForm;
-use Zikula\Core\Response\Ajax\FatalResponse;
-use Zikula\Core\Response\Ajax\ForbiddenResponse;
+use Zikula\Bundle\HookBundle\Dispatcher\HookDispatcherInterface;
 use Zikula\Bundle\HookBundle\FormAwareHook\FormAwareHook;
 
 /**
@@ -70,16 +69,6 @@ class AdminController extends AbstractController {
 
 
     /**
-     * Post initialise.
-     *
-     * @return void
-     */
-    protected function postInitialize() : void {
-        // In this controller we do not want caching.
-        $this->view->setCaching(Zikula_View::CACHE_DISABLED);
-    }
-
-    /**
      * @Route("")
      * @param Request $request
      * @return Response
@@ -90,7 +79,7 @@ class AdminController extends AbstractController {
             throw new AccessDeniedException();
         }
         // Return a page of menu items.
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_menu.html.twig');
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_menu.html.twig');
     }
 
     /**
@@ -104,7 +93,7 @@ class AdminController extends AbstractController {
      * @param QuickcheckExamEntity|null $exam
      * @return mixed The form for creating a new exam response object
      */
-    public function editAction(Request $request, QuickcheckExamEntity $exam = null) : mixed {
+    public function editAction(Request $request, QuickcheckExamEntity $exam = null) : Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
@@ -116,6 +105,11 @@ class AdminController extends AbstractController {
             $questions = $this->_prep_question_list('checkbox', $exam->getQuickcheckquestions());
         } else {
             $questions = $this->_prep_question_list('checkbox');
+        }
+
+        if($questions == ""){
+            $this->addFlash('error', $this->trans('You need to create questions before you can create an exam.'));
+            return $this->_determineRedirect($request,'paustianquickcheckmodule_admin_editmcquest');
         }
         //If the $questions already exists coming in, then we want to merge
         //if it doesn't we need to persist it instead.
@@ -130,23 +124,21 @@ class AdminController extends AbstractController {
 
         $form->handleRequest($request);
 
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $em = $this->getDoctrine()->getManager();
             $questPick = $request->get('questions');
             $exam->setQuickcheckquestions($questPick);
-            if ($doMerge) {
-                $em->merge($exam);
-            } else {
+            if (!$doMerge) {
                 $exam->setQuickcheckrefid(0);
                 $em->persist($exam);
             }
             $em->flush();
-            $this->addFlash('status', $this->__('Exam saved.'));
+            $this->addFlash('status', $this->trans('Exam saved.'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_exam.html.twig', array(
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_exam.html.twig', array(
                     'form' => $form->createView(), 'questions' => $questions
         ));
     }
@@ -155,10 +147,11 @@ class AdminController extends AbstractController {
      * @Route ("/delete/{exam}")
      * 
      *  deleteAction - delete the exam.
-     * 
      * @param Request $request
+     * @param QuickcheckExamEntity|null $exam
+     * @return Response
      */
-    public function deleteAction(Request $request, QuickcheckExamEntity $exam = null) {
+    public function deleteAction(Request $request, QuickcheckExamEntity $exam = null) : Response {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
             throw new AccessDeniedException();;
         }
@@ -170,7 +163,7 @@ class AdminController extends AbstractController {
         $em = $this->getDoctrine()->getManager();
         $em->remove($exam);
         $em->flush();
-        $this->addFlash('status', $this->__('Exam Deleted.'));
+        $this->addFlash('status', $this->trans('Exam Deleted.'));
         return $response;
     }
 
@@ -180,9 +173,9 @@ class AdminController extends AbstractController {
      *
      * @param Request $request
      * @param QuickcheckQuestionEntity|null $question
-     * @return JsonResponse
+     * @return Response
      */
-    public function deleteQuestionAction(Request $request, QuickcheckQuestionEntity $question = null) : JsonResponse {
+    public function deleteQuestionAction(Request $request, QuickcheckQuestionEntity $question = null) : Response {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
             throw new AccessDeniedException();
         }
@@ -203,7 +196,7 @@ class AdminController extends AbstractController {
         $this->_removeQuestionFromExams($em, $id);
         $em->remove($question);
         $em->flush();
-        $this->addFlash('status', $this->__('Question Deleted.'));
+        $this->addFlash('status', $this->trans('Question Deleted.'));
         if($json){
             $jsonReply = [
                 'id' => $id,
@@ -216,12 +209,14 @@ class AdminController extends AbstractController {
 
     /**
      * remove a deleted question from an exam
-     * @param  $id the id of the question to delete
-     * @param  $em the entity manager   
-     * @return true if successful
+     */
+    /**
+     * @param ObjectManager $em
+     * @param int $id
+     * @return bool
      */
 
-    private function _removeQuestionFromExams($em, $id) : bool {
+    private function _removeQuestionFromExams(ObjectManager $em, int $id) : bool {
         $qb = $em->createQueryBuilder();
         // add select and from params
         $qb->select('u')
@@ -270,17 +265,16 @@ class AdminController extends AbstractController {
         $exams = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity')->get_all_exams();
 
         if (!$exams) {
-            $this->addFlash('error', $this->__('There are no exams to edit'));
+            $this->addFlash('error', $this->trans('There are no exams to edit'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_modify.html.twig', ['exams' => $exams]);
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_modify.html.twig', ['exams' => $exams]);
     }
 
     /**
-     * @Route ("/attach/")
-     * @Method("POST")
+     * @Route ("/attach/", methods={"POST"})
      * @param Request $request
      * @throws AccessDeniedException
      * @return RedirectResponse
@@ -317,18 +311,18 @@ class AdminController extends AbstractController {
         }
         if (isset($attach)) {
             if (!isset($art_id) || !isset($exam)) {
-                throw new NotFoundHttpException($this->__('An article id or exam id are missing'));
+                throw new NotFoundHttpException($this->trans('An article id or exam id are missing'));
             }
             //modify the exam by grabbing it and then changing or adding the art_id
             $new_exam = $em->find('PaustianQuickcheckModule:QuickcheckExamEntity', $exam);
             if (null === $new_exam) {
-                throw new \Doctrine\ORM\NoResultException($this->__('An exam was not found, when it should have been.'));
+                throw new \Doctrine\ORM\NoResultException($this->trans('An exam was not found, when it should have been.'));
             }
             $new_exam->setQuickcheckrefid($art_id);
             $em->merge($new_exam);
-            $request->getSession()->getFlashBag()->add('status', $this->__('The exam was attached.'));
+            $request->getSession()->getFlashBag()->add('status', $this->trans('The exam was attached.'));
         } else {
-            $request->getSession()->getFlashBag()->add('status', $this->__('The exam was removed.'));
+            $request->getSession()->getFlashBag()->add('status', $this->trans('The exam was removed.'));
         }
         $em->flush();
         //finally return to the page that called.
@@ -374,7 +368,7 @@ class AdminController extends AbstractController {
             //this sends back an ArrayCollection of 1 item (each question can only be in 1 category)
             $catItems = $question->getCategories();
             if ($catItems->isEmpty()) {
-                $questions[$this->__('Uncategorized')][] = $built_question;
+                $questions[$this->trans('Uncategorized')][] = $built_question;
                 continue;
             }
 
@@ -399,9 +393,7 @@ class AdminController extends AbstractController {
      */
     private function _persistQuestion(QuickcheckQuestionEntity $question, bool $doMerge, string $flashText, Response $redirect) :Response {
         $em = $this->getDoctrine()->getManager();
-        if ($doMerge) {
-            $em->merge($question);
-        } else {
+        if (!$doMerge) {
             $em->persist($question);
         }
         
@@ -417,7 +409,7 @@ class AdminController extends AbstractController {
      * have changed.
      * @param type $questionList - the list of questions to save
      */
-    private function _persistQuestionList($questionList, $categories) : void {
+    private function _persistQuestionList(array $questionList, $categories) : void {
         $em = $this->getDoctrine()->getManager();
         $catElement = $categories->first();
         
@@ -429,7 +421,6 @@ class AdminController extends AbstractController {
             $newCat['entity'] = $question;
             $categories->set(0, $newCat);
             $question->setCategories($categories);
-            $em->merge($question);
         }
         $em->flush();
     }
@@ -459,8 +450,7 @@ class AdminController extends AbstractController {
     }
 
     /**
-     * @Route("/setquestion", options={"expose"=true})
-     * @Method("POST")
+     * @Route("/setquestion", options={"expose"=true}, methods={"POST"})
      * @param Request $request
      * @return JsonResponse
      */
@@ -492,24 +482,28 @@ class AdminController extends AbstractController {
     }
 
     /**
-     * @Route("/javaedit", options={"expose"=true})
-     * @Method("POST")
+     * @Route("/javaedit", options={"expose"=true}, methods={"POST"})
      * @param Request $request
      * @return JsonResponse
      */
     public function javaEditAction(Request $request) : JsonResponse{
         $id = $request->request->get('id');
-        if(!isset($id)){
-            new FatalResponse($this->__('That qusetion for some reason does not exist.'));
+        //dummy values if id is not set.
+        $jsonReply = ['id' => '0',
+                    'qText' => '',
+                    'qAnswer' => '',
+                    'qExpan' => ''];
+        if(isset($id)){
+            $em = $this->getDoctrine()->getManager();
+            $question = $em->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity')->findOneBy(['id' => $id]);
+            $jsonReply = [
+                'id' => $question->getId(),
+                'qText' => $question->getQuickcheckqText(),
+                'qAnswer' => $question->getQuickcheckqAnswer(),
+                'qExpan' => $question->getQuickcheckqExpan()
+            ];
         }
-        $em = $this->getDoctrine()->getManager();
-        $question = $em->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity')->findOneBy(['id' => $id]);
-        $jsonReply = [
-            'id' => $question->getId(),
-            'qText' => $question->getQuickcheckqText(),
-            'qAnswer' => $question->getQuickcheckqAnswer(),
-            'qExpan' => $question->getQuickcheckqExpan()
-        ];
+
         return  new JsonResponse($jsonReply);
     }
 
@@ -524,7 +518,9 @@ class AdminController extends AbstractController {
      * @return Response
      */
 
-    public function editTextQuestAction(Request $request, QuickcheckQuestionEntity $question = null) :Response{
+    public function editTextQuestAction(Request $request,
+                                        QuickcheckQuestionEntity $question = null,
+                                        HookDispatcherInterface $hookDispatcher) :Response{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
@@ -542,7 +538,7 @@ class AdminController extends AbstractController {
         //I need to add the use declaration for this class. 
         $form = $this->createForm(TextQuestion::class, $question);
         $formHook = new FormAwareHook($form);
-        $this->get('hook_dispatcher')->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
+        $hookDispatcher->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
 
         if ($form->isValid()) {
@@ -550,10 +546,10 @@ class AdminController extends AbstractController {
                 return $this->deleteQuestionAction($request, $question);
             }
             $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_edittextquest');
-            return $this->_persistQuestion($question, $doMerge, $this->__('Text question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->trans('Text question saved!'), $response);
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_text_question.html.twig', array(
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_new_text_question.html.twig', array(
             'form' => $form->createView(),
             'hook_templates' => $formHook->getTemplates()
         ));
@@ -570,7 +566,9 @@ class AdminController extends AbstractController {
      * @param QuickcheckQuestionEntity|null $question
      * @return Response
      */
-    public function editMatchQuestAction(Request $request, QuickcheckQuestionEntity $question = null) :Response {
+    public function editMatchQuestAction(Request $request,
+                                         QuickcheckQuestionEntity $question = null,
+                                         HookDispatcherInterface $hookDispatcher) :Response {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
@@ -585,7 +583,7 @@ class AdminController extends AbstractController {
         $form = $this->createForm(MatchQuestion::class, $question);
         //Add form hooks. For example Scribyte
         $formHook = new FormAwareHook($form);
-        $this->get('hook_dispatcher')->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
+        $hookDispatcher->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -595,10 +593,10 @@ class AdminController extends AbstractController {
                 return $this->deleteQuestionAction($request, $question);
             }
             $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_editmatchquest');
-            return $this->_persistQuestion($question, $doMerge, $this->__('Matching question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->trans('Matching question saved!'), $response);
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_match_question.html.twig', array(
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_new_match_question.html.twig', array(
                     'form' => $form->createView(),
                     'hook_templates' => $formHook->getTemplates()
         ));
@@ -613,7 +611,9 @@ class AdminController extends AbstractController {
      * @param QuickcheckQuestionEntity $question
      * @return Response
      */
-    public function editTFQuestAction(Request $request, QuickcheckQuestionEntity $question = null) : Response {
+    public function editTFQuestAction(Request $request,
+                                      QuickcheckQuestionEntity $question = null,
+                                      HookDispatcherInterface $hookDispatcher) : Response {
 
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
@@ -632,7 +632,7 @@ class AdminController extends AbstractController {
         $form = $this->createForm(TFQuestion::class, $question);
         //Add form hooks. For example Scribyte
         $formHook = new FormAwareHook($form);
-        $this->get('hook_dispatcher')->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
+        $hookDispatcher->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -641,10 +641,10 @@ class AdminController extends AbstractController {
                 return $this->deleteQuestionAction($request, $question);
             }
             $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_edittfquest');
-            return $this->_persistQuestion($question, $doMerge, $this->__('True/False question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->trans('True/False question saved!'), $response);
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_tf_question.html.twig', array(
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_new_tf_question.html.twig', array(
                     'form' => $form->createView(),
             'hook_templates' => $formHook->getTemplates()
         ));
@@ -662,7 +662,9 @@ class AdminController extends AbstractController {
      * HEre is an answer|100
      * HEre is another|0
      */
-    public function editMCQuestAction(Request $request, QuickcheckQuestionEntity $question = null) : Response{
+    public function editMCQuestAction(Request $request,
+                                      QuickcheckQuestionEntity $question = null,
+                                      HookDispatcherInterface $hookDispatcher) : Response{
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
@@ -677,20 +679,20 @@ class AdminController extends AbstractController {
         $form = $this->createForm(MCQuestion::class, $question);
         //Add form hooks. For example Scribyte
         $formHook = new FormAwareHook($form);
-        $this->get('hook_dispatcher')->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
+        $hookDispatcher->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
 
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestionAction($request, $question);
             }
             $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_editmcquest');
-            return $this->_persistQuestion($question, $doMerge, $this->__('Multiple-Choice  question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->trans('Multiple-Choice  question saved!'), $response);
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_mc_question.html.twig', array(
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_new_mc_question.html.twig', array(
                     'form' => $form->createView(),
             'hook_templates' => $formHook->getTemplates()
         ));
@@ -705,7 +707,9 @@ class AdminController extends AbstractController {
      * @param QuickcheckQuestionEntity|null $question
      * @return Response
      */
-    public function editMANSQuestAction(Request $request, QuickcheckQuestionEntity $question = null) : Response {
+    public function editMANSQuestAction(Request $request,
+                                        QuickcheckQuestionEntity $question = null,
+                                        HookDispatcherInterface $hookDispatcher) : Response {
 
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
             throw new AccessDeniedException();
@@ -721,19 +725,19 @@ class AdminController extends AbstractController {
         $form = $this->createForm(MAnsQuestion::class, $question);
         //Add form hooks. For example Scribyte
         $formHook = new FormAwareHook($form);
-        $this->get('hook_dispatcher')->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
+        $hookDispatcher->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestionAction($request, $question);
             }
             $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_editmansquest');
-            return $this->_persistQuestion($question, $doMerge, $this->__('Multiple-Answer question saved!'), $response);
+            return $this->_persistQuestion($question, $doMerge, $this->trans('Multiple-Answer question saved!'), $response);
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_new_mans_question.html.twig', array(
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_new_mans_question.html.twig', array(
                     'form' => $form->createView(),
             'hook_templates' => $formHook->getTemplates()
         ));
@@ -760,12 +764,12 @@ class AdminController extends AbstractController {
             $id = $request->request->get('questions', null);
             $redirect_url = $this->get('router')->generate('paustianquickcheckmodule_admin_editquestions', array(), RouterInterface::ABSOLUTE_URL);
             if (!isset($id) || !is_numeric($id)) {
-                $request->getSession()->getFlashBag()->add('status', $this->__("You need to pick a question"));
+                $request->getSession()->getFlashBag()->add('status', $this->trans("You need to pick a question"));
                 return new RedirectResponse($redirect_url);
             }
             $question = $this->getDoctrine()->getManager()->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
             if (!$question) {
-                $request->getSession()->getFlashBag()->add('status', $this->__("A question with that id does not exist"));
+                $request->getSession()->getFlashBag()->add('status', $this->trans("A question with that id does not exist"));
                 return new RedirectResponse($redirect_url);
             }
         }
@@ -831,7 +835,7 @@ class AdminController extends AbstractController {
         }
         $questions = $this->_prep_question_list('radio');
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_editquestions.html.twig', array('questions' => $questions));
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_editquestions.html.twig', array('questions' => $questions));
     }
 
     /**
@@ -851,12 +855,12 @@ class AdminController extends AbstractController {
         $questions = $this->_build_questions_list($ckquestions);
 
         if (!$questions) {
-            $this->addFlash('error', $this->__('There are no questions to modify. Create some first.'));
+            $this->addFlash('error', $this->trans('There are no questions to modify. Create some first.'));
 
             return "";
         }
 
-        $html = $this->renderView('PaustianQuickcheckModule:Admin:quickcheck_admin_qpart.html.twig', [ 'questions' => $questions,
+        $html = $this->renderView('@PaustianQuickcheckModule/Admin/quickcheck_admin_qpart.html.twig', [ 'questions' => $questions,
             'buttons' => $buttons]);
 
 
@@ -884,17 +888,17 @@ class AdminController extends AbstractController {
 
         $form->handleRequest($request);
 
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $questPick = $request->get('questions');
 
             $categories = $form->get('categories')->getData();
             $this->_persistQuestionList($questPick, $categories);
-            $this->addFlash('status', $this->__('Questions recategorized.'));
+            $this->addFlash('status', $this->trans('Questions recategorized.'));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_categorize'));
             return $response;
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_categorize.html.twig', ['form' => $form->createView(), 'questions' => $questions]);
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_categorize.html.twig', ['form' => $form->createView(), 'questions' => $questions]);
     }
 
 
@@ -931,12 +935,12 @@ class AdminController extends AbstractController {
 //            
 //        }
         if (empty($questions)) {
-            $this->addFlash('error', $this->__("There are no unexplained questions."));
+            $this->addFlash('error', $this->trans("There are no unexplained questions."));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
             return $response;
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_findunanswered.html.twig', ['count' => count($questions), 'questions' => $questions]);
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_findunanswered.html.twig', ['count' => count($questions), 'questions' => $questions]);
     }
 
     /**
@@ -1003,7 +1007,7 @@ class AdminController extends AbstractController {
                     break;
                 default:
                     //if we get here there is an issue, throw an error
-                    throw new NotFoundHttpException($this->__('Unrecognized question type, was your qtype empty in the xml file?'));
+                    throw new NotFoundHttpException($this->trans('Unrecognized question type, was your qtype empty in the xml file?'));
                     break;
             }
             
@@ -1075,18 +1079,18 @@ class AdminController extends AbstractController {
 
         $form->handleRequest($request);
 
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $xmlQuestionText = $form->get('importText')->getData();
             $category = $form->get('categories')->getData();
             //take the xml that is imported, and parse it into an array
             //That array should have filled out a new question entity which it shoudl return
             $questions = $this->_parseImportedQuizXML($xmlQuestionText, $category);
-            $this->addFlash('status', $this->__("Questions imported."));
+            $this->addFlash('status', $this->trans("Questions imported."));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_importquiz'));
             return $response;
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_import.html.twig', array(
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_import.html.twig', array(
                     'form' => $form->createView(),
         ));
     }
@@ -1111,7 +1115,7 @@ class AdminController extends AbstractController {
 
         $form->handleRequest($request);
 
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             //I need to impement the export all button.
             $questPick = null;
             $button = $form->get('export');
@@ -1120,11 +1124,11 @@ class AdminController extends AbstractController {
                 $questPick = $request->get('questions');
             }
             $questionItems = $this->_prepExportText($questPick);
-            $response = $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_doexport.html.twig', ['questions' => $questionItems]);
+            $response = $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_doexport.html.twig', ['questions' => $questionItems]);
             return $response;
         }
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_export.html.twig', ['form' => $form->createView(), 'questions' => $questions]);
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_export.html.twig', ['form' => $form->createView(), 'questions' => $questions]);
     }
 
     /**
@@ -1211,7 +1215,7 @@ class AdminController extends AbstractController {
             }
         }
         $em->flush();
-        $this->addFlash('status', $this->__("Questions updated."));
+        $this->addFlash('status', $this->trans("Questions updated."));
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
         return $response;
     }
@@ -1243,7 +1247,7 @@ class AdminController extends AbstractController {
         // execute query
         $questions = $query->getResult();
 
-        return $this->render('PaustianQuickcheckModule:Admin:quickcheck_admin_findmyid.html.twig', ['questions' => $questions]);
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_findmyid.html.twig', ['questions' => $questions]);
     }
 
     /**
@@ -1288,7 +1292,7 @@ class AdminController extends AbstractController {
             }
         }
         $em->flush();
-        $this->addFlash('status', $dups  . $this->__(" questions removed."));
+        $this->addFlash('status', $dups  . $this->trans(" questions removed."));
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
         return $response;
     }
@@ -1345,7 +1349,7 @@ class AdminController extends AbstractController {
         $questions = $query->getResult();
         $qCategories = $this->_categorizeQuestions($questions);
 
-        return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
+        return $this->render("@PaustianQuickcheckModule/Admin/quickcheck_admin_examinequestions.html.twig",
             ['questions' => $questions,
              'categories' => $qCategories,
                 'deleteRows' => true]);
@@ -1368,7 +1372,7 @@ class AdminController extends AbstractController {
 
         $form->handleRequest($request);
 
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
 
             $formData = $form->getData();
             $searchText = explode(' ', $formData['searchtext']);
@@ -1404,12 +1408,12 @@ class AdminController extends AbstractController {
             }
             $qCategories = $this->_categorizeQuestions($questions);
 
-            return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
+            return $this->render("@PaustianQuickcheckModule/Admin/quickcheck_admin_examinequestions.html.twig",
                 ['questions' => $questions,
                     'categories' => $qCategories,
                     'deleteRows' => false]);
         }
-        return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_searchallquestions.html.twig",
+        return $this->render("@PaustianQuickcheckModule/Admin/quickcheck_admin_searchallquestions.html.twig",
                 ['form' => $form->createView()]);
     }
 
@@ -1452,7 +1456,7 @@ class AdminController extends AbstractController {
             $em->merge($question);
         }
         $em->flush();
-        $this->addFlash('status', $this->__('Hidden questions added to public database.'));
+        $this->addFlash('status', $this->trans('Hidden questions added to public database.'));
         return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
     }
 
@@ -1478,7 +1482,7 @@ class AdminController extends AbstractController {
         }
         $newExam = new QuickcheckExamEntity();
         $newExam->setQuickcheckquestions($questionIds);
-        $newExam->setQuickcheckname($this->__("New Exam from Hidden Questions"));
+        $newExam->setQuickcheckname($this->trans("New Exam from Hidden Questions"));
         $newExam->setQuickcheckrefid(0);
         $em = $this->getDoctrine()->getManager();
         $em->persist($newExam);
@@ -1505,7 +1509,7 @@ class AdminController extends AbstractController {
         $questions = $this->_findHidden();
         $qCategories = $this->_categorizeQuestions($questions);
 
-        return $this->render("PaustianQuickcheckModule:Admin:quickcheck_admin_examinequestions.html.twig",
+        return $this->render("@PaustianQuickcheckModule/Admin/quickcheck_admin_examinequestions.html.twig",
             ['questions' => $questions,
                 'categories' => $qCategories,
                 'deleteRows' => true]);

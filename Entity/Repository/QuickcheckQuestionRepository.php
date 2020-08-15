@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace Paustian\QuickcheckModule\Entity\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 
-class QuickcheckQuestionRepository extends EntityRepository {
+class QuickcheckQuestionRepository extends ServiceEntityRepository {
+
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, QuickcheckQuestionEntity::class);
+    }
 
     /**
      * @param array $words
@@ -61,10 +67,6 @@ class QuickcheckQuestionRepository extends EntityRepository {
         $query = $qb->getQuery();
         $results = $query->getResult();
         return $results;
-    }
-
-    public function getTextAndCategory($words){
-
     }
 }
 

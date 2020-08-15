@@ -2,9 +2,9 @@
 
 <h3>
     <span class="fa fa-book"></span>
-    {{ __("Create a practice exam") }}
+    {{("Create a practice exam"|trans) }}
 </h3>
-<p>{{ __("Choose the number of questions you want from each category and then hit the create button") }}</p>
+<p>{{("Choose the number of questions you want from each category and then hit the create button"|trans) }}</p>
 <form action="{{ path('paustianquickcheckmodule_user_createexam') }}" method="post"
       enctype="application/x-www-form-urlencoded">
     <input type="hidden" id="csrftoken" name="csrftoken" value="{insert name='csrftoken'}"/>
@@ -12,8 +12,8 @@
         <table class="table table-striped">
             <thead>
             <tr>
-                <th>{{ __('Category') }}</th>
-                <th> {{ __('Number of Questions') }} </th>
+                <th>{{('Category'|trans) }}</th>
+                <th> {{('Number of Questions'|trans) }} </th>
             </tr>
             </thead>
             <tbody>
@@ -34,7 +34,7 @@
     <div class="form-group">
         <div class="col-lg-offset-3 col-lg-9">
             <button class="btn btn-success" type="submit" name="create" value="create">
-                {{ __('Create Exam') }}
+                {{('Create Exam'|trans) }}
             </button>
         </div>
     </div>

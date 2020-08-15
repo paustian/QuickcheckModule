@@ -2,13 +2,13 @@
       enctype="application/x-www-form-urlencoded">
     <input type="hidden" name="art_id" value="{{ art_id }}">
     <input type="hidden" name="return_url" value="{{ return_url }}">
-    <h3>{{ __('Choose an exam to attach') }}</h3>
+    <h3>{{('Choose an exam to attach'|trans) }}</h3>
 
     <table class="table table-striped exams">
         <thead class="exams">
         <tr>
-            <th class="col-xs-1">{{ __('Add Exam') }}</th>
-            <th class="col-xs-11">{{ __('Exam Name') }}</th>
+            <th class="col-xs-1">{{('Add Exam'|trans) }}</th>
+            <th class="col-xs-11">{{('Exam Name'|trans) }}</th>
         </tr>
         </thead>
         <tbody class="exams">
@@ -24,10 +24,10 @@
     </table>
     <div class="form-group">
         <button class="btn btn-success" type="submit" name="attach" value="attach">
-            {{ __('Attach') }}
+            {{('Attach'|trans) }}
         </button>
         <button class="btn btn-success" type="submit" name="delete" value="delete">
-            {{ __('Remove') }}
+            {{('Remove'|trans) }}
         </button>
 
     </div>

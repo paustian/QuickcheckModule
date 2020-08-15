@@ -5,7 +5,7 @@ namespace Paustian\QuickcheckModule\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Zikula\Common\Translator\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * Description of CategorizeForm
  * Set up the elements for a Exam form. A simple forms
@@ -35,8 +35,8 @@ class ExamineAllForm extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) : void
     {
         $builder
-            ->add('list', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => $this->translator->__('List Questions')))
-            ->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' => $this->translator->__('Cancel')));
+            ->add('list', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => $this->translator->trans('List Questions')))
+            ->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' => $this->translator->trans('Cancel')));
 
 
         $builder->add('categories', 'Zikula\CategoriesModule\Form\Type\CategoriesType', [
@@ -47,7 +47,7 @@ class ExamineAllForm extends AbstractType {
             'entityCategoryClass' => 'Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory',
         ]);
 
-        $builder->add('searchtext', \Symfony\Component\Form\Extension\Core\Type\TextType::class, array('label' => $this->translator->__('Search Text'), 'required' => false));
+        $builder->add('searchtext', \Symfony\Component\Form\Extension\Core\Type\TextType::class, array('label' => $this->translator->trans('Search Text'), 'required' => false));
     }
 
     public function getPrefixName() : string
