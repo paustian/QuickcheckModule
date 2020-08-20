@@ -16,9 +16,10 @@ declare(strict_types=1);
 
 namespace Paustian\QuickcheckModule\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Entity\Category;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Doctrine\Common\Collections\ArrayCollection;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory as QuickcheckCategoryRelation;
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Doctrine\ORM\Mapping as ORM;
@@ -101,7 +102,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
         $this->quickcheckqanswer = '';
         $this->quickcheckqexpan = '';
         $this->quickcheckqparam = '';
-        $this->categories = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->categories = new ArrayCollection();
         $this->status = 0;
     }
 
@@ -128,12 +129,8 @@ class QuickcheckQuestionEntity extends EntityAccess {
     public function getQuickcheckqParam() :string {
         return $this->quickcheckqparam;
     }
-    /**
-     * Get page categories
-     *
-     * @return \Doctrine\Common\Collections\ArrayCollection
-     */
-    public function getCategories() : ArrayCollection {
+
+    public function getCategories() : ?Collection {
         return $this->categories;
     }
 

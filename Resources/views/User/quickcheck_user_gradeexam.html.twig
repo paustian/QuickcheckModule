@@ -10,29 +10,29 @@
 
 {% for question in questions %}
     <div class='qc_question_group'>
-        <p>{{ loop.index }}. {{ question.quickcheckqtext }}</p>
-        {% if question.quickcheckqtype == 0 %} {# text #}
+        <p>{{ loop.index }}. {{ question.question }}</p>
+        {% if question.type == 0 %} {# text #}
             <h4>{{("Correct Answer"|trans) }}</h4>
-            <p>{{ question.quickcheckqanswer|raw }}</p>
+            <p>{{ question.answer|raw }}</p>
             <h4>{{("Your Answer"|trans) }}</h4>
             <p>{{ student_answers[loop.index0] }}</p>
         {% endif %}
-        {% if question.quickcheckqtype == 1 %} {# multiple choice #}
+        {% if question.type == 1 %} {# multiple choice #}
             <ol class="upper-alpha">
-                {% set answers = question.quickcheckqanswer %}
-                {% set params = question.quickcheckqparam %}
+                {% set answers = question.answer %}
+                {% set params = question.param %}
                 {% set uranswer = student_answers[loop.index0] %}
                 {% for answer in answers %}
                     {% if params[loop.index0] == 100 %}
                         {% if uranswer == loop.index0 %}
-                            <li><span class="fa fa-thumbs-o-up"></span> {{ answer|raw }} - {{('correct'|trans) }}
+                            <li><span class="fas fa-thumbs-up"></span> {{ answer|raw }} - {{('correct'|trans) }}
                                 - {{('Your answer'|trans) }}</li>
                         {% else %}
-                            <li><span class="fa fa-asterisk"></span>{{ answer|raw }} - <b>{{('correct'|trans) }}</b></li>
+                            <li><span class="fas fa-asterisk"></span>{{ answer|raw }} - <b>{{('correct'|trans) }}</b></li>
                         {% endif %}
                     {% else %}
                         {% if uranswer == loop.index0 %}
-                            <li><span class="fa fa-thumbs-o-down"></span>{{ answer|raw }} -
+                            <li><span class="fas fa-thumbs-down"></span>{{ answer|raw }} -
                                 <b>{{('Your answer'|trans) }}</b></li>
                         {% else %}
                             <li>{{ answer|raw }}</li>
@@ -41,9 +41,9 @@
                 {% endfor %}
             </ol>
         {% endif %}
-        {% if question.quickcheckqtype == 2 %} {# true/false #}
-            {% if question.quickcheckqanswer == student_answers[loop.index0] %}
-                {% if question.quickcheckqanswer == 'yes' %}
+        {% if question.type == 2 %} {# true/false #}
+            {% if question.answer == student_answers[loop.index0] %}
+                {% if question.answer == 'yes' %}
                     <p><span class="fa fa-thumbs-o-up"></span>{{('True'|trans) }} {{('- Correct - Your answer'|trans) }}</p>
                     <p>{{('False'|trans) }}</p>
                 {% else %}
@@ -51,7 +51,7 @@
                     <p><span class="fa fa-thumbs-o-up"></span>{{('False'|trans) }} {{('Correct - Your answer'|trans) }}</p>
                 {% endif %}
             {% else %}
-                {% if question.quickcheckqanswer == 'yes' %}
+                {% if question.answer == 'yes' %}
                     <p><span class="fa fa-thumbs-o-up"></span>{{('True'|trans) }} <b>{{('Correct answer'|trans) }}</b></p>
                     <p><span class="fa fa-thumbs-o-down"></span>{{('False'|trans) }} <b>{{('Your answer'|trans) }}</b></p>
                 {% else %}
@@ -60,7 +60,7 @@
                 {% endif %}
             {% endif %}
         {% endif %}
-        {% if question.quickcheckqtype == 3 %} {# matching #}
+        {% if question.type == 3 %} {# matching #}
             <table class="table table-striped">
                 <thead>
                 <tr>
@@ -69,8 +69,8 @@
                     <th>{{('Your Answer'|trans) }}</th>
                 </tr>
                 </thead>
-                {% set answers = question.quickcheckqanswer %}
-                {% set params = question.quickcheckqparam %}
+                {% set answers = question.answer %}
+                {% set params = question.param %}
                 {% set ur_answers = student_answers[loop.index0] %}
                 <tbody>
                 {% for answer in answers %}
@@ -83,24 +83,24 @@
                 </tbody>
             </table>
         {% endif %}
-        {% if question.quickcheckqtype == 4 %} {# multiple answer #}
+        {% if question.type == 4 %} {# multiple answer #}
             I need to take off points for choosing incorrect answers. Right now if you check everything, you get it right.
             <ol class="upper-alpha">
-                {% set answers = question.quickcheckqanswer %}
-                {% set params = question.quickcheckqparam %}
+                {% set answers = question.answer %}
+                {% set params = question.param %}
                 {% set uranswer = student_answers[loop.index0] %}
                 {% for answer in answers %}
                     {% if params[loop.index0] > 0 %}
                         {% if uranswer[loop.index0] == loop.index0 %}
-                            <li><span class="fa fa-thumbs-o-up"></span>{{ answer|raw }} - {{('Correct'|trans) }}
+                            <li><span class="fas fa-thumbs-up"></span>{{ answer|raw }} - {{('Correct'|trans) }}
                                 - {{('Your answer'|trans) }}</li>
                         {% else %}
-                            <li><span class="fa fa-asterisk"></span>{{ answer|raw }} - <b>{{('Correct'|trans) }}</b></li>
+                            <li><span class="fas fa-asterisk"></span>{{ answer|raw }} - <b>{{('Correct'|trans) }}</b></li>
                         {% endif %}
                     {% else %}
                         {% if uranswer[loop.index0] == loop.index0 %}
                             <li>
-                                <span class="fa fa-thumbs-o-down"><span>{{ answer|raw }} - <b>{{('Your answer'|trans) }}</b>
+                                <span class="fas fa-thumbs-down"><span>{{ answer|raw }} - <b>{{('Your answer'|trans) }}</b>
                             </li>
                         {% else %}
                             <li>{{ answer|raw }}</li>
@@ -109,6 +109,6 @@
                 {% endfor %}
             </ol>
         {% endif %}
-        <p>Explanation: {{ question.quickcheckqexpan|raw }}</p>
+        <p class="qc_explanation">Explanation: {{ question.explanation|raw }}</p>
     </div>
 {% endfor %}

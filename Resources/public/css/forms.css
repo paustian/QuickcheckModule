@@ -41,6 +41,10 @@ textarea.qc_importtext{
     padding: 5px 5px 5px 5px;
 }
 
+.qc_explanation {
+    background: aliceblue;
+}
+
 ol.upper-alpha {list-style-type: upper-alpha;}
 
 ul.sortable_a { 
@@ -52,7 +56,7 @@ ul.sortable_a {
 }
 li.matching { 
     padding: 5px 5px 5px 5px; 
-    font-size: 12px; height: 50px;
+    font-size: 12px; height: 30px;
     border: 1px solid black; }
 
 table.exams {

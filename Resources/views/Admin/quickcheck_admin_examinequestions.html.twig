@@ -3,7 +3,6 @@
 {{ pageAddAsset('stylesheet', 'https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css') }}
 {{ pageAddAsset('javascript', 'https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js') }}
 {{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.moderatequestions.js')) }}
-{{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.viewquestion.js')) }}
 
 <h3> {{ 'Current Questions for Moderation'|trans }}</h3>
 <table id="tableToSort" class="table table-striped">
@@ -44,7 +43,7 @@
                     {% endif %}
                 </select></td>
             <td id="actions">
-                <span id="edit_{{ item.id }}" class="fa fa-pencil" title="Edit in place"></span>
+                <span id="edit_{{ item.id }}" class="fas fa-pencil-alt" title="Edit in place"></span>
                 <span id="preview_button_{{ item.id }}" class="fa fa-eye" title="Preview Question"></span>
                 <a href="{{ path('paustianquickcheckmodule_admin_modifyquestion', {"question": item.id, "modify": 2}) }}"><span id="link_{{ item.id }}" class="fa fa-edit" title="Edit in interface."></span></a>
                 <span id="delete_{{ item.id }}" class="fa fa-trash" title="Delete question"></span>

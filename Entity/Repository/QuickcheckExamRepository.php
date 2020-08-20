@@ -71,9 +71,9 @@ class QuickcheckExamRepository extends EntityRepository {
             for ($i = 0; $i < $total; $i++) {
                 $item = $questions[$i];
                 $q_ids[] = $item['id'];
-                if ($item['q_type'] == 3) {
+                if ($item['type'] == 3) {
                     //matching question, add a new parameter
-                    $ran_array = $item['q_answer'];
+                    $ran_array = $item['answer'];
                     shuffle($ran_array);
                     $item['ran_array'] = $ran_array;
                     $questions[$i] = $item;
@@ -93,18 +93,22 @@ class QuickcheckExamRepository extends EntityRepository {
      *
      * @param QuickcheckQuestionEntity $in_question
      * @param bool $shuffle
-     * @return QuickcheckQuestionEntity
+     * @return array
      */
-    public function unpackQuestion(QuickcheckQuestionEntity $in_question, bool $shuffle = true) : QuickcheckQuestionEntity {
-        $type = $in_question->getQuickcheckqType();
+    public function unpackQuestion(QuickcheckQuestionEntity $in_question, bool $shuffle = true) : array {
+        $qArray = [];
+        $qArray['type'] = $type = $in_question->getQuickcheckqType();
+        $qArray['question'] = $in_question->getQuickcheckqText();
+        $qArray['explanation'] = $in_question-> getQuickcheckqExpan();
+        $qArray['id'] = $in_question->getId();
         //We need to unpack this a bit to prepare it for display
         //We parse out the correct answer and put those in the param variable of the class
         if (($type == Admincontroller::_QUICKCHECK_MULTIPLECHOICE_TYPE) ||
                 ($type == Admincontroller::_QUICKCHECK_MATCHING_TYPE) ||
                 ($type == Admincontroller::_QUICKCHECK_MULTIANSWER_TYPE)) {
             $qAnswer = $in_question->getQuickcheckqAnswer();
-            preg_match_all("|(.*)\|(.*)|", $qAnswer, $matches);
-            $in_question->setQuickcheckqAnswer($matches[1]);
+            preg_match_all("|(.*)\|(.*)\s*|", $qAnswer, $matches);
+            $qArray['answer'] = $matches[1];
             if (($type == Admincontroller::_QUICKCHECK_MATCHING_TYPE) && $shuffle) {
                 $param = array();
                 $orig_array = $matches[2];
@@ -116,13 +120,15 @@ class QuickcheckExamRepository extends EntityRepository {
                     //It's original position.
                     $param[1][] = $item;
                 }
-                $in_question->setQuickcheckqParam($param);
+                $qArray['param'] = $param;
             } else {
-                $in_question->setQuickcheckqParam($matches[2]);
+                $qArray['param'] = $matches[2];
             }
+        } else {
+            $qArray['answer'] = $in_question->getQuickcheckqAnswer();
         }
 
-        return $in_question;
+        return $qArray;
     }
     
 }

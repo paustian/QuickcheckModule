@@ -100,8 +100,9 @@ class ExtensionMenu implements ExtensionMenuInterface
 
         //the import/export menu
         $menu->addChild('Processing', [
-            'route' => 'paustianquickcheckmodule_admin_modify',
-        ])->setAttribute('icon', 'fas fa-microchip');
+            'uri' => '#',
+        ])->setAttribute('icon', 'fas fa-microchip')
+            ->setAttribute('dropdown', true);
 
         $menu['Processing']->addChild('Examine all moderated questions', [
             'route' => 'paustianquickcheckmodule_admin_examinemoderated'

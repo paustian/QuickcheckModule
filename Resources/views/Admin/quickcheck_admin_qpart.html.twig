@@ -21,11 +21,15 @@
         </div>
     {% endfor %}
 </div>
-<script type="text/javascript">
-    (function ($) {
-        $('#QuestionList').accordion({
-            collapsible: true,
-            heightStyle: "content"
-        });
-    })(jQuery);
+<script>
+    document.onreadystatechange = function () {
+        if (document.readyState === 'complete') {
+            (function ($) {
+                $('#QuestionList').accordion({
+                    collapsible: true,
+                    heightStyle: "content"
+                });
+            })(jQuery);
+        }
+    }
 </script>

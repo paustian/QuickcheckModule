@@ -55,18 +55,17 @@ class TFQuestion extends AbstractType {
             'choices' => array('True' => '1', 'False' => '0'),
             'required' => true,
             'label' => $this->translator->trans('Answer'),
-            'choices_as_values' => true,
             'expanded' => true,
             'multiple' => false));
         if($this->permissionApi->hasPermission('Quickcheck::', '::', ACCESS_ADMIN)) {
             $builder->add('status', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
-                'label' => $this->translator->trans('Moderation Status', 'paustianquickcheckmodule') . ':',
+                'label' => $this->translator->trans('Moderation Status') . ':',
                 'label_attr' => ['class' => 'radio-inline'],
                 'empty_data' => 'default',
                 'choices' => [
-                    $this->translator->trans('Public', 'paustianquickcheckmodule') => '0',
-                    $this->translator->trans('Moderated', 'paustianquickcheckmodule') => '1',
-                    $this->translator->trans('Hidden for Exam', 'paustianquickcheckmodule') => '2'
+                    $this->translator->trans('Public') => '0',
+                    $this->translator->trans('Moderated') => '1',
+                    $this->translator->trans('Hidden for Exam') => '2'
                 ],
                 'multiple' => false,
                 'expanded' => true
@@ -82,6 +81,7 @@ class TFQuestion extends AbstractType {
             'required' => false,
             'multiple' => false,
             'module' => 'PaustianQuickcheckModule',
+            'showRegistryLabels' => false,
             'entity' => 'QuickcheckQuestionEntity',
             'entityCategoryClass' => 'Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory',
         ]);

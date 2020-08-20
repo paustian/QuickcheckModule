@@ -52,13 +52,13 @@ class MAnsQuestion extends AbstractType {
         $builder->add('quickcheckqtype', \Symfony\Component\Form\Extension\Core\Type\HiddenType::class, array('data' => AdminController::_QUICKCHECK_MULTIANSWER_TYPE));
         if($this->permissionApi->hasPermission('Quickcheck::', '::', ACCESS_ADMIN)) {
             $builder->add('status', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
-                'label' => $this->translator->trans('Moderation Status', 'paustianquickcheckmodule') . ':',
+                'label' => $this->translator->trans('Moderation Status') . ':',
                 'label_attr' => ['class' => 'radio-inline'],
                 'empty_data' => 'default',
                 'choices' => [
-                    $this->translator->trans('Public', 'paustianquickcheckmodule') => '0',
-                    $this->translator->trans('Moderated', 'paustianquickcheckmodule') => '1',
-                    $this->translator->trans('Hidden for Exam', 'paustianquickcheckmodule') => '2'
+                    $this->translator->trans('Public') => '0',
+                    $this->translator->trans('Moderated') => '1',
+                    $this->translator->trans('Hidden for Exam') => '2'
                 ],
                 'multiple' => false,
                 'expanded' => true

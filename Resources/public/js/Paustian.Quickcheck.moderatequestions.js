@@ -27,6 +27,7 @@
         cacheDom: function () {
             this.$deleteButtons = $("span[id^=delete_]");
             this.$editButtons = $("span[id^=edit_]");
+            this.$previewButtons = $("span[id^=preview_button_]");
             this.$table = $("#tableToSort");
             var divDeleteRowsExists = $("#delete_rows");
             this.$deleteRows = (divDeleteRowsExists.length !== 0);
@@ -35,6 +36,7 @@
         bindEvents: function () {
             this.$deleteButtons.on('click',  this.deleteQuestion.bind(this));
             this.$editButtons.on('click', this.editQuestion.bind(this));
+            this.$previewButtons.on('click', this.previewQustion.bind(this));
 
         },
 
@@ -83,6 +85,44 @@
             buttons.empty();
             buttons.html("<span id='submit_" + this.currentId + "' class='fa fa-save'></span>");
             $("#submit_" + this.currentId).on("click", this.saveItem.bind(this));
+        },
+
+        showPreview: function (evt){
+            var itemName = evt.target.id;
+            var id = itemName.substring(15, itemName.length);
+            var question;
+            var answer;
+            var type;
+            question=$("#quickcheckqtext_" + id).html();
+            answer=$("#quickcheckqanswer_" + id).html();
+            type = $("#type_" + id).val();
+
+            this.sendAjax(
+                "paustianquickcheckmodule_user_getpreviewhtml",
+                {"question" : question,
+                    "answer" : answer,
+                    "type" : type},
+                {"success": this.displayPreview.bind(this), method: "POST"}
+            );
+
+            evt.stopPropagation();
+        },
+
+        displayPreview: function(result, textStatus, jqXHR){
+            this.$preview.html(result.html);
+            this.$preview.dialog({
+                title: "Preview Question",
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                width: 600,
+                dialogClass: "ui-dialog-osx",
+                buttons: {
+                    "OK": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
         },
 
         saveItem: function(evt){

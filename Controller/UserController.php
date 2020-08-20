@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace Paustian\QuickcheckModule\Controller;
 
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
-use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,9 +33,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\RouterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
-use Paustian\QuickcheckModule\Controller\AdminController;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
-use Zikula\Bundle\CoreBundle\Response\Ajax\ForbiddenResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class UserController extends AbstractController {
@@ -295,8 +292,7 @@ class UserController extends AbstractController {
         return $this->displayAction($request, $exam, "", true);
     }
     /**
-     * @Route("/gradeexam")
-     * @Method("POST")
+     * @Route("/gradeexam", methods={"POST"})
      * 
      * gradequizAction
      *
@@ -304,8 +300,6 @@ class UserController extends AbstractController {
      * and then find the right answer to each question. Each question answer comes back as an array, corresponding to
      * the question id. We can then compare this to the correct answer for each type.
      * @param $request
-     */
-    /**
      * @param Request $request
      * @return Response
      */
@@ -326,10 +320,10 @@ class UserController extends AbstractController {
         $ur_answer = '';
 
         foreach ($q_ids as $q_id) {
-            $student_answer = $request->request->get($q_id, null);
+            $student_answer = $request->request->get((string)$q_id, null);
             $question = $em->find('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', $q_id);
             //we need to unpack the question so that we can display it.
-            $examRepo->unpackQuestion($question, false);
+            $unpacked_question = $examRepo->unpackQuestion($question, false);
             if (!isset($student_answer)) {
                 $student_answer = "";
             }
@@ -374,7 +368,10 @@ class UserController extends AbstractController {
                     $total = 0;
                     $ur_answer = array();
                     //fill an array the size of the answers with -1
-                    $array_size = count($question->getQuickcheckqanswer());
+                    $qAnswers = $question->getQuickcheckqAnswer();
+                    preg_match_all("|(.*)\|(.*)|", $qAnswers, $matches);
+                    $answerArray = $matches[1];
+                    $array_size = count($answerArray);
                     $num_that_should = 0;
                     $marked_answers = array_fill(0, $array_size, -1);
                     if (is_array($student_answer)) {
@@ -404,13 +401,15 @@ class UserController extends AbstractController {
                     break;
             }
             //save the questions in an array for display.
-            $display_questions[] = $question;
+            $display_questions[] = $unpacked_question;
             $student_answers[] = $ur_answer;
             //reset these answers
             $ur_answer = '';
         }
+
         $percent = $score / count($q_ids) * 100;
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
+
 
         return $this->render('@PaustianQuickcheckModule/User/quickcheck_user_gradeexam.html.twig', [
                     'questions' => $display_questions,
@@ -428,12 +427,13 @@ class UserController extends AbstractController {
      * The caller is a javascript, see the javascripts in Resources/public/js directory
      *
      * @param Request $request
-     * @return Response
+     * @return Response|AccessDeniedException
      */
 
-    public function getpreviewhtmlAction(Request $request) :Response {
+    public function getpreviewhtmlAction(Request $request)
+    {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_READ)) {
-            return new ForbiddenResponse($this->trans('Access forbidden since you cannot read questions.'));
+            return new AccessDeniedException($this->trans('Access forbidden since you cannot read questions.'));
         }
         //fetch the parameters for the question
         $questionText = $request->get('question');

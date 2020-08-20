@@ -17,8 +17,8 @@
         {% else %}
             {% set qID = "" %}
         {% endif %}
-        <p>{{ qID }} {{ loop.index }}. {{ question.quickcheckqtext|raw }}</p>
-        {% if question.quickcheckqtype == 0 %} {# text #}
+        <p>{{ qID }} {{ loop.index }}. {{ question.question|raw }}</p>
+        {% if question.type == 0 %} {# text #}
             {% if print==false %}
                 <p><textarea cols="60" rows="5" name="{{ question.id }}" required></textarea>
             {% else %}
@@ -28,17 +28,17 @@
                 <br/>
             {% endif %}
         {% endif %}
-        {% if question.quickcheckqtype == 1 %} {# multiple choice #}
+        {% if question.type == 1 %} {# multiple choice #}
             <ol class="upper-alpha">
-                {% set answers = question.quickcheckqanswer %}
+                {% set answers = question.answer %}
                 {% for answer in answers %}
                     <li>{% if print == false %}<input type="radio" name="{{ question.id }}"
-                                                      value="{{ question.quickcheckqparam[loop.index0] }}_{{ loop.index0 }}"
+                                                      value="{{ question.param[loop.index0] }}_{{ loop.index0 }}"
                                                       required>{% endif %} {{ answer|raw }}</li>
                 {% endfor %}
             </ol>
         {% endif %}
-        {% if question.quickcheckqtype == 2 %} {# true/false #}
+        {% if question.type == 2 %} {# true/false #}
             <ol class="upper-alpha">
                 <li>{% if print==false %}<input type="radio" name="{{ question.id }}" value="1"
                                                 required>{% endif %} {{('True'|trans) }}</li>
@@ -46,31 +46,30 @@
                                                 required>{% endif %} {{('False'|trans) }}</li>
             </ol>
         {% endif %}
-        {% if question.quickcheckqtype == 3 %} {# matching #}
+        {% if question.type == 3 %} {# matching #}
             {% if print==false %}<input name="order_{{ question.id }}" id="order_{{ question.id }}"
                                         type="hidden" />{% endif %}
-            {% set answers = question.quickcheckqanswer %}
+            {% set answers = question.answer %}
             <ul class="sortable_a">
                 {% for answer in answers %}
                     <li class="matching">{{ answer|raw }}</li>
                 {% endfor %}
             </ul>
-            {% set params = question.quickcheckqparam[0] %}
-            {% set position = question.quickcheckqparam[1] %}
+            {% set params = question.param[0] %}
+            {% set position = question.param[1] %}
             <ul class="sortable_a" id="sortable{{ question.id }}">
                 {% for match in params %}
-                    <li class="matching" id="item_{{ position[loop.index0] }}"><span
-                                class="fa fa-arrows-v"></span> {{ match|raw }}</li>
+                    <li class="matching" id="item_{{ position[loop.index0] }}">{{ match|raw }}<span class="fas fa-ellipsis-v float-right"></span></li>
                 {% endfor %}
             </ul>
             <br/>
         {% endif %}
-        {% if question.quickcheckqtype == 4 %} {# multiple answer #}
+        {% if question.type == 4 %} {# multiple answer #}
             <ol class="upper-alpha">
-                {% set answers = question.quickcheckqanswer %}
+                {% set answers = question.answer %}
                 {% for answer in answers %}
                     <li>{% if print==false %}<input type="checkbox" name="{{ question.id }}[]"
-                                                    value="{{ question.quickcheckqparam[loop.index0] }}_{{ loop.index0 }}">{% endif %} {{ answer|raw }}
+                                                    value="{{ question.param[loop.index0] }}_{{ loop.index0 }}">{% endif %} {{ answer|raw }}
                     </li>
                 {% endfor %}
             </ol>
@@ -88,23 +87,22 @@
 <hr/>
 
 <script type="text/javascript">
-    function setMatching() {
-        {% for question in questions %}
-        {% if question.quickcheckqtype == 3 %}
-        jQuery("#sortable{{ question.id }}").sortable({
-            update: function (event, ui) {
-                var Order = jQuery(this).sortable('serialize');
-
-                jQuery('#order_{{ question.id }}').val(Order);
-            }
-        });
-        jQuery("#sortable{{ question.id }}").disableSelection();
-        {% endif %}
-        {% endfor %}
-    };
     document.onreadystatechange = function () {
         if (document.readyState === 'complete') {
-            setMatching();
+            (function ($) {
+                {% for question in questions %}
+                {% if question.type == 3 %}
+                $("#sortable{{ question.id }}").sortable({
+                    update: function (event, ui) {
+                        var Order = jQuery(this).sortable('serialize');
+
+                        $('#order_{{ question.id }}').val(Order);
+                    }
+                });
+                $("#sortable{{ question.id }}").disableSelection();
+                {% endif %}
+                {% endfor %}
+            })(jQuery);
         }
     };
 </script>

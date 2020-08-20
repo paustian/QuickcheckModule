@@ -30,6 +30,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Zikula\ThemeModule\Engine\Annotation\Theme;
 use Symfony\Component\Routing\RouterInterface;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
@@ -70,6 +71,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("")
+     * @Theme("admin")
      * @param Request $request
      * @return Response
      */
@@ -88,7 +90,7 @@ class AdminController extends AbstractController {
      * * form to add new exam  
      *
      * Create a new exam
-     *
+     * @Theme("admin")
      * @param Request $request
      * @param QuickcheckExamEntity|null $exam
      * @return mixed The form for creating a new exam response object
@@ -145,7 +147,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route ("/delete/{exam}")
-     * 
+     * @Theme("admin")
      *  deleteAction - delete the exam.
      * @param Request $request
      * @param QuickcheckExamEntity|null $exam
@@ -169,6 +171,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route ("/deletequestion/{question}", options={"expose"=true})
+     * @Theme("admin")
      * deleteQuestionAction - delete the question.
      *
      * @param Request $request
@@ -209,8 +212,6 @@ class AdminController extends AbstractController {
 
     /**
      * remove a deleted question from an exam
-     */
-    /**
      * @param ObjectManager $em
      * @param int $id
      * @return bool
@@ -248,7 +249,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route ("/modify")
-     * 
+     * @Theme("admin")
      * modify an exam
      *
      * Set up a form to present all the exams and let the user choose
@@ -275,6 +276,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route ("/attach/", methods={"POST"})
+     * @Theme("admin")
      * @param Request $request
      * @throws AccessDeniedException
      * @return RedirectResponse
@@ -451,6 +453,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/setquestion", options={"expose"=true}, methods={"POST"})
+     * @Theme("admin")
      * @param Request $request
      * @return JsonResponse
      */
@@ -459,7 +462,7 @@ class AdminController extends AbstractController {
         $text = $request->request->get('qText');
         $answer = $request->request->get('qAnswer');
         $explanation = $request->request->get('qExpan');
-        $status = $request->request->get('qStatus');
+        $status = (int) $request->request->get('qStatus');
         $canSave = isset($id);
         if($canSave){
             $em = $this->getDoctrine()->getManager();
@@ -468,7 +471,6 @@ class AdminController extends AbstractController {
             $question->setQuickcheckqAnswer($answer);
             $question->setQuickcheckqExpan($explanation);
             $question->setStatus($status);
-            $em->merge($question);
             $em->flush();
         }
         $jsonReply = ['id' => $id,
@@ -483,6 +485,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/javaedit", options={"expose"=true}, methods={"POST"})
+     * @Theme("admin")
      * @param Request $request
      * @return JsonResponse
      */
@@ -509,6 +512,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/edittextquest/{question}")
+     * @Theme("admin")
      * form to add new text question
      *
      * Create a new quick_check question
@@ -541,7 +545,7 @@ class AdminController extends AbstractController {
         $hookDispatcher->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
 
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestionAction($request, $question);
             }
@@ -558,7 +562,7 @@ class AdminController extends AbstractController {
     /**
      * 
      * @Route("/editmatchquest/{question}")
-     * 
+     * @Theme("admin")
      * form to add new matching question
      *
      * Create a new quick_check question
@@ -588,7 +592,7 @@ class AdminController extends AbstractController {
 
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = $this->getDoctrine()->getManager();
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestionAction($request, $question);
             }
@@ -604,6 +608,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/edittfquest/{question}")
+     * @Theme("admin")
      * form to add new TF question
      *
      * Create a new quick_check question
@@ -636,7 +641,7 @@ class AdminController extends AbstractController {
         $form->handleRequest($request);
 
         /** @var \Doctrine\ORM\EntityManager $em */
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestionAction($request, $question);
             }
@@ -652,9 +657,9 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/editmcquest/{question}")
-     * 
+     * @Theme("admin")
      * Form to add a new multiple choice question
-     * * @param Request $request
+     * @param Request $request
      * @param QuickcheckQuestionEntity|null $question
      * @return Response
      *
@@ -682,8 +687,6 @@ class AdminController extends AbstractController {
         $hookDispatcher->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
 
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->getDoctrine()->getManager();
         if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestionAction($request, $question);
@@ -700,7 +703,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route ("/editmansquest/{question}")
-     *
+     * @Theme("admin")
      * Edit a multiple answer question.
      *
      * @param Request $request
@@ -727,8 +730,7 @@ class AdminController extends AbstractController {
         $formHook = new FormAwareHook($form);
         $hookDispatcher->dispatch('quickcheck.form_aware_hook.article.edit', $formHook);
         $form->handleRequest($request);
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->getDoctrine()->getManager();
+
         if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestionAction($request, $question);
@@ -745,7 +747,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route ("/modifyquestion/{question}")
-     * 
+     * @Theme("admin")
      * modifyquestion
      * 
      * Take the form data from editquestionsAction and dispatch it to the right question interface.
@@ -753,10 +755,10 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      * @param Request $request
      * @param QuickcheckQuestionEntity|null $question
-     * @return RedirectResponse
+     * @return Response
      *
      */
-    public function modifyquestionAction(Request $request, QuickcheckQuestionEntity $question = null) :RedirectResponse {
+    public function modifyquestionAction(Request $request, QuickcheckQuestionEntity $question = null) : Response {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -817,7 +819,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/editquestions")
-     * 
+     * @Theme("admin")
      * edit questions
      *
      *  This is the interface for modifying and deleting questions. I combined the
@@ -859,7 +861,7 @@ class AdminController extends AbstractController {
 
             return "";
         }
-
+        ksort($questions);
         $html = $this->renderView('@PaustianQuickcheckModule/Admin/quickcheck_admin_qpart.html.twig', [ 'questions' => $questions,
             'buttons' => $buttons]);
 
@@ -870,7 +872,7 @@ class AdminController extends AbstractController {
     /**
      * @Route("/categorize")
      * 
-     * Present an interface for puttin uncategorized quesitons into categories
+     * Present an interface for putting uncategorized quesitons into categories
      * 
      * @param Request $request
      * @return Response
@@ -904,7 +906,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/findunanswered")
-     * 
+     * @Theme("admin")
      * findunanswered
      *
      * This is a quick function to find all the unexplained questions in the module
@@ -1064,7 +1066,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/importquiz")
-     * 
+     * @Theme("admin")
      * set up the interface to import an xml file of quiz questions.
      * @return Response
      * @throws AccessDeniedException
@@ -1097,7 +1099,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/exportquiz")
-     * 
+     * @Theme("admin")
      * export the chosen questions. First step. This displays the interface to export the questions
      * @return Response
      * @throws AccessDeniedException
@@ -1160,7 +1162,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/upgradeoldquestions")
-     * 
+     * @Theme("admin")
      * export the chosen questions. First step. This displays the interface to export the questions
      * @return Response
      * @throws AccessDeniedException
@@ -1222,7 +1224,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/findmyid")
-     *
+     * @Theme("admin")
      * Match the ID of a question using the first 250 charaters of the stem. This is useful for students trying to look up the QID,
      * @return Response
      * @throws AccessDeniedException
@@ -1252,7 +1254,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/cleanCatDupes")
-     *
+     * @Theme("admin")
      * export the chosen questions. First step. This displays the interface to export the questions
      * @return Response
      * @throws AccessDeniedException
@@ -1326,6 +1328,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/examinemoderated")
+     * @Theme("admin")
      * @return Response
      * @throws AccessDeniedException
      */
@@ -1357,6 +1360,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/examineall")
+     * @Theme("admin")
      * @return Response
      * @throws AccessDeniedException
      */
@@ -1437,7 +1441,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/hiddentopublic")
-     *
+     * @Theme("admin")
      * @param Request $request
      * @return RedirectResponse
      * @throws AccessDeniedException
@@ -1462,6 +1466,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("createexamfromhidden")
+     * @Theme("admin")
      * @return RedirectResponse
      * @throws AccessDeniedException
      * @param Request $request
@@ -1495,6 +1500,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/examinehidden")
+     * @Theme("admin")
      * @return Response
      * @throws AccessDeniedException
      */
