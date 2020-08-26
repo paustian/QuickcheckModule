@@ -19,6 +19,7 @@ namespace Paustian\QuickcheckModule\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Persistence\ObjectManager;
+//use mysql_xdevapi\Exception as \Exception;
 use Paustian\QuickcheckModule\API\UUID;
 use Paustian\QuickcheckModule\Form\ExamineAllForm;
 use Paustian\QuickcheckModule\PaustianQuickcheckModule;
@@ -155,7 +156,7 @@ class AdminController extends AbstractController {
      */
     public function deleteAction(Request $request, QuickcheckExamEntity $exam = null) : Response {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
-            throw new AccessDeniedException();;
+            throw new AccessDeniedException();
         }
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_modify'));
         if ($exam == null) {
@@ -287,6 +288,7 @@ class AdminController extends AbstractController {
      *  exam the exam that is being attached to the article
      *
      */
+    Stopped here. I need to finish up the javascript and make this a Json event. There are examples in the book module on how to do this.
     public function attachAction(Request $request) : RedirectResponse {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
@@ -309,7 +311,6 @@ class AdminController extends AbstractController {
         $old_exam = $repo->get_exam($art_id);
         if ($old_exam) {
             $old_exam->setQuickcheckrefid(-1); //no article attached
-            $em->merge($old_exam);
         }
         if (isset($attach)) {
             if (!isset($art_id) || !isset($exam)) {
@@ -320,8 +321,7 @@ class AdminController extends AbstractController {
             if (null === $new_exam) {
                 throw new \Doctrine\ORM\NoResultException($this->trans('An exam was not found, when it should have been.'));
             }
-            $new_exam->setQuickcheckrefid($art_id);
-            $em->merge($new_exam);
+            $new_exam->setQuickcheckrefid((int)$art_id);
             $request->getSession()->getFlashBag()->add('status', $this->trans('The exam was attached.'));
         } else {
             $request->getSession()->getFlashBag()->add('status', $this->trans('The exam was removed.'));
@@ -871,7 +871,7 @@ class AdminController extends AbstractController {
 
     /**
      * @Route("/categorize")
-     * 
+     * @Theme("admin")
      * Present an interface for putting uncategorized quesitons into categories
      * 
      * @param Request $request
@@ -954,21 +954,13 @@ class AdminController extends AbstractController {
     private function _parseImportedQuizXML(string $xmlQuestionText, ArrayCollection $category) {
         //An awesome function for parsing simple xml.
         //First we need to scrumb out our xml tags before doing this magic
-        $tagsSearch1 = ["|<questiondoc>|", "|</questiondoc>|", 
-                        "", "|</question>|",
-                        "|<qtext>|", "|</qtext>|", 
-                        "|<qanswer>|", "|</qanswer>|", 
-                        "|<qexplanation>|", "|</qexplanation>|",
-                        "|<qparam>|", "|</qparam>|", 
-                        "|<qtype>|", "|</qtype>|", "|<\?xml(.*?)>|"];
-        
         preg_match_all("|<question>(.*?)</question>|s", $xmlQuestionText, $questionArray);
 
 //grab the manager for saving the data.
         $em = $this->getDoctrine()->getManager();
         foreach ($questionArray[1] as $q_item) {
             $doMerge = false;
-            if(preg_match("|<qId>(.*?)</qId>|", $q_item, $qId)){
+            if(preg_match("|<qid>([0-9]{1,3})</qid>|", $q_item, $qId)){
                 $id = $qId[1];
             } else {
                 $id=-1;
@@ -980,7 +972,7 @@ class AdminController extends AbstractController {
                 $fquestion = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
                 if ($fquestion === null) {
                     $question = new QuickcheckQuestionEntity();
-                    $question->setId($id);
+                    $question->setId((int)$id);
                 } else {
                     $question = $fquestion;
                     $doMerge = true;
@@ -1055,9 +1047,7 @@ class AdminController extends AbstractController {
             $question->setQuickcheckqAnswer($answer);
 
             $question->setCategories($category);
-            if ($doMerge) {
-                $em->merge($question);
-            } else {
+            if (!$doMerge) {
                 $em->persist($question);
             }
         }
@@ -1388,7 +1378,7 @@ class AdminController extends AbstractController {
             $em = $this->getDoctrine()->getManager();
             $repo = $em->getRepository("PaustianQuickcheckModule:QuickcheckQuestionEntity");
             $questions = [];
-            if($searchText !== ''){
+            if($searchText){
                 $questions = $repo->getSearchResults($searchText, 'AND', true);
             } else {
                 //get them all

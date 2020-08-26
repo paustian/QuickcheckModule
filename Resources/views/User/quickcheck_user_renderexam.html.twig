@@ -2,6 +2,9 @@
 {{ pageAddAsset('javascript', zasset('jquery-ui/jquery-ui.js')) }}
 {{ pageAddAsset('stylesheet', asset('jquery-ui/themes/base/jquery-ui.min.css')) }}
 
+{#  render the admin interface #}
+{{ admininterface | raw }}
+
 <h3>
     <span class="fa fa-book"></span>
     {{ exam_name }}
@@ -86,23 +89,22 @@
 </form>
 <hr/>
 
-<script type="text/javascript">
-    document.onreadystatechange = function () {
-        if (document.readyState === 'complete') {
-            (function ($) {
-                {% for question in questions %}
-                {% if question.type == 3 %}
-                $("#sortable{{ question.id }}").sortable({
-                    update: function (event, ui) {
-                        var Order = jQuery(this).sortable('serialize');
 
-                        $('#order_{{ question.id }}').val(Order);
-                    }
-                });
-                $("#sortable{{ question.id }}").disableSelection();
-                {% endif %}
-                {% endfor %}
-            })(jQuery);
-        }
-    };
+<script type="text/javascript">
+document.addEventListener("DOMContentLoaded",
+    function () {
+        (function($) {
+            {% for question in questions %}
+            {% if question.type == 3 %}
+            $("#sortable{{ question.id }}").sortable({
+                update: function (event, ui) {
+                    var Order = $(this).sortable('serialize');
+                    $('#order_{{ question.id }}').val(Order);
+                }
+            });
+            $("#sortable{{ question.id }}").disableSelection();
+            {% endif %}
+            {% endfor %}
+        })(jQuery);
+    });
 </script>

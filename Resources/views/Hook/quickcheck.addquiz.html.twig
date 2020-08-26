@@ -1,34 +1,30 @@
+{{ pageAddAsset('stylesheet', 'https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css') }}
+{{ pageAddAsset('javascript', 'https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js') }}
+{{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.examtablesort.js')) }}
 <form action="{{ path('paustianquickcheckmodule_admin_attach') }}" method="post"
       enctype="application/x-www-form-urlencoded">
     <input type="hidden" name="art_id" value="{{ art_id }}">
     <input type="hidden" name="return_url" value="{{ return_url }}">
     <h3>{{('Choose an exam to attach'|trans) }}</h3>
-
-    <table class="table table-striped exams">
-        <thead class="exams">
+    <table id="tableToSort" class="table table-striped">
+        <thead>
         <tr>
-            <th class="col-xs-1">{{('Add Exam'|trans) }}</th>
-            <th class="col-xs-11">{{('Exam Name'|trans) }}</th>
+            <th>{{('Exam Name'|trans) }}</th>
+            <th>{{('Actions'|trans) }}</th>
         </tr>
         </thead>
-        <tbody class="exams">
+        <tbody>
         {% for item in exams %}
-            <tr class="exams">
-                <td class="exams col-xs-1"><input type="radio" name="exam" value="{{ item.id }}"></td>
-                <td class="exams col-xs-11">
-                    {{ item.quickcheckname }}
-                </td>
-            </tr>
+        <tr>
+            <td>
+                {{ item.quickcheckname }}
+            </td>
+            <td>
+                <span id="link_{{ item.id }}" class="fas fa-link" title="Link Exam"></span>
+                <span id="unlink_{{ item.id }}" class="fas fa-unlink" title="Unlink Exam"></span>
+            </td>
+        </tr>
         {% endfor %}
         </tbody>
     </table>
-    <div class="form-group">
-        <button class="btn btn-success" type="submit" name="attach" value="attach">
-            {{('Attach'|trans) }}
-        </button>
-        <button class="btn btn-success" type="submit" name="delete" value="delete">
-            {{('Remove'|trans) }}
-        </button>
-
-    </div>
 </form>

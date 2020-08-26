@@ -33,9 +33,9 @@ class QuickcheckExamRepository extends EntityRepository {
     /**
      * get the exam object for the referring id
      * @param $art_id
-     * @return array
+     * @return QuickcheckExamEntity
       */
-    public function get_exam($art_id) : array {
+    public function get_exam($art_id) : ?QuickcheckExamEntity {
         $result = $this->findOneByQuickcheckrefid($art_id);
         return $result;
     }

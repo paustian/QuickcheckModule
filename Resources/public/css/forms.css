@@ -59,34 +59,11 @@ li.matching {
     font-size: 12px; height: 30px;
     border: 1px solid black; }
 
-table.exams {
-    width: 100%;
-}
-
-thead.exams, tbody.exams, tr.exams, td.exams, th.exams { display: block; }
-
-tr.exams:after {
-    content: ' ';
-    display: block;
-    visibility: hidden;
-    clear: both;
-}
-
-thead.exams th.exams {
-    height: 30px;
-
-    /*text-align: left;*/
-}
-
-tbody.exams {
-    height: 520px;
-    overflow-y: auto;
-}
-
-thead.exams {
-    /* fallback */
-}
 
 .ui-dialog-osx {
     text-align: left;
+}
+
+.hidden {
+    display: none;
 }

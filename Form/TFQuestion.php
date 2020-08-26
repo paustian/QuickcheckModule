@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Paustian\QuickcheckModule\Controller\AdminController;
 use Zikula\PermissionsModule\Api\PermissionApi;
+use Zikula\CategoriesModule\Form\Type\CategoriesType;
 
 /**
  * Description of QuiccheckTFQuestion
@@ -77,12 +78,12 @@ class TFQuestion extends AbstractType {
         if (isset($id)) {
             $builder->add('id', HiddenType::class, array('data' => $id));
         }
-        $builder->add('categories', 'Zikula\CategoriesModule\Form\Type\CategoriesType', [
+        $builder->add('categories', CategoriesType::class, [
             'required' => false,
             'multiple' => false,
             'module' => 'PaustianQuickcheckModule',
-            'showRegistryLabels' => false,
             'entity' => 'QuickcheckQuestionEntity',
+            'expanded' => false,
             'entityCategoryClass' => 'Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory',
         ]);
     }

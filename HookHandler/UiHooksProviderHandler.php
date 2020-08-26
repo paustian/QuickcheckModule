@@ -123,13 +123,13 @@ class UiHooksProviderHandler  implements HookProviderInterface
                 ->from('PaustianQuickcheckModule:QuickcheckExamEntity', 'u', 'u.quickcheckname');
             $query2 = $qb2->getQuery();
             $exams = $query2->getResult();
-            $admininterface = $this->twig->render('PaustianQuickcheckModule:Hook:quickcheck.addquiz.html.twig', [
+            $admininterface = $this->twig->render('@PaustianQuickcheckModule/Hook/quickcheck.addquiz.html.twig', [
                 'exams' => $exams,
                 'art_id' => $id,
                 'return_url' => $return_url]);
         }
-        if (false === $examObj) {
-            //Now just use the templating to renger a twig template and send it as a string back as a response.
+        if (null === $examObj) {
+            //Now just use the templating to render a twig template and send it as a string back as a response.
             if ($is_admin) {
                 $content = $admininterface;
             } else {
@@ -148,7 +148,7 @@ class UiHooksProviderHandler  implements HookProviderInterface
             if (!$is_admin) {
                 $admininterface = "";
             }
-            $content = $this->twig->render('PaustianQuickcheckModule:User:quickcheck_user_renderexam.html.twig', ['letters' => $letters,
+            $content = $this->twig->render('@PaustianQuickcheckModule/User/quickcheck_user_renderexam.html.twig', ['letters' => $letters,
                 'q_ids' => $sq_ids,
                 'questions' => $questions,
                 'return_url' => $return_url,
