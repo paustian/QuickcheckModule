@@ -1,7 +1,20 @@
 {{ pageAddAsset('javascript', zasset('jquery-ui/jquery-ui.js')) }}
 {{ pageAddAsset('stylesheet', asset('jquery-ui/themes/base/jquery-ui.min.css')) }}
 {{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/highlighting.css')) }}
-{# I struggled for hours trying to get the accordian interface to work. Only after realizing it was not including the jquery-ui.js did it fix #}
+{% set formScript %}
+<script>
+    (function($) {
+        $(document).ready(function() {
+            $('#QuestionList').accordion({
+                collapsible: true,
+                heightStyle: "content"
+            });
+        });
+    })(jQuery);
+</script>
+{% endset %}
+{{ pageAddAsset('footer', formScript) }}
+
 <h3>{{ 'Questions'|trans }}</h3>
 <div id="QuestionList">
     {% for category, question in questions %}
@@ -21,15 +34,4 @@
         </div>
     {% endfor %}
 </div>
-<script>
-    document.onreadystatechange = function () {
-        if (document.readyState === 'complete') {
-            (function ($) {
-                $('#QuestionList').accordion({
-                    collapsible: true,
-                    heightStyle: "content"
-                });
-            })(jQuery);
-        }
-    }
-</script>
+

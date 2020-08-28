@@ -440,7 +440,7 @@ class UserController extends AbstractController {
         $answer = $request->get('answer');
         $type = $request->get('type');
         $question = new QuickcheckQuestionEntity();
-        $question->setQuickcheckqType($type);
+        $question->setQuickcheckqType((int)$type);
         $question->setQuickcheckqText($questionText);
         $question->setQuickcheckqAnswer($answer);
         //Create the type of object that we need for the renderexam template

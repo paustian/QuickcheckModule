@@ -35,22 +35,16 @@
         showPreview: function (evt){
             var itemName = evt.target.id;
             var id = itemName.substring(15, itemName.length);
-            var question;
-            var answer;
-            var type;
-            if(id === ""){
-                question = $("textarea[id*=quickcheckqtext]").val();
-                answer = $("textarea[id*=quickcheckqanswer]").val();
-                type = $("input[id=type]").val();
-            } else {
-                question=$("#quickcheckqtext_" + id).html();
-                answer=$("#quickcheckqanswer_" + id).html();
-                type = $("#type_" + id).val();
+            var question = $("textarea[id*=quickcheckqtext]").val();
+            var answer = $("textarea[id*=quickcheckqanswer]").val();
+            var type = $("input[id=type]").val();
+            if(type === "2") {//True/False type
+                answer = $("#tf_quesiton_quickcheckanswer_0").attr("checked");
+                if(typeof answer === "undefined"){
+                    answer = 0;
+                }
             }
-
-            //send a message to delete that item
-
-
+                //send a message to preview that item
             this.sendAjax(
                 "paustianquickcheckmodule_user_getpreviewhtml",
                 {"question" : question,

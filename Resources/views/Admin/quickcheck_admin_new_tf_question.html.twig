@@ -9,7 +9,7 @@
 {{ showflashes() }}
         {{ form_start(form) }}
         {{ form_errors(form) }}
-<input id="type" type="hidden" name="type" value="2"> <!- true/false type ->
+<input id="type" type="hidden" name="type" value="2" /> <!- true/false type ->
 <fieldset>
     <legend>{{ 'T/F Question'|trans }}</legend>
     {{ form_row(form.quickcheckqtext, {'attr': {'class': 'qc_question'}}) }}
@@ -26,7 +26,7 @@
 <div class="form-group">
     <div class="col-lg-offset-3 col-lg-9">
         {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
-        <button id="preview_button" type="button" class="btn btn-success" name="preview" value="preview">
+        <button id="preview_button_{{ question.id }}" type="button" class="btn btn-success" name="preview" value="preview">
             {{ 'Preview Question'|trans }}
         </button>
         {{ form_widget(form.delete, {'attr': {'class': 'btn btn-danger'}}) }}

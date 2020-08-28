@@ -173,7 +173,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
             if (false === $key = $this->collectionContains($categories, $categoryAssignment)) {
                 $this->categories->removeElement($categoryAssignment);
             } else {
-                $categories->remove($key);
+                $this->categories->remove($key);
             }
         }
 
@@ -197,7 +197,6 @@ class QuickcheckQuestionEntity extends EntityAccess {
             if ($collectionAssignment->getCategoryRegistryId() == $element->getCategoryRegistryId()
                 && $collectionAssignment->getCategory() == $element->getCategory()
             ) {
-
                 return $key;
             }
         }

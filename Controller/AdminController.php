@@ -288,7 +288,7 @@ class AdminController extends AbstractController {
      *  exam the exam that is being attached to the article
      *
      */
-    Stopped here. I need to finish up the javascript and make this a Json event. There are examples in the book module on how to do this.
+    //Stopped here. I need to finish up the javascript and make this a Json event. There are examples in the book module on how to do this.
     public function attachAction(Request $request) : RedirectResponse {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
@@ -417,7 +417,7 @@ class AdminController extends AbstractController {
         
         foreach ($questionList as $qId) {
             $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $qId);
-            //You need to close the element so that each question has its own link pointing from
+            //You need to clone the element so that each question has its own link pointing from
             //the questionentity to the category table.
             $newCat = clone $catElement;
             $newCat['entity'] = $question;
@@ -651,6 +651,7 @@ class AdminController extends AbstractController {
 
         return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_new_tf_question.html.twig', array(
                     'form' => $form->createView(),
+                    'question' => $question,
             'hook_templates' => $formHook->getTemplates()
         ));
     }
@@ -1234,7 +1235,7 @@ class AdminController extends AbstractController {
         $qb->select('u')
             ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
             ->where('u.id > ?1' )
-            ->setParameter(1, '1300');
+            ->setParameter(1, '0');
         $query = $qb->getQuery();
         // execute query
         $questions = $query->getResult();
