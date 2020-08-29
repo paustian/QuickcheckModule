@@ -82,7 +82,7 @@ class RmdController extends AbstractController{
         }
 
         $namePath = preg_replace("/[^A-Za-z0-9]/", '', $exam->getQuickcheckname());
-        $this->directory = realpath($_SERVER['TMPDIR']) . '/' . $namePath;
+        $this->directory = realpath($request->server->get('TMPDIR')) . '/' . $namePath;
 
         $this->archive = new ZipArchive();
         $zipName = $this->directory . '.zip';
