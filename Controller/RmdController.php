@@ -81,9 +81,8 @@ class RmdController extends AbstractController{
             }
         }
 
-        $directory = realpath(__DIR__ . '/../../../' . 'web/uploads/');
         $namePath = preg_replace("/[^A-Za-z0-9]/", '', $exam->getQuickcheckname());
-        $this->directory = $directory . '/' . $namePath;
+        $this->directory = realpath($_SERVER['TMPDIR']) . '/' . $namePath;
 
         $this->archive = new ZipArchive();
         $zipName = $this->directory . '.zip';
@@ -102,7 +101,7 @@ class RmdController extends AbstractController{
                 ($type !== AdminController::_QUICKCHECK_MULTIANSWER_TYPE)){
                 continue;
             }
-            $this->_writeQuestionFile($question, $qId);
+            $this->_writeQuestionFile($question, (int)$qId);
         }
         $this->rcommand .= ")\n exams2canvas(myexam)";
         $this->addFlash('status', $this->trans('Use the R command ' . $this->rcommand));
