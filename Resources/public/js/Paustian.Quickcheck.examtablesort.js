@@ -24,6 +24,24 @@
         cacheDom: function () {
             this.$linkButton = $("span[id^=link_]");
             this.$unlinkButton = $("span[id^=unlink_]");
+            this.$dialog = $("#dialog");
+            this.$dialog.dialog({
+                autoOpen: false,
+                show: {
+                    effect: "blind",
+                    duration: 1000
+                },
+                hide: {
+                    effect: "explode",
+                    duration: 1000
+                },
+                buttons: {
+                    Ok: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+            this.$dialogText = $("#dialog_text");
         },
 
         bindEvents: function () {
@@ -34,41 +52,35 @@
         linkExam: function (evt) {
             var itemName = evt.target.id;
             var id = itemName.substring(5, itemName.length);
+            var artId = $("#art_id").val();
 
-            //send a message to delete that item
-
-
-            /*
             this.sendAjax(
-                "paustianquickcheckmodule_user_getpreviewhtml",
-                {"question" : question,
-                    "answer" : answer,
-                    "type" : type},
-                {"success": this.displayPreview.bind(this), method: "POST"}
+                "paustianquickcheckmodule_admin_attach",
+                {"exam" : id,
+                    "art_id" : artId,
+                    "attach": true},
+                {"success": this.examAddRemove.bind(this), method: "POST"}
             );
-                */
             evt.stopPropagation();
         },
 
-        /*displayPreview: function(result, textStatus, jqXHR){
-            this.$preview.html(result.html);
-            this.$preview.dialog({
-                title: "Preview Question",
-                modal: true,
-                show: "blind",
-                hide: "blind",
-                width: 600,
-                dialogClass: "ui-dialog-osx",
-                buttons: {
-                    "OK": function () {
-                        $(this).dialog("close");
-                    }
-                }
-            });
-        },*/
+        examAddRemove: function(result, textStatus, jqXHR){
+            // right now the dialog is not working. Maybe just get rid of it and
+            //update the DOM with the resulting html. Send back the quiz to be added?
+            this.$dialogText.html(result.html);
+            this.$dialog.dialog("open");
+        },
         unlinkExam: function (evt) {
             var itemName = evt.target.id;
             var id = itemName.substring(7, itemName.length);
+            var artId = $("#art_id").val();
+            this.sendAjax(
+                "paustianquickcheckmodule_admin_attach",
+                {"exam" : id,
+                    "art_id" : artId},
+                {"success": this.examAddRemove.bind(this), method: "POST"}
+            );
+            evt.stopPropagation();
         },
 
         sendAjax: function (url, data, options) {

@@ -17,14 +17,12 @@ declare(strict_types=1);
 
 namespace Paustian\QuickcheckModule\Controller;
 
+use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Persistence\ObjectManager;
 //use mysql_xdevapi\Exception as \Exception;
-use Paustian\QuickcheckModule\API\UUID;
 use Paustian\QuickcheckModule\Form\ExamineAllForm;
-use Paustian\QuickcheckModule\PaustianQuickcheckModule;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Request;
@@ -276,39 +274,32 @@ class AdminController extends AbstractController {
     }
 
     /**
-     * @Route ("/attach/", methods={"POST"})
+     * @Route ("/attach", methods={"POST"}, options={"expose"=true})
      * @Theme("admin")
      * @param Request $request
      * @throws AccessDeniedException
-     * @return RedirectResponse
+     * @return JsonResponse
+     * @throws \Doctrine\ORM\NoResultException
      *
-     * Parameters of the request are:
-     *  ret_url the URL to return to after being done
-     *  art_id the article Id of the item that the exam is being attached to
-     *  exam the exam that is being attached to the article
-     *
+     * This is called by the javascript in Paustian.Quickcheck.examtablesort.js
      */
-    //Stopped here. I need to finish up the javascript and make this a Json event. There are examples in the book module on how to do this.
-    public function attachAction(Request $request) : RedirectResponse {
+
+    public function attachAction(Request $request) : JsonResponse {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
         //get the values
-        $ret_url = $request->request->get('return_url', null);
         $exam = $request->request->get('exam', null);
         $art_id = $request->request->get('art_id', null);
         $attach = $request->request->get('attach', null);
-        //arguments check
-        if ($ret_url == "") {
-            //if a default route is not provided, then just send them to the quickcheck admin interface
-            $ret_url = $this->generateUrl('paustianquickcheckmodule_admin_index');
-        }
+
 
         $em = $this->getDoctrine()->getManager();
         $repo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
 
         //get rid of the old exam if there is one.    
         $old_exam = $repo->get_exam($art_id);
+        $reponse = "";
         if ($old_exam) {
             $old_exam->setQuickcheckrefid(-1); //no article attached
         }
@@ -322,13 +313,17 @@ class AdminController extends AbstractController {
                 throw new \Doctrine\ORM\NoResultException($this->trans('An exam was not found, when it should have been.'));
             }
             $new_exam->setQuickcheckrefid((int)$art_id);
-            $request->getSession()->getFlashBag()->add('status', $this->trans('The exam was attached.'));
+            $response = "<p>" . $new_exam->getQuickcheckname() ." exam was attached to the page. Reload the page to see it.</p>";
         } else {
-            $request->getSession()->getFlashBag()->add('status', $this->trans('The exam was removed.'));
+            $response = "<p>" . $old_exam->getQuickcheckname() ." exam was removed from the page. Reload the page to see it.</p>";
         }
         $em->flush();
         //finally return to the page that called.
-        return new RedirectResponse($ret_url);
+        $jsonReply = [
+            'html' => $response,
+            'success' => true
+        ];
+        return  new JsonResponse($jsonReply);
     }
 
     /**
