@@ -102,7 +102,7 @@ class UserController extends AbstractController {
                     ->andWhere('p.status = ?1' )
                     ->setParameter(1, '0');
 
-            return $qb->getQuery()->getSingleScalarResult();
+            return (int)$qb->getQuery()->getSingleScalarResult();
         }
         $qb = $em->createQueryBuilder();
         $qb->select('count(p)')->from('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', 'p');
@@ -151,7 +151,7 @@ class UserController extends AbstractController {
             }
             if ($number_of_questions > 0) {
                 //grab the random keys from the array of questions
-                $random_questions = array_rand($bin_questions[$catid], $number_of_questions);
+                $random_questions = array_rand($bin_questions[$catid], (int)$number_of_questions);
                 if ($number_of_questions == 1) {
                     $the_question = $examRepo->unpackQuestion($bin_questions[$catid][$random_questions]);
                     $quiz_questions[] = $the_question;
@@ -173,7 +173,7 @@ class UserController extends AbstractController {
         //build the sq_id array. This is used to grade the quesitons
         $sq_ids = array();
         foreach ($quiz_questions as $question) {
-            $sq_ids[] = $question->getId();
+            $sq_ids[] = $question['id'];
         }
         //I need to change this so that it sends back it's own response. What this entails is just getting the data that it
         //needs and then sending it back.
