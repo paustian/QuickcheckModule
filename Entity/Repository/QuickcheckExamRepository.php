@@ -107,7 +107,7 @@ class QuickcheckExamRepository extends EntityRepository {
                 ($type == Admincontroller::_QUICKCHECK_MATCHING_TYPE) ||
                 ($type == Admincontroller::_QUICKCHECK_MULTIANSWER_TYPE)) {
             $qAnswer = $in_question->getQuickcheckqAnswer();
-            preg_match_all("|(.*)\|(.*)\s*|", $qAnswer, $matches);
+            preg_match_all("|(.*)\|([^\s]*)\s*|", $qAnswer, $matches);
             $qArray['answer'] = $matches[1];
             if (($type == Admincontroller::_QUICKCHECK_MATCHING_TYPE) && $shuffle) {
                 $param = array();
