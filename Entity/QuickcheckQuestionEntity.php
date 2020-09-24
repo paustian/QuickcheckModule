@@ -169,6 +169,10 @@ class QuickcheckQuestionEntity extends EntityAccess {
      * @param $categories
      */
     public function setCategories(ArrayCollection $categories) : void {
+        //if the categories are the same, there is nothing to update.
+        if($this->collectIdentical($categories)){
+            return;
+        }
         foreach ($this->categories as $categoryAssignment) {
             if (false === $key = $this->collectionContains($categories, $categoryAssignment)) {
                 $this->categories->removeElement($categoryAssignment);
@@ -184,6 +188,19 @@ class QuickcheckQuestionEntity extends EntityAccess {
 
     public function setStatus(int $status) : void {
         $this->status = $status;
+    }
+
+    //check to see if any categories have changed.
+    private function collectIdentical(ArrayCollection $categories){
+        if($this->categories->count() != $categories->count()){
+            return false;
+        }
+        foreach($this->categories as $categoryAssignment){
+            if(false === $this->collectionContains($categories, $categoryAssignment)){
+                return false;
+            }
+        }
+        return true;
     }
     /**
      * Check if a collection contains an element based only on two criteria (categoryRegistryId, categoy).
@@ -201,7 +218,7 @@ class QuickcheckQuestionEntity extends EntityAccess {
             }
         }
 
-        return 0;
+        return false;
     }
 
     /**
