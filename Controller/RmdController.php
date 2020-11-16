@@ -82,7 +82,7 @@ class RmdController extends AbstractController{
         }
 
         $namePath = preg_replace("/[^A-Za-z0-9]/", '', $exam->getQuickcheckname());
-        $this->directory = realpath($request->server->get('TMPDIR')) . '/' . $namePath;
+        $this->directory = realpath($request->server->get('DOCUMENT_ROOT')) . $request->server->get('BASE') . '/uploads/' . $namePath;
 
         $this->archive = new ZipArchive();
         $zipName = $this->directory . '.zip';
@@ -97,11 +97,12 @@ class RmdController extends AbstractController{
             $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $qId);
             //right now only exporting MCQs. I will expand later
             $type = $question->getQuickcheckqType();
-            if( ($type !== AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE) &&
-                ($type !== AdminController::_QUICKCHECK_MULTIANSWER_TYPE)){
-                continue;
+            if( ($type === AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE) ||
+                ($type === AdminController::_QUICKCHECK_MULTIANSWER_TYPE) ||
+                ($type === AdminController::_QUICKCHECK_TF_TYPE)){
+                $this->_writeQuestionFile($question, (int)$qId);
             }
-            $this->_writeQuestionFile($question, (int)$qId);
+
         }
         $this->rcommand .= ")\n exams2canvas(myexam)";
         $this->addFlash('status', $this->trans('Use the R command ' . $this->rcommand));
@@ -126,21 +127,39 @@ class RmdController extends AbstractController{
     private function _writeQuestionFile(QuickcheckQuestionEntity $question, int $qId) : void{
         $items = [];
         $answers = $question->getQuickcheckqAnswer();
-        preg_match_all("|(.*)\|(.*)|", $answers, $matches);
-        $ansCount = count($matches[1]);
-        $exsolution = "";
-        $solutions = [];
-        $items = [];
-        for($i = 0; $i < $ansCount; $i++){
-            $items[$i] = $matches[1][$i];
-            if($matches[2][$i] > 0){
-                $solutions[$i] = "True. That is a correct answer";
-                $exsolution .= "1";
+        if($question->getQuickcheckqType() === AdminController::_QUICKCHECK_TF_TYPE){
+            $items[0] = "True";
+            $items[1] = "False";
+            $items[2]  = "I don't know";
+            if($question->getQuickcheckqAnswer() == 1){
+                $exsolution = "100";
+                $solutions[0] = "That is correct";
+                $solutions[1] = "That is incorrect";
             } else {
-                $solutions[$i] = "False. That is an incorrect answer";
-                $exsolution .= "0";
+                $exsolution = "010";
+                $solutions[0] = "That is incorrect";
+                $solutions[1] = "That is correct";
+            }
+            $solutions[2] = "That is incorrect";
+            $ansCount = 3;
+        } else {
+            preg_match_all("|(.*)\|(.*)|", $answers, $matches);
+            $ansCount = count($matches[1]);
+            $exsolution = "";
+            $solutions = [];
+            $items = [];
+            for($i = 0; $i < $ansCount; $i++){
+                $items[$i] = $matches[1][$i];
+                if($matches[2][$i] > 0){
+                    $solutions[$i] = "True. That is a correct answer";
+                    $exsolution .= "1";
+                } else {
+                    $solutions[$i] = "False. That is an incorrect answer";
+                    $exsolution .= "0";
+                }
             }
         }
+
         $questionText = $this->renderView("@PaustianQuickcheckModule/Rmd/rmd_export.rmd.twig",
             [  'question' => $question->getQuickcheckqText(),
                 'items' => $items,

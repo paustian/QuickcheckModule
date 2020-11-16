@@ -40,11 +40,13 @@
         {% else %}
             {% set qID = "" %}
         {% endif %}
-        <p>{{ qID }} {{ loop.index }}. {{ question.question|raw }}</p>
+        <p>{{ qID }} {{ loop.index }}. {{ question.question|raw }} </p>
         {% if question.type == 0 %} {# text #}
             {% if print==false %}
                 <p><textarea cols="60" rows="5" name="{{ question.id }}" required></textarea>
             {% else %}
+                <p><a href="{{ path('paustianquickcheckmodule_admin_edittextquest', {"question": qID}) }}"
+                          target="_blank" class="fas fa-edit" title="{{ 'Edit Text Question'|trans }}"></a></p>
                 <br/>
                 <br/>
                 <br/>
@@ -52,6 +54,10 @@
             {% endif %}
         {% endif %}
         {% if question.type == 1 %} {# multiple choice #}
+            {% if print==true %}
+            <p><a href="{{ path('paustianquickcheckmodule_admin_editmcquest', {"question": qID}) }}"
+                  target="_blank" class="fas fa-edit" title="{{ 'Edit MC Question'|trans }}"></a></p>
+            {% endif %}
             <ol class="upper-alpha">
                 {% set answers = question.answer %}
                 {% for answer in answers %}
@@ -62,6 +68,10 @@
             </ol>
         {% endif %}
         {% if question.type == 2 %} {# true/false #}
+            {% if print==true %}
+                <p><a href="{{ path('paustianquickcheckmodule_admin_edittfquest', {"question": qID}) }}"
+                      target="_blank" class="fas fa-edit" title="{{ 'Edit MC Question'|trans }}"></a></p>
+            {% endif %}
             <ol class="upper-alpha">
                 <li>{% if print==false %}<input type="radio" name="{{ question.id }}" value="1"
                                                 required>{% endif %} {{('True'|trans) }}</li>
@@ -70,6 +80,10 @@
             </ol>
         {% endif %}
         {% if question.type == 3 %} {# matching #}
+            {% if print==true %}
+                <p><a href="{{ path('paustianquickcheckmodule_admin_editmatchquest', {"question": qID}) }}"
+                      target="_blank" class="fas fa-edit" title="{{ 'Edit MC Question'|trans }}"></a></p>
+            {% endif %}
             {% if print==false %}<input name="order_{{ question.id }}" id="order_{{ question.id }}"
                                         type="hidden" />{% endif %}
             {% set answers = question.answer %}
@@ -88,6 +102,10 @@
             <br/>
         {% endif %}
         {% if question.type == 4 %} {# multiple answer #}
+            {% if print==true %}
+                <p><a href="{{ path('paustianquickcheckmodule_admin_editmansquest', {"question": qID}) }}"
+                      target="_blank" class="fas fa-edit" title="{{ 'Edit MC Question'|trans }}"></a></p>
+            {% endif %}
             <ol class="upper-alpha">
                 {% set answers = question.answer %}
                 {% for answer in answers %}

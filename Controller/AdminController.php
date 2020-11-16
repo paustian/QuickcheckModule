@@ -1001,20 +1001,20 @@ class AdminController extends AbstractController {
                     break;
             }
             
-            if(!preg_match("|<qtext>(.*?)<\/qtext>|s", $q_item, $text)){
+            if(!preg_match("|<qtext>(.*?)</qtext>|s", $q_item, $text)){
                 continue;
             }
             
             $question->setQuickcheckqText($text[1]);
-            if(preg_match("|<qexplanation>(.*?)<\/qexplanation>|s", $q_item, $explan)){
+            if(preg_match("|<qexplanation>(.*?)</qexplanation>|s", $q_item, $explan)){
                 $question->setQuickcheckqExpan($explan[1]);
             } else {
                 $question->setQuickcheckqExpan("");
             }
             
-            preg_match("|<qparam>(.*?)<\/qparam>|s", $q_item, $sparam);
+            preg_match("|<qparam>(.*?)</qparam>|s", $q_item, $sparam);
             
-            if(!preg_match("|<qanswer>(.*?)<\/qanswer>|s", $q_item, $sanswer)){
+            if(!preg_match("|<qanswer>(.*?)</qanswer>|s", $q_item, $sanswer)){
                 continue;
             }
             
@@ -1072,7 +1072,7 @@ class AdminController extends AbstractController {
             $category = $form->get('categories')->getData();
             //take the xml that is imported, and parse it into an array
             //That array should have filled out a new question entity which it shoudl return
-            $questions = $this->_parseImportedQuizXML($xmlQuestionText, $category);
+            $this->_parseImportedQuizXML($xmlQuestionText, $category);
             $this->addFlash('status', $this->trans("Questions imported."));
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_importquiz'));
             return $response;
@@ -1365,7 +1365,10 @@ class AdminController extends AbstractController {
         if ($form->isSubmitted() && $form->isValid()) {
 
             $formData = $form->getData();
-            $searchText = explode(' ', $formData['searchtext']);
+            $searchText = "";
+            if(!empty($formData['searchtext'])){
+                $searchText = explode(" ", $formData['searchtext']);
+            }
             $catCollection = $formData['categories'];
             $category = "";
             if(!$catCollection->isEmpty()){
