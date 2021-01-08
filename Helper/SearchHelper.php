@@ -24,6 +24,7 @@ use Zikula\PermissionsModule\Api\ApiInterface\PermissionApiInterface;
 use Zikula\SearchModule\Entity\SearchResultEntity;
 use Zikula\SearchModule\SearchableInterface;
 use Zikula\Bundle\CoreBundle\RouteUrl;
+use DateTime;
 
 class SearchHelper implements SearchableInterface
 {
@@ -71,12 +72,13 @@ class SearchHelper implements SearchableInterface
     public function getResults(array $words, string $searchType = 'AND', ?array $modVars = []) : array
     {
         //return an empty array if you don't have permission to be able to search questions
-        if (!$this->permissionApi->hasPermission('Book::',"::", ACCESS_ADMIN)){
+        if (!$this->permissionApi->hasPermission('Quickcheck::',"::", ACCESS_ADMIN)){
             return [];
         }
         $hits = $this->questionRepository->getSearchResults($words, $searchType);
         $sessionID = $this->session->getId();
         $returnArray = [];
+        $now = new DateTime();
         foreach ($hits as $question) {
             $url = $this->_determineRoute($question);
             //No need for permisison here, restricted to admin already. We only want Admins to be able to
@@ -86,7 +88,8 @@ class SearchHelper implements SearchableInterface
                 ->setModule('PaustianBookModule')
                 ->setText($this->shorten_text($question['quickcheckqtext']))
                 ->setSesid($sessionID)
-                ->setUrl($url);
+                ->setUrl($url)
+                ->setCreated($now);
             $returnArray[] = $result;
         }
         return $returnArray;
@@ -97,7 +100,7 @@ class SearchHelper implements SearchableInterface
         return 'PaustianQuickcheckModule';
     }
 
-    private function _determineRoute(QuickcheckQuestionEntity $question) : RouteUrl
+    private function _determineRoute(array $question) : RouteUrl
     {
         $url = "";
         switch($question['quickcheckqtype']){

@@ -1392,6 +1392,7 @@ class AdminController extends AbstractController {
 
             //filter out only one category if $category != ""
             if($category !== ""){
+                //TODO:uncatetorized quesitons break this search function. This needs to be fixed.
                 $catName = $category->getCategory()->getName();
                 $questions = array_filter($questions, function($element) use ($catName){
                     $cat = $element->getCategories()->first();
