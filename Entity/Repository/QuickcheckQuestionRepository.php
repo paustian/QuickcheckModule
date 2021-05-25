@@ -65,7 +65,7 @@ class QuickcheckQuestionRepository extends ServiceEntityRepository {
                 break;
         }
         $query = $qb->getQuery();
-        $results = $query->getResult();
+        $results = $query->getArrayResult();
         return $results;
     }
 }
