@@ -21,7 +21,7 @@ class QuickcheckQuestionRepository extends ServiceEntityRepository {
      * @param bool $full
      * @return array
      */
-    public function getSearchResults(array $words, string $searchType, bool $full=false) :array {
+    public function getSearchResults(array $words, string $searchType, bool $full=false, bool $objects=false) :array {
         $qb = $this->_em->createQueryBuilder();
         if($full){
             $qb->select('a');
@@ -65,7 +65,12 @@ class QuickcheckQuestionRepository extends ServiceEntityRepository {
                 break;
         }
         $query = $qb->getQuery();
-        $results = $query->getArrayResult();
+        $results = [];
+        if($objects){
+            $results = $query->getResult();
+        } else {
+            $results = $query->getArrayResult();
+        }
         return $results;
     }
 }

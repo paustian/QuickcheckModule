@@ -1378,7 +1378,7 @@ class AdminController extends AbstractController {
             $repo = $em->getRepository("PaustianQuickcheckModule:QuickcheckQuestionEntity");
             $questions = [];
             if($searchText){
-                $questions = $repo->getSearchResults($searchText, 'AND', true);
+                $questions = $repo->getSearchResults($searchText, 'AND', true, true);
             } else {
                 //get them all
                 $qb = $em->createQueryBuilder();
