@@ -10,7 +10,7 @@
 
 {% for question in questions %}
     <div class='qc_question_group'>
-        <p>{{ loop.index }}. {{ question.question }}</p>
+        <p>{{ loop.index }}. {{ question.question |raw }}</p>
         {% if question.type == 0 %} {# text #}
             <h4>{{("Correct Answer"|trans) }}</h4>
             <p>{{ question.answer|raw }}</p>
