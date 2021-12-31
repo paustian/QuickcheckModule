@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace Paustian\QuickcheckModule\Controller;
 
+use http\Params;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -35,6 +36,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotatio
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Zikula\UsersModule\Api\ApiInterface\CurrentUserApiInterface;
 
 class UserController extends AbstractController {
 
@@ -303,7 +305,8 @@ class UserController extends AbstractController {
      * @param Request $request
      * @return Response
      */
-    public function gradeexamAction(Request $request) : Response {
+    public function gradeexamAction(Request $request,
+                                    CurrentUserApiInterface $currentUserApi) : Response {
 
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
             throw AccessDeniedException();
@@ -368,29 +371,28 @@ class UserController extends AbstractController {
                     $total = 0;
                     $ur_answer = array();
                     //fill an array the size of the answers with -1
-                    $qAnswers = $question->getQuickcheckqAnswer();
-                    preg_match_all("|(.*)\|(.*)|", $qAnswers, $matches);
-                    $answerArray = $matches[1];
-                    $array_size = count($answerArray);
-                    $num_that_should = 0;
-                    $marked_answers = array_fill(0, $array_size, -1);
                     if (is_array($student_answer)) {
                         foreach ($student_answer as $checked_item) {
                             $mc_answers = explode('_', $checked_item);
                             //you get points added if this is a correct mark
                             $total += $mc_answers[0];
-                            if ($mc_answers[0] > 0) {
-                                $num_that_should++;
-                            }
+                            //the student picked a wrong answer, we have to mark it as such.
+                            if($mc_answers[0] == 0){$mc_answers[0] = 3;}
                             //mark this position as one that was checked.
-                            $marked_answers[$mc_answers[1]] = (int) $mc_answers[1];
+                            $ur_answer[$mc_answers[1]] = 1;
                         }
                     }
-                    $ur_answer = $marked_answers;
-                    //substract
-                    $deduction = (count($student_answer) - $num_that_should) * (100 / $array_size);
-                    if ($deduction > 0) {
-                        $total -= $deduction;
+                    //we need to add the answers the students didn't check and mark them appropriately.
+                    foreach($unpacked_question['param'] as $key => $correct_answer){
+                        if(!isset($ur_answer[$key])){
+                            //the student correctly didn't check this box
+                            if($correct_answer == 0){
+                                $ur_answer[$key] = 2;
+                            } else {
+                                //The students should have checked this box
+                                $ur_answer[$key] = 4;
+                            }
+                        }
                     }
                     $score += $total / 100;
                     break;
@@ -410,6 +412,13 @@ class UserController extends AbstractController {
         $percent = $score / count($q_ids) * 100;
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
 
+        //Record the exam that was taken, the user id, questions, and their score IF a user is logged in
+        if($currentUserApi->isLoggedIn()){
+            $uid = $currentUserApi->get('uid');
+            $gradeRepository = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
+            $gradeRepository->recordScore($uid, $q_ids, $student_answers, $score);
+
+        }
 
         return $this->render('@PaustianQuickcheckModule/User/quickcheck_user_gradeexam.html.twig', [
                     'questions' => $display_questions,

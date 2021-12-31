@@ -84,27 +84,25 @@
             </table>
         {% endif %}
         {% if question.type == 4 %} {# multiple answer #}
-            I need to take off points for choosing incorrect answers. Right now if you check everything, you get it right.
             <ol class="upper-alpha">
                 {% set answers = question.answer %}
-                {% set params = question.param %}
                 {% set uranswer = student_answers[loop.index0] %}
                 {% for answer in answers %}
-                    {% if params[loop.index0] > 0 %}
-                        {% if uranswer[loop.index0] == loop.index0 %}
-                            <li><span class="fas fa-thumbs-up"></span>{{ answer|raw }} - {{('Correct'|trans) }}
-                                - {{('Your answer'|trans) }}</li>
-                        {% else %}
-                            <li><span class="fas fa-asterisk"></span>{{ answer|raw }} - <b>{{('Correct'|trans) }}</b></li>
-                        {% endif %}
-                    {% else %}
-                        {% if uranswer[loop.index0] == loop.index0 %}
-                            <li>
-                                <span class="fas fa-thumbs-down"><span>{{ answer|raw }} - <b>{{('Your answer'|trans) }}</b>
-                            </li>
-                        {% else %}
-                            <li>{{ answer|raw }}</li>
-                        {% endif %}
+                    {% if uranswer[loop.index0] == 1 %}
+                    {# 1-student correctly checked a correct answer #}
+                    <li><span class="fas fa-thumbs-up"></span>{{ answer|raw }} - {{('Correct to check'|trans) }} - {{('You checked'|trans) }}</li>
+                    {% endif %}
+                    {% if uranswer[loop.index0] == 2 %}
+                        {# 2 - student correctly didn't check #}
+                        <li><span class="fas fa-thumbs-up"></span>{{ answer|raw }} - {{('Correct to not check'|trans) }}</li>
+                    {% endif %}
+                    {% if uranswer[loop.index0] == 3 %}
+                        {# 3-student student checked a wrong answer #}
+                        <li><span class="fas fa-thumbs-down">{{ answer|raw }}</span> - <b>{{('Checked an incorrect answer.'|trans) }} {{('You checked'|trans) }}</b></li>
+                    {% endif %}
+                    {% if uranswer[loop.index0] == 4 %}
+                        {# 4 - student didn't check a correct answer #}
+                        <li><span class="fas fa-thumbs-down">{{ answer|raw }}</span> - <b>{{('Did no check a correct answer.'|trans) }}</b></li>
                     {% endif %}
                 {% endfor %}
             </ol>

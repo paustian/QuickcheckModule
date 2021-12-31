@@ -36,13 +36,15 @@ use Zikula\CategoriesModule\Entity\CategoryRegistryEntity;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionCategory;
+use Paustian\QuickcheckModule\Entity\QuickcheckGradesEntity;
 
 class QuickcheckModuleInstaller extends AbstractExtensionInstaller {
     
     private $entities = array(
             QuickcheckExamEntity::class,
             QuickcheckQuestionEntity::class,
-            QuickcheckQuestionCategory::class
+            QuickcheckQuestionCategory::class,
+            QuickcheckGradesEntity::class
         );
 
     //the interface to the category to set up categories for the module.
@@ -135,12 +137,24 @@ class QuickcheckModuleInstaller extends AbstractExtensionInstaller {
      */
     public function upgrade($oldversion) :bool {
         switch ($oldversion){
-            case 3.0:
+            case "3.0":
                 //install status member into QuickcheckQuestion Entity
                 $sql = "ALTER TABLE `quickcheck_quest` ADD `status` SMALLINT DEFAULT 0";
                 $this->entityManager->getConnection()->exec($sql);
-            case 3.1:
+            case "3.1":
+            case "3.2/1":
                 //future upgrades
+            case "4.0.6":
+                //install the grades table
+                $sql = "CREATE TABLE `quickcheck_grades` (
+                       `id` int(11) NOT NULL AUTO_INCREMENT,
+                       `uid` int(11) NOT NULL,
+                      `questions` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+                      `answers` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+                      `score` float NOT NULL,
+                      PRIMARY KEY (`id`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+                $this->entityManager->getConnection()->exec($sql);
         }
         return true;
     }
