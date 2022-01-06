@@ -147,13 +147,15 @@ class QuickcheckModuleInstaller extends AbstractExtensionInstaller {
             case "4.0.6":
                 //install the grades table
                 $sql = "CREATE TABLE `quickcheck_grades` (
-                       `id` int(11) NOT NULL AUTO_INCREMENT,
-                       `uid` int(11) NOT NULL,
-                      `questions` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
-                      `answers` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
-                      `score` float NOT NULL,
-                      PRIMARY KEY (`id`)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+                          `id` int(11) NOT NULL AUTO_INCREMENT,
+                          `uid` int(11) NOT NULL,
+                          `questions` longtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '(DC2Type:array)',
+                          `answers` longtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '(DC2Type:array)',
+                          `catagories` longtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '(DC2Type:array)',
+                          `score` double NOT NULL,
+                          `date` datetime NOT NULL,
+                          PRIMARY KEY (`id`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
                 $this->entityManager->getConnection()->exec($sql);
         }
         return true;

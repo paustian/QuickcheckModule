@@ -59,10 +59,23 @@ class QuickcheckGradesEntity extends EntityAccess {
     private $answers;
 
     /**
+     * categories of questions on this exam as array of strings
+     * @ORM\Column(type="array")
+     *
+     */
+    private $catagories;
+
+    /**
      * score
      * @ORM\Column(type="float")
      */
     private $score;
+
+    /**
+     * date
+     * @ORM\Column(type="datetime")
+     */
+    private $date;
 
     /**
      * Constructor
@@ -83,11 +96,19 @@ class QuickcheckGradesEntity extends EntityAccess {
     }
 
     public function getQuestions() : array {
-        return $this->quesitons;
+        return array($this->questions);
     }
 
     public function getAnswers() : array {
-        return $this->answers;
+        return array($this->answers);
+    }
+
+    public function getCatagories() : array{
+        return array($this->catagories);
+    }
+
+    public function getDate() : \DateTime {
+        return $this->date;
     }
 
     public function getScore() : float {
@@ -105,12 +126,19 @@ class QuickcheckGradesEntity extends EntityAccess {
         $this->questions = $questions;
     }
 
-    public function setAnswers(array $answers): void {
+    public function setAnswers(array $answers) : void {
         $this->answers = $answers;
+    }
+
+    public function setCatagories(array $categories) : void {
+        $this->catagories = $categories;
     }
 
     public function setScore(float $score) : void {
         $this->score = $score;
     }
 
+    public function setDate(\DateTime $date) : void {
+        $this->date = $date;
+    }
 }

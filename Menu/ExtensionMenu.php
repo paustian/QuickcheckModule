@@ -140,6 +140,23 @@ class ExtensionMenu implements ExtensionMenuInterface
             'route' => 'paustianquickcheckmodule_admin_findunanswered'
         ]);
 
+        $menu->addChild('Results', [
+            'uri' => '#',
+        ])->setAttribute('icon', 'fas fa-signal')
+            ->setAttribute('dropdown', true);
+
+        $menu['Results']->addChild('View My Scores', [
+            'route' => 'paustianquickcheckmodule_user_viewmyscores'
+        ]);
+
+        $menu['Results']->addChild('View All Scores', [
+            'route' => 'paustianquickcheckmodule_admin_viewstudentsgrades'
+        ]);
+
+        $menu['Results']->addChild('Examine students and categories', [
+            'route' => 'paustianquickcheckmodule_admin_examinestudents'
+        ]);
+
         return 0 === $menu->count() ? null : $menu;
     }
 
@@ -148,7 +165,14 @@ class ExtensionMenu implements ExtensionMenuInterface
     }
 
     private function getUser() : ?ItemInterface {
-        return null;
+        $menu = $this->factory->createItem('quickcheckMain');
+
+        //Quickcheck functions
+        $menu->addChild('View My Scores', [
+            'route' => 'paustianquickcheckmodule_user_viewmyscores',
+        ])->setAttribute('icon', 'fas fa-eye');
+
+        return 0 === $menu->count() ? null : $menu;
     }
 
     public function getBundleName(): string

@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 namespace Paustian\QuickcheckModule\Controller;
 
+use Paustian\QuickcheckModule\Form\ExamineStudentsForm;
 use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Persistence\ObjectManager;
@@ -44,6 +45,7 @@ use Paustian\QuickcheckModule\Form\ExportForm;
 use Paustian\QuickcheckModule\Form\CategorizeForm;
 use Zikula\Bundle\HookBundle\Dispatcher\HookDispatcherInterface;
 use Zikula\Bundle\HookBundle\FormAwareHook\FormAwareHook;
+use Zikula\UsersModule\Entity\RepositoryInterface\UserRepositoryInterface;
 
 /**
  * The various types of questions. We use defines to make the code
@@ -1509,5 +1511,108 @@ class AdminController extends AbstractController {
             ['questions' => $questions,
                 'categories' => $qCategories,
                 'deleteRows' => true]);
+    }
+
+    /**
+     * @Route("/viewstudentsgrades")
+     * @Theme("admin")
+     * @return Response
+     * @throws AccessDeniedException
+     */
+    public function viewStudentsGradesAction(Request $request,
+                                        UserRepositoryInterface $userRepository) : Response
+    {
+        // Security check - important to do this as early as possible to avoid
+        // potential security holes or just too much wasted processing
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
+        $gradeRepository = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
+        $grades = $gradeRepository->findAll();
+        $gradeArray = [];
+        $currentGrade = [];
+        foreach($grades as $grade){
+            $score = $grade->getScore();
+            $question = $grade->getQuestions();
+            $currentGrade['numberofquestions'] = sizeof($question[0]);
+            $currentGrade['percentage'] = $score/$currentGrade['numberofquestions'] * 100;
+            $currentGrade['score'] = $score;
+            $currentGrade['id'] = $grade->getId();
+            $currentGrade['catagories'] = $grade->getCatagories();
+            $currentGrade['catagories'] = $currentGrade['catagories'][0];
+            $currentGrade['username'] = $userRepository->find($grade->getUid())->getUname();
+            $gradeArray[] = $currentGrade;
+        }
+        //This is coded, I just now need to implement the html. Make sure you use that fancy table thing
+        return $this->render('@PaustianQuickcheckModule/User/quickcheck_user_showgrades.html.twig', [
+            'grades' => $gradeArray,
+            'showname' => true]);
+    }
+
+    /**
+     * @Route("examinestudents")
+     * @Theme("admin")
+     * @return Response
+     * @throws AccessDeniedException
+     * @param Request $request
+     *
+     */
+    public function examineStudentsAction(Request $request,
+                                          UserRepositoryInterface $userRepository) : Response{
+        // Security check - important to do this as early as possible to avoid
+        // potential security holes or just too much wasted processing
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
+        $gradeRepository = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
+        $grades = $gradeRepository->findAll();
+        $userArray = [];
+        $catArray = [];
+        foreach($grades as $grade){
+            $userArray[] = $grade->getUid();
+            $catagories = $grade->getCatagories();
+            $catArray = array_merge($catArray, $catagories[0]);
+        }
+        $userArray = array_unique($userArray);
+        $students = [];
+        foreach($userArray as $user){
+            $aUser['id'] = $user;
+            $aUser['name'] = $userRepository->find($user)->getUname();
+            $students[] = $aUser;
+        }
+        $catArray = array_unique($catArray);
+
+        $form = $this->createForm(ExamineStudentsForm::class);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $student = $request->get('students');
+            $chosenCats = $request->get('categories');
+            if($chosenCats > 0){
+                $catTopic = $catArray[$chosenCats - 1];
+            } else {
+                $catTopic = "";
+            }
+            $examTable = $gradeRepository->findExams((int)$student, $catTopic);
+            $averagePercent = 0;
+            //calculate the average score.
+            foreach($examTable as $index => $exam){
+                $exam['percent'] = $exam['score']/sizeof($exam['questions']) * 100;
+                $averagePercent += $exam['percent'];
+                $exam['username'] = $userRepository->find($exam['uid'])->getUname();
+                $exam['numberofquestions'] = sizeof($exam['questions']);
+                $examTable[$index] = $exam;
+            }
+            $averagePercent /= sizeof($examTable);
+            return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_displayexams.html.twig',
+                ['examtable' => $examTable,
+                  'averagepercent' => $averagePercent ]);
+        }
+
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_examinestudents.html.twig',
+                            ['form' => $form->createView(),
+                                'students' => $students,
+                                'catArray' => $catArray]);
     }
 }

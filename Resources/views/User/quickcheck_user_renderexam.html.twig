@@ -29,7 +29,7 @@
     <span class="fa fa-book"></span>
     {{ exam_name }}
 </h3>
-<p>{{("Answer the questions below and then hit the Grade Exam button"|trans) }}</p>
+<p><b>{{("Warning, you must be logged in to be able to have your exam graded."|trans)}}</b> {{("Answer the questions below and if you are a registered user of the site you will see a Grade Exam button. Click it to have your exam graded."|trans) }}</p>
 <form action="{{ path('paustianquickcheckmodule_user_gradeexam') }}" method="post"
       enctype="application/x-www-form-urlencoded">
     {% if print==false %}<input type="hidden" name="q_ids" value="{{ q_ids }}" />{% endif %}
@@ -117,6 +117,7 @@
         {% endif %}
     {% endfor %}
     <br/>
+    {% if currentUser.loggedIn %}
     <div class="form-group">
         <div class="col-lg-offset-3 col-lg-9">
             <button class="btn btn-success" type="submit" name="create" value="create">
@@ -124,6 +125,7 @@
             </button>
         </div>
     </div>
+    {% endif %}
 </form>
 <hr/>
 

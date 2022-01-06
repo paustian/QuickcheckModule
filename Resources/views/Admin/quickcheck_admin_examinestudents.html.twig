@@ -1,0 +1,32 @@
+{{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
+{{ pageSetVar('title', 'Select students/categories to examine') }}
+<h3>
+    <span class="fa fa-edit"></span>
+    {{ "Pick Students to Examine"|trans }}
+</h3>
+<p>{{ "Pick users and categories that you want to examine."|trans }}</p>
+{{ showflashes() }}
+{{ form_start(form) }}
+{{ form_errors(form) }}
+<fieldset>
+    <legend>{{ 'Students'|trans }}</legend>
+    <select name="students">
+        <option value="0">All Users</option>
+    {% for student in students%}
+        <option value="{{ student.id }}">{{ student.name }}</option>
+    {% endfor %}
+    </select>
+    <legend>{{ 'Categories'|trans }}</legend>
+    <select name="categories">
+        <option value="0">All Categories</option>
+        {% for cat in catArray%}
+            <option value="{{ loop.index }}">{{ cat }}</option>
+        {% endfor %}
+    </select>
+</fieldset>
+<div class="form-group">
+    <div class="col-lg-offset-3 col-lg-9">
+        {{ form_widget(form.save, {'attr': {'class': 'btn btn-success'}}) }}
+    </div>
+</div>
+{{ form_end(form) }}

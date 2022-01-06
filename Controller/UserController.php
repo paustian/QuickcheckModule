@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace Paustian\QuickcheckModule\Controller;
 
+use DoctrineProxy\__CG__\Paustian\QuickcheckModule\Entity\QuickcheckGradesEntity;
 use http\Params;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
 use Zikula\Bundle\CoreBundle\Controller\AbstractController;
@@ -308,28 +309,36 @@ class UserController extends AbstractController {
     public function gradeexamAction(Request $request,
                                     CurrentUserApiInterface $currentUserApi) : Response {
 
-        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
             throw AccessDeniedException();
         }
         $return_url = $request->request->get('ret_url', null);
         $sq_ids = $request->request->get('q_ids', null);
         $q_ids = unserialize($sq_ids);
+
         $score = 0;
         $display_questions = array();
         $student_answers = array();
-        $correct_answers = array();
         $em = $this->getDoctrine()->getManager();
         $examRepo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
         $ur_answer = '';
+        $catagories = [];
 
         foreach ($q_ids as $q_id) {
             $student_answer = $request->request->get((string)$q_id, null);
             $question = $em->find('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', $q_id);
             //we need to unpack the question so that we can display it.
             $unpacked_question = $examRepo->unpackQuestion($question, false);
+            $cat = $question->getCategories()->first();
+            $name = "Uncategorized";
+            if($cat !== false){
+                $name = $cat->getCategory()->getName();
+            }
+            $catagories[] = $name;
             if (!isset($student_answer)) {
                 $student_answer = "";
             }
+
             switch ($question['quickcheckqtype']) {
                 case AdminController::_QUICKCHECK_TEXT_TYPE:
                     $score += 1;
@@ -408,7 +417,7 @@ class UserController extends AbstractController {
             //reset these answers
             $ur_answer = '';
         }
-
+        $catagories = array_unique($catagories);
         $percent = $score / count($q_ids) * 100;
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
 
@@ -416,7 +425,7 @@ class UserController extends AbstractController {
         if($currentUserApi->isLoggedIn()){
             $uid = $currentUserApi->get('uid');
             $gradeRepository = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
-            $gradeRepository->recordScore($uid, $q_ids, $student_answers, $score);
+            $gradeRepository->recordScore($uid, $q_ids, $student_answers, $score, $catagories, new \DateTime());
 
         }
 
@@ -463,6 +472,94 @@ class UserController extends AbstractController {
         return  new JsonResponse($jsonReply);
     }
 
+    /**
+     * @Route("/viewmyscores", methods={"POST", "GET"})
+     *
+     * view all exams taken by this person
+     *
+     * @param Request $request
+     * @return Response|AccessDeniedException
+     */
+    public function viewMyScoresAction(Request $request,
+                                CurrentUserApiInterface $currentUserApi){
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_READ)) {
+            return new AccessDeniedException($this->trans('Access forbidden since you cannot read questions.'));
+        }
+        if(!$currentUserApi->isLoggedIn()){
+            //if you are not logged in, you cannot read scores
+            $ret_url = $this->get('router')->generate('paustianquickcheckmodule_user_index', array(), RouterInterface::ABSOLUTE_URL);
+            $request->getSession()->getFlashBag()->add('error', $this->trans('You need to pick the number of questions.'));
+            return new RedirectResponse($ret_url);
+        }
+
+        $uid = $currentUserApi->get('uid');
+        $gradeRepository = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
+        $grades = $gradeRepository->findBy(['uid' => $uid]);
+        $gradeArray = [];
+        $currentGrade = [];
+        foreach($grades as $grade){
+            $score = $grade->getScore();
+            $question = $grade->getQuestions();
+            $currentGrade['numberofquestions'] = sizeof($question[0]);
+            $currentGrade['percentage'] = $score/$currentGrade['numberofquestions'] * 100;
+            $currentGrade['score'] = $score;
+            $currentGrade['id'] = $grade->getId();
+            $currentGrade['catagories'] = $grade->getCatagories();
+            $currentGrade['catagories'] = $currentGrade['catagories'][0];
+            $gradeArray[] = $currentGrade;
+        }
+        //This is coded, I just now need to implement the html. Make sure you use that fancy table thing
+        return $this->render('@PaustianQuickcheckModule/User/quickcheck_user_showgrades.html.twig', [
+            'grades' => $gradeArray,
+            'showname' => false]);
+    }
+
+    /**
+     * @Route("/displaypastexam/{grade}")
+     *
+     * This displays an quiz from the database, or it displays a quiz set up by
+     * the student for self study.
+     *
+     * @param Request $request
+     * @param QuickcheckGradesEntity $grade
+     * @return Response
+     * @throws AccessDeniedException
+     */
+    public function displayPastExamAction(Request $request,
+                                          int $grade,
+                                          CurrentUserApiInterface $currentUserApi){
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_READ)) {
+            return new AccessDeniedException($this->trans('Access forbidden since you cannot read questions.'));
+        }
+        if(!$currentUserApi->isLoggedIn()){
+            //if you are not logged in, you cannot read scores
+            $ret_url = $this->get('router')->generate('paustianquickcheckmodule_user_index', array(), RouterInterface::ABSOLUTE_URL);
+            $request->getSession()->getFlashBag()->add('error', $this->trans('You need to pick the number of questions.'));
+            return new RedirectResponse($ret_url);
+        }
+        $gradeRepository = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
+        $grades = $gradeRepository->find($grade);
+        $qIdArray = $grades->getQuestions();
+        $qIdArray = $qIdArray[0];
+        $answers = $grades->getAnswers();
+        $answers = $answers[0];
+        $em = $this->getDoctrine()->getManager();
+        $examRepo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
+        $score = $grades->getScore();
+
+        foreach($qIdArray as $qId){
+            $question = $em->find('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', $qId);
+            $display_questions[] = $examRepo->unpackQuestion($question, false);
+        }
+        $percent = $score / count($qIdArray) * 100;
+        $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
+        return $this->render('@PaustianQuickcheckModule/User/quickcheck_user_gradeexam.html.twig', [
+            'questions' => $display_questions,
+            'score' => $score,
+            'percent' => $percent,
+            'letters' => $letters,
+            'student_answers' => $answers]);
+    }
 }
 
 ?>

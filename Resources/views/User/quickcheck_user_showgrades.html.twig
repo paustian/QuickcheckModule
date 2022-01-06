@@ -1,0 +1,49 @@
+{{ pageSetVar('title', 'Your Exam Scores') }}
+{{ pageAddAsset('javascript', zasset('jquery-ui/jquery-ui.js')) }}
+{{ pageAddAsset('stylesheet', asset('jquery-ui/themes/base/jquery-ui.min.css')) }}
+{{ pageAddAsset('stylesheet', 'https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css') }}
+{{ pageAddAsset('javascript', 'https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js') }}
+{{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.showgrades.js')) }}
+
+<h3> {{ 'Your Exam Scores'|trans }}</h3>
+<table id="tableToSort" class="table table-striped">
+    <thead>
+    <tr>
+        {% if showname %}
+        <th id="user">{{ 'User'|trans }}</th>
+        {% endif %}
+        <th>{{ 'Date'|trans }}</th>
+        <th id="catagories">{{ 'Catagories'|trans }}</th>
+        <th id="numberofquestions">{{ 'Number of Questions'|trans }}</th>
+        <th id="score">{{ 'Score'|trans }}</th>
+        <th id="percentage">{{ 'Percentage'|trans }}</th>
+        <th>{{ 'Show Exam'|trans }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for grade in grades %}
+        <tr id="{{ loop.index }}">
+            {% if showname %}
+            <td id="username">{{ grade.username }}</td>
+            {% endif %}
+            <td id="date">{{ grade.date| format_datetime('short', 'none')}}</td>
+            {% set catLen = grade.catagories|length %}
+            <td id="listofcatagories">
+            {% for catagory in grade.catagories %}
+                {% if loop.index < catLen %}
+                    {{ catagory }}<br />
+                {% endif %}
+                {% if loop.index == catLen %}
+                    {{ catagory }}
+                {% endif %}
+            {% endfor %}
+            </td>
+            <td id="numberofquestions">{{ grade.numberofquestions }}</td>
+            <td id="score">{{ grade.score }}</td>
+            <td id="percentage">{{ grade.percentage }}</td>
+            <td id="view"><a href="{{ path('paustianquickcheckmodule_user_displaypastexam', {'grade': grade.id}) }}" class="fas fa-eye"
+                             title="{{ 'View past exam'|trans }}"></a></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
