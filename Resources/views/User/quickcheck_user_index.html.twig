@@ -6,7 +6,7 @@
 </h3>
 <p>
     {% if not currentUser.loggedIn %}
-    <b>{{ "Warning, you must be logged in to be able to have your exam graded."|trans }}</b>
+    <b>{{ "Warning, you must be logged in to have your exam graded."|trans }}</b>
     {% endif %}
     {{(" Choose the number of questions you want from each category and then hit the create button"|trans) }}</p>
 <form action="{{ path('paustianquickcheckmodule_user_createexam') }}" method="post"
