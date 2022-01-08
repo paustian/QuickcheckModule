@@ -30,7 +30,7 @@
     {{ exam_name }}
 </h3>
 <p>
-    {% if !currentUser.loggedIn %}
+    {% if not currentUser.loggedIn %}
     <b>{{("Warning, you must be logged in to be able to have your exam graded."|trans)}}</b>
     {% endif %}
     {{("Answer the questions below and if you are a registered user of the site you will see a Grade Exam button. Click it to have your exam graded."|trans) }}</p>
