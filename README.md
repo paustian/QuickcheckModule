@@ -1,9 +1,16 @@
 Quickcheck is a module that creates quizzes. It is designed to attach to other modules and
 from there you create a quiz and attach it to the content of another module. 
 
-Version 4.0.0 is compatible with Zikula 3
+Version >4.2.0 is compatible with Zikula 3.1
+
+Version 4.0.0 to 4.1.3 is compatible with Zikula 3.0
 
 Version 3.x is compatible with Zikula 2
+
+##User performance
+Version 4.1 and above add the ability to monitor your users performance on exams. Whenever a user uses an exam, it tracks 
+the created exam and the questions answered. Users can review their exam performance and administrators can view all exam
+performance. 
 
 ##Quickcheck functionality
 
@@ -107,7 +114,7 @@ of an xml file. The question writing interface in the app will mark unexplianed 
  You can search for the exam you want and link or unlink it to the page. If an exam is linked to the page, it will display
  whenever the page is rendered. 
  
- ###Practic exams
+ ###Practice exams
  The Quickcheck module also provides an exam practice interface which is the only user interface 
  (https://your.site.com/quickcheck/). From this interface, a user can choose how many questions they want from
  each category. When the Create Exam button is clicked, the number of questions specified from each category is randomly

@@ -141,9 +141,21 @@ class QuickcheckModuleInstaller extends AbstractExtensionInstaller {
                 //install status member into QuickcheckQuestion Entity
                 $sql = "ALTER TABLE `quickcheck_quest` ADD `status` SMALLINT DEFAULT 0";
                 $this->entityManager->getConnection()->exec($sql);
-            case "3.1":
-            case "3.2/1":
+            case "3.1.0":
+            case "3.1.1":
+            case "3.1.2":
+            case "3.1.3":
+            case "3.1.5":
+            case "3.2.0":
+            case "3.2.1":
+
                 //future upgrades
+            case "4.0.0":
+            case "4.0.1":
+            case "4.0.2":
+            case "4.0.3":
+            case "4.0.4":
+            case "4.0.5":
             case "4.0.6":
                 //install the grades table
                 $sql = "CREATE TABLE `quickcheck_grades` (
