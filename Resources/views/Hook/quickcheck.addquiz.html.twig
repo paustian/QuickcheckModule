@@ -1,3 +1,5 @@
+{{ pageAddAsset('javascript', zasset('jquery-ui/jquery-ui.js')) }}
+{{ pageAddAsset('stylesheet', asset('jquery-ui/themes/base/jquery-ui.min.css')) }}
 {{ pageAddAsset('stylesheet', 'https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css') }}
 {{ pageAddAsset('javascript', 'https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js') }}
 {{ pageAddAsset('javascript', zasset('@PaustianQuickcheckModule:js/Paustian.Quickcheck.examtablesort.js')) }}
@@ -28,7 +30,7 @@
         </tbody>
     </table>
 </form>
-<button id="DialogButton"></button>
+
 <div id="dialog" title="Attach/Remove Exam">
     <p id="dialog_text"></p>
 </div>

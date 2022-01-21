@@ -301,23 +301,36 @@ class AdminController extends AbstractController {
 
         //get rid of the old exam if there is one.    
         $old_exam = $repo->get_exam($art_id);
-        $reponse = "";
-        if ($old_exam) {
-            $old_exam->setQuickcheckrefid(-1); //no article attached
+        $response = "";
+        $already_attached = false;
+        if (null !== $old_exam) {
+            if(($old_exam->getId() == $exam) && $attach) {
+                $response = "<p>That exam is already attached.</p>";
+                $already_attached = true;
+            } else {
+                $old_exam->setQuickcheckrefid(-1); //no article attached
+                $response = "<p>" . $old_exam->getQuickcheckname() . " was removed from the page. </p>";
+            }
         }
-        if (isset($attach)) {
-            if (!isset($art_id) || !isset($exam)) {
-                throw new NotFoundHttpException($this->trans('An article id or exam id are missing'));
+        if(!$already_attached){
+            if (isset($attach)) {
+                if (!isset($art_id) || !isset($exam)) {
+                    throw new NotFoundHttpException($this->trans('An article id or exam id are missing'));
+                }
+                //modify the exam by grabbing it and then changing or adding the art_id
+                $new_exam = $em->find('PaustianQuickcheckModule:QuickcheckExamEntity', $exam);
+                if (null === $new_exam) {
+                    throw new \Doctrine\ORM\NoResultException($this->trans('An exam was not found, when it should have been.'));
+                }
+                $new_exam->setQuickcheckrefid((int)$art_id);
+                $response .= "<p>" . $new_exam->getQuickcheckname() ." exam was attached to the page. Reload the page to see it.</p>";
+            } else {
+                if(null !== $old_exam){
+                    $response = "<p>" . $old_exam->getQuickcheckname() ." exam was removed from the page. Reload the page to see it.</p>";
+                } else {
+                    $response = "<p> There is no exam to remove. Get it together you loser.";
+                }
             }
-            //modify the exam by grabbing it and then changing or adding the art_id
-            $new_exam = $em->find('PaustianQuickcheckModule:QuickcheckExamEntity', $exam);
-            if (null === $new_exam) {
-                throw new \Doctrine\ORM\NoResultException($this->trans('An exam was not found, when it should have been.'));
-            }
-            $new_exam->setQuickcheckrefid((int)$art_id);
-            $response = "<p>" . $new_exam->getQuickcheckname() ." exam was attached to the page. Reload the page to see it.</p>";
-        } else {
-            $response = "<p>" . $old_exam->getQuickcheckname() ." exam was removed from the page. Reload the page to see it.</p>";
         }
         $em->flush();
         //finally return to the page that called.
