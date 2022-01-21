@@ -1,6 +1,6 @@
 {
     "name": "paustian/quickcheck-module",
-    "version": "4.2",
+    "version": "4.2.0",
     "description": "Module for creating quizzes that you can attach to other modules",
     "type": "zikula-module",
     "license": "LGPL-3.0+",
