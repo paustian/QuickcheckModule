@@ -53,7 +53,6 @@
             var itemName = evt.target.id;
             var id = itemName.substring(5, itemName.length);
             var artId = $("#art_id").val();
-
             this.sendAjax(
                 "paustianquickcheckmodule_admin_attach",
                 {"exam" : id,

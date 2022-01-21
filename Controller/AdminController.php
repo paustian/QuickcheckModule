@@ -76,7 +76,7 @@ class AdminController extends AbstractController {
      * @param Request $request
      * @return Response
      */
-    public function indexAction(Request $request) : Response {
+    public function index(Request $request) : Response {
 
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
@@ -96,7 +96,7 @@ class AdminController extends AbstractController {
      * @param QuickcheckExamEntity|null $exam
      * @return mixed The form for creating a new exam response object
      */
-    public function editAction(Request $request, QuickcheckExamEntity $exam = null) : Response {
+    public function edit(Request $request, QuickcheckExamEntity $exam = null) : Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
@@ -154,7 +154,7 @@ class AdminController extends AbstractController {
      * @param QuickcheckExamEntity|null $exam
      * @return Response
      */
-    public function deleteAction(Request $request, QuickcheckExamEntity $exam = null) : Response {
+    public function delete(Request $request, QuickcheckExamEntity $exam = null) : Response {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
             throw new AccessDeniedException();
         }
@@ -179,7 +179,7 @@ class AdminController extends AbstractController {
      * @param QuickcheckQuestionEntity|null $question
      * @return Response
      */
-    public function deleteQuestionAction(Request $request, QuickcheckQuestionEntity $question = null) : Response {
+    public function deleteQuestion(Request $request, QuickcheckQuestionEntity $question = null) : Response {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
             throw new AccessDeniedException();
         }
@@ -260,7 +260,7 @@ class AdminController extends AbstractController {
      * @return Response
      * @throws AccessDeniedException
      */
-    public function modifyAction(Request $request) : Response{
+    public function modify(Request $request) : Response{
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -286,7 +286,7 @@ class AdminController extends AbstractController {
      * This is called by the javascript in Paustian.Quickcheck.examtablesort.js
      */
 
-    public function attachAction(Request $request) : JsonResponse {
+    public function attach(Request $request) : JsonResponse {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
@@ -301,23 +301,36 @@ class AdminController extends AbstractController {
 
         //get rid of the old exam if there is one.    
         $old_exam = $repo->get_exam($art_id);
-        $reponse = "";
-        if ($old_exam) {
-            $old_exam->setQuickcheckrefid(-1); //no article attached
+        $response = "";
+        $already_attached = false;
+        if (null !== $old_exam) {
+            if(($old_exam->getId() == $exam) && $attach){
+                $response = "<p>That exam is already attached.</p>";
+                $already_attached = true;
+            } else {
+                $old_exam->setQuickcheckrefid(-1); //no article attached
+                $response = "<p>" . $old_exam->getQuickcheckname() . " was removed from the page. </p>";
+            }
         }
-        if (isset($attach)) {
-            if (!isset($art_id) || !isset($exam)) {
-                throw new NotFoundHttpException($this->trans('An article id or exam id are missing'));
+        if(!$already_attached){
+            if (isset($attach)) {
+                if (!isset($art_id) || !isset($exam)) {
+                    throw new NotFoundHttpException($this->trans('An article id or exam id are missing'));
+                }
+                //modify the exam by grabbing it and then changing or adding the art_id
+                $new_exam = $em->find('PaustianQuickcheckModule:QuickcheckExamEntity', $exam);
+                if (null === $new_exam) {
+                    throw new \Doctrine\ORM\NoResultException($this->trans('An exam was not found, when it should have been.'));
+                }
+                $new_exam->setQuickcheckrefid((int)$art_id);
+                $response .= "<p>" . $new_exam->getQuickcheckname() ." exam was attached to the page. Reload the page to see it.</p>";
+            } else {
+                if(null !== $old_exam){
+                    $response = "<p>" . $old_exam->getQuickcheckname() ." exam was removed from the page. Reload the page to see it.</p>";
+                } else {
+                    $response = "<p> There is no exam to remove. Get it together you loser.";
+                }
             }
-            //modify the exam by grabbing it and then changing or adding the art_id
-            $new_exam = $em->find('PaustianQuickcheckModule:QuickcheckExamEntity', $exam);
-            if (null === $new_exam) {
-                throw new \Doctrine\ORM\NoResultException($this->trans('An exam was not found, when it should have been.'));
-            }
-            $new_exam->setQuickcheckrefid((int)$art_id);
-            $response = "<p>" . $new_exam->getQuickcheckname() ." exam was attached to the page. Reload the page to see it.</p>";
-        } else {
-            $response = "<p>" . $old_exam->getQuickcheckname() ." exam was removed from the page. Reload the page to see it.</p>";
         }
         $em->flush();
         //finally return to the page that called.
@@ -454,7 +467,7 @@ class AdminController extends AbstractController {
      * @param Request $request
      * @return JsonResponse
      */
-    public function setQuestionAction(Request $request) :JsonResponse{
+    public function setQuestion(Request $request) :JsonResponse{
         $id = $request->request->get('id');
         $text = $request->request->get('qText');
         $answer = $request->request->get('qAnswer');
@@ -486,7 +499,7 @@ class AdminController extends AbstractController {
      * @param Request $request
      * @return JsonResponse
      */
-    public function javaEditAction(Request $request) : JsonResponse{
+    public function javaEdit(Request $request) : JsonResponse{
         $id = $request->request->get('id');
         //dummy values if id is not set.
         $jsonReply = ['id' => '0',
@@ -519,7 +532,7 @@ class AdminController extends AbstractController {
      * @return Response
      */
 
-    public function editTextQuestAction(Request $request,
+    public function editTextQuest(Request $request,
                                         QuickcheckQuestionEntity $question = null,
                                         HookDispatcherInterface $hookDispatcher) :Response{
         // Security check - important to do this as early as possible to avoid
@@ -544,7 +557,7 @@ class AdminController extends AbstractController {
 
         if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
-                return $this->deleteQuestionAction($request, $question);
+                return $this->deleteQuestion($request, $question);
             }
             $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_edittextquest');
             return $this->_persistQuestion($question, $doMerge, $this->trans('Text question saved!'), $response);
@@ -567,7 +580,7 @@ class AdminController extends AbstractController {
      * @param QuickcheckQuestionEntity|null $question
      * @return Response
      */
-    public function editMatchQuestAction(Request $request,
+    public function editMatchQuest(Request $request,
                                          QuickcheckQuestionEntity $question = null,
                                          HookDispatcherInterface $hookDispatcher) :Response {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
@@ -591,7 +604,7 @@ class AdminController extends AbstractController {
         $em = $this->getDoctrine()->getManager();
         if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
-                return $this->deleteQuestionAction($request, $question);
+                return $this->deleteQuestion($request, $question);
             }
             $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_editmatchquest');
             return $this->_persistQuestion($question, $doMerge, $this->trans('Matching question saved!'), $response);
@@ -613,7 +626,7 @@ class AdminController extends AbstractController {
      * @param QuickcheckQuestionEntity $question
      * @return Response
      */
-    public function editTFQuestAction(Request $request,
+    public function editTFQuest(Request $request,
                                       QuickcheckQuestionEntity $question = null,
                                       HookDispatcherInterface $hookDispatcher) : Response {
 
@@ -640,7 +653,7 @@ class AdminController extends AbstractController {
         /** @var \Doctrine\ORM\EntityManager $em */
         if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
-                return $this->deleteQuestionAction($request, $question);
+                return $this->deleteQuestion($request, $question);
             }
             $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_edittfquest');
             return $this->_persistQuestion($question, $doMerge, $this->trans('True/False question saved!'), $response);
@@ -665,7 +678,7 @@ class AdminController extends AbstractController {
      * HEre is an answer|100
      * HEre is another|0
      */
-    public function editMCQuestAction(Request $request,
+    public function editMCQuest(Request $request,
                                       QuickcheckQuestionEntity $question = null,
                                       HookDispatcherInterface $hookDispatcher) : Response{
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_ADD)) {
@@ -687,7 +700,7 @@ class AdminController extends AbstractController {
 
         if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
-                return $this->deleteQuestionAction($request, $question);
+                return $this->deleteQuestion($request, $question);
             }
             $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_editmcquest');
             return $this->_persistQuestion($question, $doMerge, $this->trans('Multiple-Choice  question saved!'), $response);
@@ -708,7 +721,7 @@ class AdminController extends AbstractController {
      * @param QuickcheckQuestionEntity|null $question
      * @return Response
      */
-    public function editMANSQuestAction(Request $request,
+    public function editMANSQuest(Request $request,
                                         QuickcheckQuestionEntity $question = null,
                                         HookDispatcherInterface $hookDispatcher) : Response {
 
@@ -731,7 +744,7 @@ class AdminController extends AbstractController {
 
         if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
-                return $this->deleteQuestionAction($request, $question);
+                return $this->deleteQuestion($request, $question);
             }
             $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_editmansquest');
             return $this->_persistQuestion($question, $doMerge, $this->trans('Multiple-Answer question saved!'), $response);
@@ -756,7 +769,7 @@ class AdminController extends AbstractController {
      * @return Response
      *
      */
-    public function modifyquestionAction(Request $request, QuickcheckQuestionEntity $question = null) : Response {
+    public function modifyquestion(Request $request, QuickcheckQuestionEntity $question = null) : Response {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -810,7 +823,7 @@ class AdminController extends AbstractController {
                     break;
             }
         } else if ($button == 'delete') {
-            return $this->deleteQuestionAction($request, $question);
+            return $this->deleteQuestion($request, $question);
         }
         return $response;
     }
@@ -829,7 +842,7 @@ class AdminController extends AbstractController {
      * 
      */
 
-    public function editquestionsAction(Request $request) :Response{
+    public function editquestions(Request $request) :Response{
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -875,7 +888,7 @@ class AdminController extends AbstractController {
      * @param Request $request
      * @return Response
      */
-    public function categorizeAction(Request $request) : Response {
+    public function categorize(Request $request) : Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
@@ -914,7 +927,7 @@ class AdminController extends AbstractController {
      *  @return Response
      *  @throws AccessDeniedException
      */
-    public function findunansweredAction() : Response {
+    public function findunanswered() : Response {
         //you have to have edit access to do this
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
@@ -1059,7 +1072,7 @@ class AdminController extends AbstractController {
      * @return Response
      * @throws AccessDeniedException
      */
-    public function importquizAction(Request $request) :Response {
+    public function importquiz(Request $request) :Response {
         //you have to have edit access to do this
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
@@ -1092,7 +1105,7 @@ class AdminController extends AbstractController {
      * @return Response
      * @throws AccessDeniedException
      */
-    public function exportquizAction(Request $request) :Response {
+    public function exportquiz(Request $request) :Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
@@ -1155,7 +1168,7 @@ class AdminController extends AbstractController {
      * @return Response
      * @throws AccessDeniedException
      */
-    public function upgradeoldquestionsAction() : Response {
+    public function upgradeoldquestions() : Response {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
@@ -1218,7 +1231,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      *
      */
-    public function findmyidAction() : Response {
+    public function findmyid() : Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
@@ -1248,7 +1261,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
 
-    public function cleanCatDupesAction() : Response {
+    public function cleanCatDupes() : Response {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
@@ -1321,7 +1334,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
 
-    public function examinemoderatedAction(Request $request) : Response {
+    public function examinemoderated(Request $request) : Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
@@ -1353,7 +1366,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
 
-    public function examineallAction(Request $request) :Response {
+    public function examineall(Request $request) :Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
@@ -1439,7 +1452,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
 
-    public function hiddentopublicAction(Request $request) : RedirectResponse{
+    public function hiddentopublic(Request $request) : RedirectResponse{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
@@ -1464,7 +1477,7 @@ class AdminController extends AbstractController {
      * @param Request $request
      *
      */
-    public function createexamfromhiddenAction(Request $request) : RedirectResponse{
+    public function createexamfromhidden(Request $request) : RedirectResponse{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
@@ -1497,7 +1510,7 @@ class AdminController extends AbstractController {
      * @throws AccessDeniedException
      */
 
-    public function examinehiddenAction(Request $request) : Response{
+    public function examinehidden(Request $request) : Response{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
@@ -1519,7 +1532,7 @@ class AdminController extends AbstractController {
      * @return Response
      * @throws AccessDeniedException
      */
-    public function viewStudentsGradesAction(Request $request,
+    public function viewStudentsGrades(Request $request,
                                         UserRepositoryInterface $userRepository) : Response
     {
         // Security check - important to do this as early as possible to avoid
@@ -1557,7 +1570,7 @@ class AdminController extends AbstractController {
      * @param Request $request
      *
      */
-    public function examineStudentsAction(Request $request,
+    public function examineStudents(Request $request,
                                           UserRepositoryInterface $userRepository) : Response{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing

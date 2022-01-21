@@ -52,7 +52,7 @@ class UserController extends AbstractController {
      *
      * @return Response
      */
-    public function indexAction() : Response {
+    public function index() : Response {
         //securtiy check first
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
             throw new AccessDeniedException();
@@ -120,7 +120,7 @@ class UserController extends AbstractController {
      * @param $request
      * @return Response
      */
-    public function createExamAction(Request $request) : Response {
+    public function createExam(Request $request) : Response {
         //you have to have edit access to do this
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_OVERVIEW)) {
             throw new AccessDeniedException();
@@ -245,7 +245,7 @@ class UserController extends AbstractController {
      * @return Response
      * @throws AccessDeniedException
      */
-    public function displayAction(Request $request, QuickcheckExamEntity $exam = null, string $return_url = "", bool $print = false) : Response {
+    public function display(Request $request, QuickcheckExamEntity $exam = null, string $return_url = "", bool $print = false) : Response {
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
@@ -291,8 +291,8 @@ class UserController extends AbstractController {
      * @param QuickcheckExamEntity|null $exam
      * @return Response
      */
-    public function printAction(Request $request, QuickcheckExamEntity $exam = null) : Response {
-        return $this->displayAction($request, $exam, "", true);
+    public function print(Request $request, QuickcheckExamEntity $exam = null) : Response {
+        return $this->display($request, $exam, "", true);
     }
     /**
      * @Route("/gradeexam", methods={"POST"})
@@ -306,7 +306,7 @@ class UserController extends AbstractController {
      * @param Request $request
      * @return Response
      */
-    public function gradeexamAction(Request $request,
+    public function gradeexam(Request $request,
                                     CurrentUserApiInterface $currentUserApi) : Response {
 
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
@@ -448,7 +448,7 @@ class UserController extends AbstractController {
      * @return Response|AccessDeniedException
      */
 
-    public function getpreviewhtmlAction(Request $request)
+    public function getpreviewhtml(Request $request)
     {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_READ)) {
             return new AccessDeniedException($this->trans('Access forbidden since you cannot read questions.'));
@@ -480,7 +480,7 @@ class UserController extends AbstractController {
      * @param Request $request
      * @return Response|AccessDeniedException
      */
-    public function viewMyScoresAction(Request $request,
+    public function viewMyScores(Request $request,
                                 CurrentUserApiInterface $currentUserApi){
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_READ)) {
             return new AccessDeniedException($this->trans('Access forbidden since you cannot read questions.'));
@@ -525,7 +525,7 @@ class UserController extends AbstractController {
      * @return Response
      * @throws AccessDeniedException
      */
-    public function displayPastExamAction(Request $request,
+    public function displayPastExam(Request $request,
                                           int $grade,
                                           CurrentUserApiInterface $currentUserApi){
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_READ)) {

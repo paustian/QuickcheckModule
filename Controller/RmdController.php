@@ -40,7 +40,7 @@ class RmdController extends AbstractController{
      * @return Response
      * @throws AccessDeniedException
      */
-    public function indexAction(Request $request) : Response {
+    public function index(Request $request) : Response {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
@@ -63,7 +63,7 @@ class RmdController extends AbstractController{
      * @param QuickcheckExamEntity|null $exam
      * @return Response
      */
-    public function exportAction(Request $request, QuickcheckExamEntity $exam = null) : Response{
+    public function export(Request $request, QuickcheckExamEntity $exam = null) : Response{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
