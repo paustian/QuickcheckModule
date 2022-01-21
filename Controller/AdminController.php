@@ -304,7 +304,7 @@ class AdminController extends AbstractController {
         $response = "";
         $already_attached = false;
         if (null !== $old_exam) {
-            if(($old_exam->getId() == $exam) && $attach){
+            if(($old_exam->getId() == $exam) && $attach) {
                 $response = "<p>That exam is already attached.</p>";
                 $already_attached = true;
             } else {
