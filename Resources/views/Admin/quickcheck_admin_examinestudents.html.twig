@@ -16,6 +16,8 @@
         <option value="{{ student.id }}">{{ student.name }}</option>
     {% endfor %}
     </select>
+    <legend>{{ 'Date Cutoff'|trans }}</legend>
+    {{ form_widget(form.datecutoff) }}
     <legend>{{ 'Categories'|trans }}</legend>
     <select name="categories">
         <option value="0">All Categories</option>

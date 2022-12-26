@@ -30,7 +30,7 @@ class QuickcheckGradesRepository extends EntityRepository {
 
     //Search for user ids or catagories for exams
     //return the result to the user.
-    public function findExams(int $uid, string $category) : array {
+    public function findExams(int $uid, string $category, $dateCut) : array {
         //First find all exams that have been done by the array of users
         $qb = $this->_em->createQueryBuilder();
         $qb->select('a')
@@ -40,13 +40,16 @@ class QuickcheckGradesRepository extends EntityRepository {
             $qb->where($qb->expr()->eq('a.uid', ":uid"))
                 ->setParameter("uid", $uid);
         }
+        $qb->andWhere($qb->expr()->gt('a.date', ":date"))
+            ->setParameter("date", $dateCut);
+
         $query = $qb->getQuery();
         $result = $query->getArrayResult();
         //if the user has not done any exams, just return null
         if(sizeof($result) == 0){
             return $result;
         }
-        //We cannot use the sql to search for array values. We have to talk thorugh them
+        //We cannot use the sql to search for array values. We have to walk through them
         //and find the ones that have each category.
         $exams = [];
         if($category === ''){

@@ -18,6 +18,7 @@ declare(strict_types=1);
 namespace Paustian\QuickcheckModule\Controller;
 
 use Paustian\QuickcheckModule\Form\ExamineStudentsForm;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Persistence\ObjectManager;
@@ -30,6 +31,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Zikula\ExtensionsModule\AbstractExtension;
+use Zikula\ExtensionsModule\Api\ApiInterface\VariableApiInterface;
+use Zikula\PermissionsModule\Api\ApiInterface\PermissionApiInterface;
 use Zikula\ThemeModule\Engine\Annotation\Theme;
 use Symfony\Component\Routing\RouterInterface;
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
@@ -46,7 +50,7 @@ use Paustian\QuickcheckModule\Form\CategorizeForm;
 use Zikula\Bundle\HookBundle\Dispatcher\HookDispatcherInterface;
 use Zikula\Bundle\HookBundle\FormAwareHook\FormAwareHook;
 use Zikula\UsersModule\Entity\RepositoryInterface\UserRepositoryInterface;
-
+use Doctrine\Persistence\ManagerRegistry;
 /**
  * The various types of questions. We use defines to make the code
  * easier to read
@@ -69,6 +73,28 @@ class AdminController extends AbstractController {
     const _STATUS_MODERATE = 1;
     const _STATUS_FOREXAM = 2;
 
+    /**
+     * @var ManagerRegistry
+     */
+    protected $managerRegistry;
+
+    /**
+     * @var ManagerRegistry
+     */
+    protected $entityManager;
+
+
+    public function __construct(
+        AbstractExtension $extension,
+        PermissionApiInterface $permissionApi,
+        VariableApiInterface $variableApi,
+        TranslatorInterface $translator,
+        ManagerRegistry $managerRegistry
+    ) {
+        parent::__construct($extension, $permissionApi, $variableApi, $translator);
+        $this->managerRegistry = $managerRegistry;
+        $this->entityManager = $managerRegistry->getManager();
+    }
 
     /**
      * @Route("")
@@ -128,7 +154,7 @@ class AdminController extends AbstractController {
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
+            $em = $this->managerRegistry->getManager();
             $questPick = $request->get('questions');
             $exam->setQuickcheckquestions($questPick);
             if (!$doMerge) {
@@ -163,7 +189,7 @@ class AdminController extends AbstractController {
             //you want the edit interface, which has a delete option.
             return $response;
         }
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->managerRegistry->getManager();
         $em->remove($exam);
         $em->flush();
         $this->addFlash('status', $this->trans('Exam Deleted.'));
@@ -183,8 +209,7 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_DELETE)) {
             throw new AccessDeniedException();
         }
-        $em = $this->getDoctrine()->getManager();
-        $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_editquestions');
+                $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_editquestions');
             //$this->redirect($this->generateUrl('paustianquickcheckmodule_admin_editquestions'));
         $json = null;
         if ($question == null) {
@@ -194,12 +219,12 @@ class AdminController extends AbstractController {
                 return $response;
             }
             $json = true;
-            $question = $em->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity')->findOneBy(['id' => $id]);
+            $question = $this->entityManager->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity')->findOneBy(['id' => $id]);
         }
         $id = $question->getId();
-        $this->_removeQuestionFromExams($em, $id);
-        $em->remove($question);
-        $em->flush();
+        $this->_removeQuestionFromExams($this->entityManager, $id);
+        $this->entityManager->remove($question);
+        $this->entityManager->flush();
         $this->addFlash('status', $this->trans('Question Deleted.'));
         if($json){
             $jsonReply = [
@@ -264,7 +289,7 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
-        $exams = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity')->get_all_exams();
+        $exams = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity')->get_all_exams();
 
         if (!$exams) {
             $this->addFlash('error', $this->trans('There are no exams to edit'));
@@ -295,9 +320,7 @@ class AdminController extends AbstractController {
         $art_id = $request->request->get('art_id', null);
         $attach = $request->request->get('attach', null);
 
-
-        $em = $this->getDoctrine()->getManager();
-        $repo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
+        $repo = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
 
         //get rid of the old exam if there is one.    
         $old_exam = $repo->get_exam($art_id);
@@ -318,7 +341,7 @@ class AdminController extends AbstractController {
                     throw new NotFoundHttpException($this->trans('An article id or exam id are missing'));
                 }
                 //modify the exam by grabbing it and then changing or adding the art_id
-                $new_exam = $em->find('PaustianQuickcheckModule:QuickcheckExamEntity', $exam);
+                $new_exam = $this->entityManager->find('PaustianQuickcheckModule:QuickcheckExamEntity', $exam);
                 if (null === $new_exam) {
                     throw new \Doctrine\ORM\NoResultException($this->trans('An exam was not found, when it should have been.'));
                 }
@@ -332,7 +355,7 @@ class AdminController extends AbstractController {
                 }
             }
         }
-        $em->flush();
+        $this->entityManager->flush();
         //finally return to the page that called.
         $jsonReply = [
             'html' => $response,
@@ -348,9 +371,8 @@ class AdminController extends AbstractController {
      * @return array Listing the text, id and type of each question and the
      */
     private function _build_questions_list(array $ckList = null) : array {
-        $em = $this->getDoctrine()->getManager();
         // create a QueryBuilder instance
-        $qb = $em->createQueryBuilder();
+        $qb = $this->entityManager->createQueryBuilder();
 
         // add select and from params
         $qb->select('u')
@@ -404,12 +426,11 @@ class AdminController extends AbstractController {
      * @return Response
      */
     private function _persistQuestion(QuickcheckQuestionEntity $question, bool $doMerge, string $flashText, Response $redirect) :Response {
-        $em = $this->getDoctrine()->getManager();
         if (!$doMerge) {
-            $em->persist($question);
+            $this->entityManager->persist($question);
         }
-        
-        $em->flush();
+
+        $this->entityManager->flush();
         $id = $question->getId();
         
         $this->addFlash('status', $flashText . " Question ID was: $id");
@@ -422,11 +443,10 @@ class AdminController extends AbstractController {
      * @param type $questionList - the list of questions to save
      */
     private function _persistQuestionList(array $questionList, $categories) : void {
-        $em = $this->getDoctrine()->getManager();
-        $catElement = $categories->first();
+                $catElement = $categories->first();
         
         foreach ($questionList as $qId) {
-            $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $qId);
+            $question = $this->entityManager->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $qId);
             //You need to clone the element so that each question has its own link pointing from
             //the questionentity to the category table.
             $newCat = clone $catElement;
@@ -434,7 +454,7 @@ class AdminController extends AbstractController {
             $categories->set(0, $newCat);
             $question->setCategories($categories);
         }
-        $em->flush();
+        $this->entityManager->flush();
     }
 
     /**
@@ -475,13 +495,12 @@ class AdminController extends AbstractController {
         $status = (int) $request->request->get('qStatus');
         $canSave = isset($id);
         if($canSave){
-            $em = $this->getDoctrine()->getManager();
-            $question = $em->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity')->findOneBy(['id' => $id]);
+            $question = $this->entityManager->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity')->findOneBy(['id' => $id]);
             $question->setQuickcheckqText($text);
             $question->setQuickcheckqAnswer($answer);
             $question->setQuickcheckqExpan($explanation);
             $question->setStatus($status);
-            $em->flush();
+            $this->entityManager->flush();
         }
         $jsonReply = ['id' => $id,
             'cansave' => $canSave,
@@ -507,8 +526,7 @@ class AdminController extends AbstractController {
                     'qAnswer' => '',
                     'qExpan' => ''];
         if(isset($id)){
-            $em = $this->getDoctrine()->getManager();
-            $question = $em->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity')->findOneBy(['id' => $id]);
+            $question = $this->entityManager->getRepository('PaustianQuickcheckModule:QuickcheckQuestionEntity')->findOneBy(['id' => $id]);
             $jsonReply = [
                 'id' => $question->getId(),
                 'qText' => $question->getQuickcheckqText(),
@@ -601,7 +619,6 @@ class AdminController extends AbstractController {
         $form->handleRequest($request);
 
         /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->getDoctrine()->getManager();
         if ($form->isSubmitted() && $form->isValid()) {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestion($request, $question);
@@ -635,7 +652,6 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
             throw new AccessDeniedException();
         }
-        $em = $this->getDoctrine()->getManager();
         $doMerge = false;
         if (null === $question) {
             $question = new QuickcheckQuestionEntity();
@@ -780,7 +796,7 @@ class AdminController extends AbstractController {
                 $request->getSession()->getFlashBag()->add('status', $this->trans("You need to pick a question"));
                 return new RedirectResponse($redirect_url);
             }
-            $question = $this->getDoctrine()->getManager()->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
+            $question = $this->managerRegistry->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
             if (!$question) {
                 $request->getSession()->getFlashBag()->add('status', $this->trans("A question with that id does not exist"));
                 return new RedirectResponse($redirect_url);
@@ -932,7 +948,7 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
-        $qb = $this->getDoctrine()->getManager()->createQueryBuilder();
+        $qb = $this->managerRegistry->createQueryBuilder();
         $qb->select('u')
                 ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
                 ->where('(u.quickcheckqexpan = ?1 OR u.quickcheckqexpan = ?2)')
@@ -968,7 +984,6 @@ class AdminController extends AbstractController {
         preg_match_all("|<question>(.*?)</question>|s", $xmlQuestionText, $questionArray);
 
 //grab the manager for saving the data.
-        $em = $this->getDoctrine()->getManager();
         foreach ($questionArray[1] as $q_item) {
             $doMerge = false;
             if(preg_match("|<qid>([0-9]{1,3})</qid>|", $q_item, $qId)){
@@ -980,7 +995,7 @@ class AdminController extends AbstractController {
             if ($id < 0) {
                 $question = new QuickcheckQuestionEntity();
             } else {
-                $fquestion = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
+                $fquestion = $this->entityManager->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
                 if ($fquestion === null) {
                     $question = new QuickcheckQuestionEntity();
                     $question->setId((int)$id);
@@ -1059,10 +1074,10 @@ class AdminController extends AbstractController {
 
             $question->setCategories($category);
             if (!$doMerge) {
-                $em->persist($question);
+                $this->entityManager->persist($question);
             }
         }
-        $em->flush();
+        $this->entityManager->flush();
     }
 
     /**
@@ -1142,11 +1157,11 @@ class AdminController extends AbstractController {
      */
     private function _prepExportText(array $qIds = null) :array {
         $questions = array();
-        $em = $this->getDoctrine()->getManager();
+
         //if this is null, we want all the questions
         if (null === $qIds) {
             //get them all
-            $qb = $em->createQueryBuilder();
+            $qb = $this->entityManager->createQueryBuilder();
             // add select and from params
             $qb->select('u')
                     ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
@@ -1155,7 +1170,7 @@ class AdminController extends AbstractController {
             $questions = $query->getResult();
         } else {
             foreach ($qIds as $id) {
-                $questions[] = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
+                $questions[] = $this->entityManager->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
             }
         }
         return $questions;
@@ -1174,9 +1189,8 @@ class AdminController extends AbstractController {
         }
         //walk through all the questions and get rid of serialized data.
         //get the questions
-        $em = $this->getDoctrine()->getManager();
         //get them all
-        $qb = $em->createQueryBuilder();
+        $qb = $this->entityManager->createQueryBuilder();
         // add select and from params
         $qb->select('u')
                 ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
@@ -1206,7 +1220,7 @@ class AdminController extends AbstractController {
                 }
                 $question->setQuickcheckqParam('');
                 $question->setQuickcheckqAnswer($newAnswer);
-                $em->merge($question);
+                $this->entityManager->merge($question);
             }
             if ($type == AdminController::_QUICKCHECK_TF_TYPE) {
                 $answer = $question->getQuickcheckqAnswer();
@@ -1217,7 +1231,7 @@ class AdminController extends AbstractController {
                 }
             }
         }
-        $em->flush();
+        $this->entityManager->flush();
         $this->addFlash('status', $this->trans("Questions updated."));
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
         return $response;
@@ -1238,9 +1252,8 @@ class AdminController extends AbstractController {
             throw new AccessDeniedException();
         }
 
-        $em = $this->getDoctrine()->getManager();
         //get them all
-        $qb = $em->createQueryBuilder();
+        $qb = $this->entityManager->createQueryBuilder();
         // add select and from params
         $qb->select('u')
             ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
@@ -1265,10 +1278,8 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
-        //get all the questions
-        $em = $this->getDoctrine()->getManager();
         // create a QueryBuilder instance
-        $qb = $em->createQueryBuilder();
+        $qb = $this->entityManager->createQueryBuilder();
 
         // add select and from params
         $qb->select('u')
@@ -1281,7 +1292,7 @@ class AdminController extends AbstractController {
         foreach($questions as $question){
             $qid = $question->getId();
             //find it in the category table
-            $qb2 = $em->createQueryBuilder();
+            $qb2 = $this->entityManager->createQueryBuilder();
             $qb2->select('u')
                 ->from('PaustianQuickcheckModule:QuickcheckQuestionCategory', 'u')
                 ->where('u.entity=:ent' )
@@ -1290,11 +1301,11 @@ class AdminController extends AbstractController {
             $result = $query2->getResult();
             if(count($result) > 1){
                 //delete the second category
-                $em->remove($result[1]);
+                $this->entityManager->remove($result[1]);
                 $dups++;
             }
         }
-        $em->flush();
+        $this->entityManager->flush();
         $this->addFlash('status', $dups  . $this->trans(" questions removed."));
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
         return $response;
@@ -1340,9 +1351,8 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
-        $em = $this->getDoctrine()->getManager();
         //get them all
-        $qb = $em->createQueryBuilder();
+        $qb = $this->entityManager->createQueryBuilder();
         // add select and from params
         $qb->select('u')
             ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
@@ -1389,14 +1399,14 @@ class AdminController extends AbstractController {
             if(!$catCollection->isEmpty()){
                 $category = $catCollection->first();
             }
-            $em = $this->getDoctrine()->getManager();
-            $repo = $em->getRepository("PaustianQuickcheckModule:QuickcheckQuestionEntity");
+
+            $repo = $this->entityManager->getRepository("PaustianQuickcheckModule:QuickcheckQuestionEntity");
             $questions = [];
             if($searchText){
                 $questions = $repo->getSearchResults($searchText, 'AND', true, true);
             } else {
                 //get them all
-                $qb = $em->createQueryBuilder();
+                $qb = $this->entityManager->createQueryBuilder();
                 // add select and from params
                 $qb->select('u')
                     ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u');
@@ -1431,9 +1441,8 @@ class AdminController extends AbstractController {
      * @return array
      */
     public function _findHidden() : array {
-        $em = $this->getDoctrine()->getManager();
         //get them all
-        $qb = $em->createQueryBuilder();
+        $qb = $this->entityManager->createQueryBuilder();
         // add select and from params
         $qb->select('u')
             ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
@@ -1459,12 +1468,12 @@ class AdminController extends AbstractController {
             throw new AccessDeniedException();
         }
         $questions = $this->_findHidden();
-        $em = $this->getDoctrine()->getManager();
+
         foreach ($questions as $question){
             $question->setStatus(AdminController::_STATUS_VIEWABLE);
-            $em->merge($question);
+            $this->entityManager->merge($question);
         }
-        $em->flush();
+        $this->entityManager->flush();
         $this->addFlash('status', $this->trans('Hidden questions added to public database.'));
         return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
     }
@@ -1494,9 +1503,9 @@ class AdminController extends AbstractController {
         $newExam->setQuickcheckquestions($questionIds);
         $newExam->setQuickcheckname($this->trans("New Exam from Hidden Questions"));
         $newExam->setQuickcheckrefid(0);
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($newExam);
-        $em->flush();
+
+        $this->entityManager->persist($newExam);
+        $this->entityManager->flush();
         //now redirect to the new exam
         $id = $newExam->getId();
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_edit', ['exam' => $id]));
@@ -1540,7 +1549,7 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
-        $gradeRepository = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
+        $gradeRepository = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
         $grades = $gradeRepository->findAll();
         $gradeArray = [];
         $currentGrade = [];
@@ -1577,7 +1586,7 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
-        $gradeRepository = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
+        $gradeRepository = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
         $grades = $gradeRepository->findAll();
         $userArray = [];
         $catArray = [];
@@ -1602,12 +1611,13 @@ class AdminController extends AbstractController {
         if ($form->isSubmitted() && $form->isValid()) {
             $student = $request->get('students');
             $chosenCats = $request->get('categories');
+            $dateCut = $request->get('examine_students_form');
             if($chosenCats > 0){
                 $catTopic = $catArray[$chosenCats - 1];
             } else {
                 $catTopic = "";
             }
-            $examTable = $gradeRepository->findExams((int)$student, $catTopic);
+            $examTable = $gradeRepository->findExams((int)$student, $catTopic, $dateCut['datecutoff']);
             $averagePercent = 0;
             //calculate the average score.
             foreach($examTable as $index => $exam){

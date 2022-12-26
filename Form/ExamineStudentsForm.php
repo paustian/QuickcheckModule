@@ -35,6 +35,7 @@ class ExamineStudentsForm extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) : void
     {
         $builder
+            ->add('datecutoff', \Symfony\Component\Form\Extension\Core\Type\DateType::class, array('label' => false, 'widget' => 'single_text'))
             ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => $this->translator->trans('Search')));
     }
 
