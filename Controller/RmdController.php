@@ -3,7 +3,12 @@
 declare(strict_types=1);
 
 namespace Paustian\QuickcheckModule\Controller;
+use Doctrine\Persistence\ManagerRegistry;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Zikula\ExtensionsModule\AbstractExtension;
+use Zikula\ExtensionsModule\Api\ApiInterface\VariableApiInterface;
+use Zikula\PermissionsModule\Api\ApiInterface\PermissionApiInterface;
 use ZipArchive;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -28,7 +33,17 @@ class RmdController extends AbstractController{
     private $rcommand;
 
     private $archive;
-
+    public function __construct(
+        AbstractExtension $extension,
+        PermissionApiInterface $permissionApi,
+        VariableApiInterface $variableApi,
+        TranslatorInterface $translator,
+        ManagerRegistry $managerRegistry
+    ) {
+        parent::__construct($extension, $permissionApi, $variableApi, $translator);
+        $this->managerRegistry = $managerRegistry;
+        $this->entityManager = $managerRegistry->getManager();
+    }
     /**
      * @Route ("")
      *
@@ -44,7 +59,7 @@ class RmdController extends AbstractController{
         if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
             throw new AccessDeniedException();
         }
-        $exams = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity')->get_all_exams();
+        $exams = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity')->get_all_exams();
 
         if (!$exams) {
             $this->addFlash('error', $this->trans('There are no exams to export'));
@@ -71,7 +86,7 @@ class RmdController extends AbstractController{
         }
         $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
         //you must list a question to do this.
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->entityManager;
         if(null === $exam){
             $id = $request->query->get('id');
             $exam = $em->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity')->findOneBy(['id' => $id]);

@@ -24,9 +24,11 @@ declare(strict_types=1);
 
 namespace Paustian\QuickcheckModule\Controller;
 
+use Doctrine\Persistence\ManagerRegistry;
 use DoctrineProxy\__CG__\Paustian\QuickcheckModule\Entity\QuickcheckGradesEntity;
 use http\Params;
 use Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,9 +39,23 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotatio
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
 use Paustian\QuickcheckModule\Entity\QuickcheckExamEntity;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Zikula\ExtensionsModule\AbstractExtension;
+use Zikula\ExtensionsModule\Api\ApiInterface\VariableApiInterface;
+use Zikula\PermissionsModule\Api\ApiInterface\PermissionApiInterface;
 use Zikula\UsersModule\Api\ApiInterface\CurrentUserApiInterface;
 
 class UserController extends AbstractController {
+    public function __construct(
+        AbstractExtension $extension,
+        PermissionApiInterface $permissionApi,
+        VariableApiInterface $variableApi,
+        TranslatorInterface $translator,
+        ManagerRegistry $managerRegistry
+    ) {
+        parent::__construct($extension, $permissionApi, $variableApi, $translator);
+        $this->managerRegistry = $managerRegistry;
+        $this->entityManager = $managerRegistry->getManager();
+    }
 
     /**
      * @Route("")
@@ -77,8 +93,7 @@ class UserController extends AbstractController {
      * @return array
      */
     private function _getCategories() : array {
-        $em = $this->getDoctrine()->getManager();
-        $registryRepository = $em->getRepository('ZikulaCategoriesModule:CategoryRegistryEntity');
+        $registryRepository = $this->entityManager->getRepository('ZikulaCategoriesModule:CategoryRegistryEntity');
         $categoryRegistries = $registryRepository->findBy(['modname' => 'PaustianQuickcheckModule']);
         $baseCategory = $categoryRegistries[0]->getCategory();
         $children = $baseCategory->getChildren();
@@ -91,11 +106,8 @@ class UserController extends AbstractController {
      * @return int
      */
     private function _countItems(int $category) : int {
-
-        $em = $this->getDoctrine()->getManager();
-
         if (isset($category) && !empty($category)) {
-            $qb = $em->createQueryBuilder();
+            $qb = $this->entityManager->createQueryBuilder();
 
             $qb->select('count(p)')
                     ->from('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', 'p')
@@ -107,7 +119,7 @@ class UserController extends AbstractController {
 
             return (int)$qb->getQuery()->getSingleScalarResult();
         }
-        $qb = $em->createQueryBuilder();
+        $qb = $this->entityManager->createQueryBuilder();
         $qb->select('count(p)')->from('Paustian\QuickcheckModule\Entity\QuickcheckQuestionEntity', 'p');
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -131,7 +143,7 @@ class UserController extends AbstractController {
         $num_quests = $request->request->get('num_questions', null);
         //now create the quiz
 
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->entityManager;
         // create a QueryBuilder instance
         $qb = $em->createQueryBuilder();
         // add select and from params
@@ -146,7 +158,7 @@ class UserController extends AbstractController {
         $bin_questions = $this->_binQuestionCategories($questions);
         $quiz_questions = array(); //the array that will hold the questions
         $random_questions = array(); //the random questions from a category
-        $examRepo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
+        $examRepo = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
 
         foreach ($num_quests as $catid => $number_of_questions) {
             if( (!is_numeric($number_of_questions)) || ($number_of_questions <= 0) ){
@@ -269,7 +281,7 @@ class UserController extends AbstractController {
         $sq_ids = array();
         $letters = array();
         $questions = array();
-        $repo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
+        $repo = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
         $repo->render_quiz($examQuestions, $questions, $sq_ids, $letters);
 
         return $this->render('@PaustianQuickcheckModule/User/quickcheck_user_renderexam.html.twig', ['letters' => $letters,
@@ -319,8 +331,8 @@ class UserController extends AbstractController {
         $score = 0;
         $display_questions = array();
         $student_answers = array();
-        $em = $this->getDoctrine()->getManager();
-        $examRepo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
+        $em = $this->entityManager;
+        $examRepo = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
         $ur_answer = '';
         $catagories = [];
 
@@ -424,7 +436,7 @@ class UserController extends AbstractController {
         //Record the exam that was taken, the user id, questions, and their score IF a user is logged in
         if($currentUserApi->isLoggedIn()){
             $uid = $currentUserApi->get('uid');
-            $gradeRepository = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
+            $gradeRepository = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
             $gradeRepository->recordScore($uid, $q_ids, $student_answers, $score, $catagories, new \DateTime());
 
         }
@@ -462,7 +474,7 @@ class UserController extends AbstractController {
         $question->setQuickcheckqText($questionText);
         $question->setQuickcheckqAnswer($answer);
         //Create the type of object that we need for the renderexam template
-        $repo = $this->getDoctrine()->getManager()->getRepository("Paustian\QuickcheckModule\Entity\QuickcheckExamEntity");
+        $repo = $this->managerRegistry->getRepository("Paustian\QuickcheckModule\Entity\QuickcheckExamEntity");
         $question = $repo->unpackQuestion($question);
         $letters = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
         $response = $this->render('@PaustianQuickcheckModule/User/quickcheck_user_preview.html.twig', ['letters' => $letters,
@@ -493,7 +505,7 @@ class UserController extends AbstractController {
         }
 
         $uid = $currentUserApi->get('uid');
-        $gradeRepository = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
+        $gradeRepository = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
         $grades = $gradeRepository->findBy(['uid' => $uid]);
         $gradeArray = [];
         $currentGrade = [];
@@ -537,14 +549,14 @@ class UserController extends AbstractController {
             $request->getSession()->getFlashBag()->add('error', $this->trans('You need to pick the number of questions.'));
             return new RedirectResponse($ret_url);
         }
-        $gradeRepository = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
+        $gradeRepository = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckGradesEntity');
         $grades = $gradeRepository->find($grade);
         $qIdArray = $grades->getQuestions();
         $qIdArray = $qIdArray[0];
         $answers = $grades->getAnswers();
         $answers = $answers[0];
-        $em = $this->getDoctrine()->getManager();
-        $examRepo = $this->getDoctrine()->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
+        $em = $this->managerRegistry->getManager();
+        $examRepo = $this->managerRegistry->getRepository('PaustianQuickcheckModule:QuickcheckExamEntity');
         $score = $grades->getScore();
 
         foreach($qIdArray as $qId){

@@ -1,11 +1,14 @@
 {{ pageSetVar('title', 'Results of Exam') }}
 {{ pageAddAsset('stylesheet', zasset('@PaustianQuickcheckModule:css/forms.css')) }}
 {{ pageAddAsset('javascript', zasset('jqueryui/jquery-ui.js')) }}
-{{ pageAddAsset('stylesheet', asset('jquery-ui/themes/base/jquery-ui.min.css')) }}
+{{ pageAddAsset('stylesheet', asset('jqueryui/themes/base/jquery-ui.min.css')) }}
 <h3>
     <span class="fa fa-book"></span>
     {{('Results of Exam'|trans) }}
 </h3>
+{% if (percent < 30)  %}
+<p>Wow, you scored really badly on this exam. It could be you just clicked on anything to get to the answers. That's not a good way to study, so I am not going to let you know the answers. If you honestly did try to answer correctly, please contact your instructor for advice on how to study and prepare before you take these practice exams. Oh, by the way, all uses of these practice exams are recorded.</p>
+{% else %}
 <p>{{("Your total score was "|trans) }}{{ score }}{{(', which is '|trans) }} {{ percent }}{{('% correct. Here are the correct answers to the quiz you took and your answers.'|trans) }}</p>
 
 {% for question in questions %}
@@ -110,3 +113,4 @@
         <p class="qc_explanation">Explanation: {{ question.explanation|raw }}</p>
     </div>
 {% endfor %}
+{% endif %}
