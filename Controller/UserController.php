@@ -138,9 +138,17 @@ class UserController extends AbstractController {
             throw new AccessDeniedException();
         }
 
-        $ret_url = $this->get('router')->generate('paustianquickcheckmodule_user_index', array(), RouterInterface::ABSOLUTE_URL);
+        $ret_url = $this->generateUrl('paustianquickcheckmodule_user_index', array(), RouterInterface::ABSOLUTE_URL);
 
         $num_quests = $request->request->get('num_questions', null);
+        //I am putting on an additional limit in php code in case there are any script kiddies who figure out
+        //how to call the code directly instead of using the form listed at the site.
+        foreach($num_quests as $index => $quest_test){
+            if($quest_test > 15){
+                $num_quests[$index] = "15";
+            }
+        }
+
         //now create the quiz
 
         $em = $this->entityManager;
@@ -499,7 +507,7 @@ class UserController extends AbstractController {
         }
         if(!$currentUserApi->isLoggedIn()){
             //if you are not logged in, you cannot read scores
-            $ret_url = $this->get('router')->generate('paustianquickcheckmodule_user_index', array(), RouterInterface::ABSOLUTE_URL);
+            $ret_url = $this->generateURL('paustianquickcheckmodule_user_index', array(), RouterInterface::ABSOLUTE_URL);
             $request->getSession()->getFlashBag()->add('error', $this->trans('You need to pick the number of questions.'));
             return new RedirectResponse($ret_url);
         }
@@ -545,7 +553,7 @@ class UserController extends AbstractController {
         }
         if(!$currentUserApi->isLoggedIn()){
             //if you are not logged in, you cannot read scores
-            $ret_url = $this->get('router')->generate('paustianquickcheckmodule_user_index', array(), RouterInterface::ABSOLUTE_URL);
+            $ret_url = $this->generateURL('paustianquickcheckmodule_user_index', array(), RouterInterface::ABSOLUTE_URL);
             $request->getSession()->getFlashBag()->add('error', $this->trans('You need to pick the number of questions.'));
             return new RedirectResponse($ret_url);
         }
@@ -574,4 +582,4 @@ class UserController extends AbstractController {
     }
 }
 
-?>
+

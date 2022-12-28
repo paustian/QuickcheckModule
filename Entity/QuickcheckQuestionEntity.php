@@ -204,8 +204,8 @@ class QuickcheckQuestionEntity extends EntityAccess {
     }
     /**
      * Check if a collection contains an element based only on two criteria (categoryRegistryId, categoy).
-     * @param $collection
-     * @param $element
+     * @param ArrayCollection $collection
+     * @param QuickcheckQuestionCategory $element
      * @return int
      */
     private function collectionContains(ArrayCollection $collection, QuickcheckQuestionCategory $element)
@@ -245,7 +245,6 @@ class QuickcheckQuestionEntity extends EntityAccess {
         switch ($this->getQuickcheckqType()) {
             case AdminController::_QUICKCHECK_TEXT_TYPE:
             case AdminController::_QUICKCHECK_TF_TYPE:
-            case AdminController::_QUICKCHECK_MATCHING_TYPE:
                 if ($answer == "") {
                     $context->buildViolation('The answer to the question cannot be empty')
                         ->atPath('quickcheckqanswer')
@@ -284,6 +283,28 @@ class QuickcheckQuestionEntity extends EntityAccess {
                         ->addViolation();
                 }
                 break;
+            case AdminController::_QUICKCHECK_MATCHING_TYPE:
+                preg_match_all('|(.*?)\|(.*)|', $answer, $answerData);
+                $leftSide = $answerData[1];
+                $rightSide = $answerData[2];
+                $leftCount = count($leftSide);
+                //The count of matches on each side must be the same.
+                $correctCount = ($leftCount != 0) && ($leftCount == count($rightSide));
+                //No empty strings are allowed on either side.
+                $empties = false;
+                for($i = 0; $i < $leftCount; $i++){
+                    if( (strlen($leftSide[$i]) == 0) || (strlen($rightSide[$i]) == 0)){
+                        $empties = true;
+                        break;
+                    }
+                }
+                if (!$correctCount || $empties) {
+                    //It has to add to 100% if not, there is an error
+                    $context->buildViolation('Your matched pairs are not set up correctly. Please look at the formatting suggestions above.')
+                        ->atPath('quickcheckqanswer')
+                        ->addViolation();
+                }
+
         }
     }
 }

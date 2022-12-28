@@ -44,9 +44,17 @@ class MatchQuestion extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) : void
     {
         $builder
-            ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->trans('Question'), 'required' => true))
-            ->add('quickcheckqanswer', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->trans('Answer'), 'required' => true))
-            ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->trans('Explanation'), 'required' => true))
+            ->add('quickcheckqtext', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array(
+                'label' =>  $this->translator->trans('Question'),
+                'empty_data' => '',
+                'required' => true))
+            ->add('quickcheckqanswer', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array(
+                'label' =>  $this->translator->trans('Answer'),
+                'empty_data' => '',
+                'required' => true))
+            ->add('quickcheckqexpan', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->trans('Explanation'),
+                'empty_data' => '',
+                'required' => true))
             ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Save Question'))
             ->add('delete', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Delete Question'));
         $builder->add('quickcheckqtype', \Symfony\Component\Form\Extension\Core\Type\HiddenType::class, array('data' => AdminController::_QUICKCHECK_MATCHING_TYPE));

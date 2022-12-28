@@ -791,12 +791,12 @@ class AdminController extends AbstractController {
         }
         if(null === $question){
             $id = $request->request->get('questions', null);
-            $redirect_url = $this->get('router')->generate('paustianquickcheckmodule_admin_editquestions', array(), RouterInterface::ABSOLUTE_URL);
+            $redirect_url = $this->generateUrl('paustianquickcheckmodule_admin_editquestions', array(), RouterInterface::ABSOLUTE_URL);
             if (!isset($id) || !is_numeric($id)) {
                 $request->getSession()->getFlashBag()->add('status', $this->trans("You need to pick a question"));
                 return new RedirectResponse($redirect_url);
             }
-            $question = $this->managerRegistry->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
+            $question = $this->entityManager->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $id);
             if (!$question) {
                 $request->getSession()->getFlashBag()->add('status', $this->trans("A question with that id does not exist"));
                 return new RedirectResponse($redirect_url);
@@ -981,8 +981,10 @@ class AdminController extends AbstractController {
     private function _parseImportedQuizXML(string $xmlQuestionText, ArrayCollection $category) {
         //An awesome function for parsing simple xml.
         //First we need to scrumb out our xml tags before doing this magic
-        preg_match_all("|<question>(.*?)</question>|s", $xmlQuestionText, $questionArray);
-
+        $matches = preg_match_all("|<question>(.*?)</question>|s", $xmlQuestionText, $questionArray);
+        if($matches === 0 || $matches === false){
+            return false;
+        }
 //grab the manager for saving the data.
         foreach ($questionArray[1] as $q_item) {
             $doMerge = false;
@@ -1078,6 +1080,7 @@ class AdminController extends AbstractController {
             }
         }
         $this->entityManager->flush();
+        return true;
     }
 
     /**
@@ -1102,8 +1105,12 @@ class AdminController extends AbstractController {
             $category = $form->get('categories')->getData();
             //take the xml that is imported, and parse it into an array
             //That array should have filled out a new question entity which it shoudl return
-            $this->_parseImportedQuizXML($xmlQuestionText, $category);
-            $this->addFlash('status', $this->trans("Questions imported."));
+            if($this->_parseImportedQuizXML($xmlQuestionText, $category)){
+                $this->addFlash('status', $this->trans("Questions imported."));
+            } else {
+                $this->addFlash('error', $this->trans("Questions not imported. There is likely a problem with your xml."));
+            }
+
             $response = $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_importquiz'));
             return $response;
         }

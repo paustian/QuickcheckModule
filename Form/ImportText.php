@@ -3,6 +3,7 @@
 declare(strict_types=1);
 namespace Paustian\QuickcheckModule\Form;
 
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -33,7 +34,11 @@ class ImportText extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) : void
     {
         $builder
-            ->add('importText', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array('label' =>  $this->translator->trans('Question'), 'required' => false, 'mapped' => false))
+            ->add('importText', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, array(
+                'label' =>  $this->translator->trans('Question'),
+                'constraints' => [new NotBlank()],
+                'required' => false,
+                'mapped' => false))
             ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, array('label' => 'Import Questions'));
         $builder->add('cancel', \Symfony\Component\Form\Extension\Core\Type\ButtonType::class, array('label' =>  $this->translator->trans('Cancel')));
         
