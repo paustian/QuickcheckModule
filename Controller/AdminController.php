@@ -1428,6 +1428,10 @@ class AdminController extends AbstractController {
                 $catName = $category->getCategory()->getName();
                 $questions = array_filter($questions, function($element) use ($catName){
                     $cat = $element->getCategories()->first();
+                    //This happens when a category has not been picked.
+                    if($cat === false){
+                        return false;
+                    }
                     $name = $cat->getCategory()->getName();
                     return ($catName === $name);
                 });
@@ -1569,6 +1573,7 @@ class AdminController extends AbstractController {
             $currentGrade['id'] = $grade->getId();
             $currentGrade['catagories'] = $grade->getCatagories();
             $currentGrade['catagories'] = $currentGrade['catagories'][0];
+            $currentGrade['date'] = $grade->getDate();
             $currentGrade['username'] = $userRepository->find($grade->getUid())->getUname();
             $gradeArray[] = $currentGrade;
         }
@@ -1625,6 +1630,13 @@ class AdminController extends AbstractController {
                 $catTopic = "";
             }
             $examTable = $gradeRepository->findExams((int)$student, $catTopic, $dateCut['datecutoff']);
+            if(count($examTable) < 1){
+                $this->addFlash('status', $this->trans('No students found with those parameters.'));
+                return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_examinestudents.html.twig',
+                    ['form' => $form->createView(),
+                        'students' => $students,
+                        'catArray' => $catArray]);
+            }
             $averagePercent = 0;
             //calculate the average score.
             foreach($examTable as $index => $exam){
