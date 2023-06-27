@@ -36,7 +36,7 @@
         bindEvents: function () {
             this.$deleteButtons.on('click',  this.deleteQuestion.bind(this));
             this.$editButtons.on('click', this.editQuestion.bind(this));
-            this.$previewButtons.on('click', this.previewQustion.bind(this));
+            this.$previewButtons.on('click', this.showPreview.bind(this));
 
         },
 

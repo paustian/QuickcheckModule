@@ -42,6 +42,11 @@
                     {% else %}
                         <option value="2">{{ 'Hidden for Exam'|trans }}</option>
                     {% endif %}
+                    {% if item.status is same as(3) %}
+                        <option value="2" selected="selected">{{ 'Hidden from Students'|trans }}</option>
+                    {% else %}
+                        <option value="2">{{ 'Hidden from Students'|trans }}</option>
+                    {% endif %}
                 </select></td>
             <td id="actions">
                 <span id="edit_{{ item.id }}" class="fas fa-pencil-alt" title="Edit in place"></span>

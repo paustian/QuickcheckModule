@@ -72,7 +72,8 @@ class TFQuestion extends AbstractType {
                 'choices' => [
                     $this->translator->trans('Public') => '0',
                     $this->translator->trans('Moderated') => '1',
-                    $this->translator->trans('Hidden for Exam') => '2'
+                    $this->translator->trans('Hidden for Exam') => '2',
+                    $this->translator->trans('Hidden from Students') => '3'
                 ],
                 'multiple' => false,
                 'expanded' => true
