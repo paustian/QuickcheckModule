@@ -124,6 +124,10 @@ class ExtensionMenu implements ExtensionMenuInterface
             'route' => 'paustianquickcheckmodule_admin_hiddentopublic'
         ]);
 
+        $menu['Processing']->addChild('Move Hidden Student Questions to public', [
+            'route' => 'paustianquickcheckmodule_admin_hiddenstudenttopublic'
+        ]);
+
         $menu['Processing']->addChild('Import questions from XML file', [
             'route' => 'paustianquickcheckmodule_admin_importquiz'
         ]);

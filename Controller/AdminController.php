@@ -1451,14 +1451,14 @@ class AdminController extends AbstractController {
      * _findHidden
      * @return array
      */
-    public function _findHidden() : array {
+    public function _findHidden($inStatus = 2) : array {
         //get them all
         $qb = $this->entityManager->createQueryBuilder();
         // add select and from params
         $qb->select('u')
             ->from('PaustianQuickcheckModule:QuickcheckQuestionEntity', 'u')
             ->where('u.status = ?1' )
-            ->setParameter(1, '2');
+            ->setParameter(1, $inStatus);
         $query = $qb->getQuery();
         // execute query
         return $query->getResult();
@@ -1489,6 +1489,30 @@ class AdminController extends AbstractController {
         return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
     }
 
+    /**
+     * @Route("/hiddenstudenttopublic")
+     * @Theme("admin")
+     * @param Request $request
+     * @return RedirectResponse
+     * @throws AccessDeniedException
+     */
+
+    public function hiddenstudenttopublic(Request $request) : RedirectResponse{
+        // Security check - important to do this as early as possible to avoid
+        // potential security holes or just too much wasted processing
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
+        $questions = $this->_findHidden(3);
+
+        foreach ($questions as $question){
+            $question->setStatus(AdminController::_STATUS_VIEWABLE);
+            $this->entityManager->merge($question);
+        }
+        $this->entityManager->flush();
+        $this->addFlash('status', $this->trans('Hidden student questions added to public database.'));
+        return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
+    }
     /**
      * @Route("createexamfromhidden")
      * @Theme("admin")
