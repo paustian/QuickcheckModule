@@ -72,6 +72,7 @@ class AdminController extends AbstractController {
     const _STATUS_VIEWABLE = 0;
     const _STATUS_MODERATE = 1;
     const _STATUS_FOREXAM = 2;
+    const _STATUS_HIDDENST = 3;
 
     /**
      * @var ManagerRegistry
@@ -1451,7 +1452,7 @@ class AdminController extends AbstractController {
      * _findHidden
      * @return array
      */
-    public function _findHidden($inStatus = 2) : array {
+    public function _findHidden($inStatus = self::_STATUS_FOREXAM) : array {
         //get them all
         $qb = $this->entityManager->createQueryBuilder();
         // add select and from params
@@ -1490,6 +1491,30 @@ class AdminController extends AbstractController {
     }
 
     /**
+     * @Route("/hiddentohiddenst")
+     * @Theme("admin")
+     * @param Request $request
+     * @return RedirectResponse
+     * @throws AccessDeniedException
+     */
+
+    public function hiddentohiddenst(Request $request) : RedirectResponse{
+        // Security check - important to do this as early as possible to avoid
+        // potential security holes or just too much wasted processing
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
+        $questions = $this->_findHidden();
+
+        foreach ($questions as $question){
+            $question->setStatus(AdminController::_STATUS_HIDDENST);
+            $this->entityManager->merge($question);
+        }
+        $this->entityManager->flush();
+        $this->addFlash('status', $this->trans('Hidden student questions for exam moved to hidden from students.'));
+        return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
+    }
+    /**
      * @Route("/hiddenstudenttopublic")
      * @Theme("admin")
      * @param Request $request
@@ -1503,7 +1528,7 @@ class AdminController extends AbstractController {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException();
         }
-        $questions = $this->_findHidden(3);
+        $questions = $this->_findHidden(self::_STATUS_HIDDENST);
 
         foreach ($questions as $question){
             $question->setStatus(AdminController::_STATUS_VIEWABLE);
