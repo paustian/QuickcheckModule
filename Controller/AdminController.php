@@ -47,6 +47,7 @@ use Paustian\QuickcheckModule\Form\ImportText;
 use Paustian\QuickcheckModule\Form\ExamForm;
 use Paustian\QuickcheckModule\Form\ExportForm;
 use Paustian\QuickcheckModule\Form\CategorizeForm;
+use Paustian\QuickcheckModule\Form\MoveForm;
 use Zikula\Bundle\HookBundle\Dispatcher\HookDispatcherInterface;
 use Zikula\Bundle\HookBundle\FormAwareHook\FormAwareHook;
 use Zikula\UsersModule\Entity\RepositoryInterface\UserRepositoryInterface;
@@ -1466,7 +1467,6 @@ class AdminController extends AbstractController {
     }
 
     /**
-     * @Route("/hiddentopublic")
      * @Theme("admin")
      * @param Request $request
      * @return RedirectResponse
@@ -1491,13 +1491,43 @@ class AdminController extends AbstractController {
     }
 
     /**
-     * @Route("/hiddentohiddenst")
+     * @Route("/movehiddenquestions")
+     * @Theme("admin")
+     * @param Request $request
+     * @return Response
+     * @throws AccessDeniedException
+     */
+
+    public function movehiddenquestions(Request $request) : Response{
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
+            throw new AccessDeniedException();
+        }
+
+        $form = $this->createForm(MoveForm::class);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            switch($form->getClickedButton()->getName()){
+                case 'hiddentopublic':
+                    return $this->hiddentopublic($request);
+                case 'hiddentohiddenst':
+                    return $this->hiddentohiddenst($request);
+                case 'hiddenstudenttopublic':
+                    return $this->hiddenstudenttopublic($request);
+            }
+        }
+        //This is going to display three buttons that call any of the three methods below.
+        return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_movehiddenquestions.html.twig',
+            ['form' => $form->createView()]);
+    }
+
+    /**
      * @Theme("admin")
      * @param Request $request
      * @return RedirectResponse
      * @throws AccessDeniedException
      */
-
     public function hiddentohiddenst(Request $request) : RedirectResponse{
         // Security check - important to do this as early as possible to avoid
         // potential security holes or just too much wasted processing
@@ -1515,7 +1545,6 @@ class AdminController extends AbstractController {
         return $this->redirect($this->generateUrl('paustianquickcheckmodule_admin_index'));
     }
     /**
-     * @Route("/hiddenstudenttopublic")
      * @Theme("admin")
      * @param Request $request
      * @return RedirectResponse

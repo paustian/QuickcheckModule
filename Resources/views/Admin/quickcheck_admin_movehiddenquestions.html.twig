@@ -1,0 +1,19 @@
+<h3>
+    <span class="fa fa-edit"></span>
+    {{ "Move Questions"|trans }}
+</h3>
+<p>{{ "Chose the action you want to take."|trans }}</p>
+{{ showflashes() }}
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+<fieldset>
+    <legend>{{ 'Actions'|trans }}</legend>
+<div class="form-group">
+    <div class="col-lg-offset-3 col-lg-9">
+        {{ form_row(form.hiddentopublic, {'attr': {'class': 'btn btn-success'}}) }}
+        {{ form_row(form.hiddentohiddenst, {'attr': {'class': 'btn btn-success'}}) }}
+        {{ form_row(form.hiddenstudenttopublic, {'attr': {'class': 'btn btn-success'}}) }}
+    </div>
+</div>
+</fieldset>
+{{ form_end(form) }}

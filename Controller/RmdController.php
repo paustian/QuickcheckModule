@@ -108,7 +108,7 @@ class RmdController extends AbstractController{
         }
         $questions = $exam->getQuickcheckquestions();
         $this->rcommand = " myexam <- c(";
-        foreach($questions as $qId) {
+        foreach($questions as $index => $qId) {
             $question = $em->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $qId);
             //right now only exporting MCQs. I will expand later
             $type = $question->getQuickcheckqType();
@@ -116,6 +116,11 @@ class RmdController extends AbstractController{
                 ($type === AdminController::_QUICKCHECK_MULTIANSWER_TYPE) ||
                 ($type === AdminController::_QUICKCHECK_TF_TYPE)){
                 $this->_writeQuestionFile($question, (int)$qId);
+            }
+            if($index > 0){
+                $this->rcommand .= ", \"" . $qId . ".rmd\"" ;
+            } else {
+                $this->rcommand .= "\"" . $qId . ".rmd\"";
             }
 
         }
@@ -184,6 +189,5 @@ class RmdController extends AbstractController{
                 'qnum' => $ansCount
             ]);
         $this->archive->addFromString($qId . ".rmd", $questionText);
-        $this->rcommand .= ", \"" . $qId . ".rmd\"" ;
     }
 }
