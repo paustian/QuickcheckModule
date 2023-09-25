@@ -541,6 +541,51 @@ class AdminController extends AbstractController {
     }
 
     /**
+     * These are bridge functions to work around php 8 being correctly more strict about values.
+     * @Route("/newtextquestion")
+     * @Theme("admin")
+     */
+    public function newTextQuest(Request $request,
+        HookDispatcherInterface $hookDispatcher) :Response {
+        return $this->editTextQuest($request, null, $hookDispatcher);
+    }
+
+    /**
+     * @Route("/newmansquestion")
+     * @Theme("admin")
+     */
+    public function newMANSQuest(Request $request,
+        HookDispatcherInterface $hookDispatcher) :Response {
+        return $this->editMANSQuest($request, null, $hookDispatcher);
+    }
+    /**
+     * @Route("/newmcquestion")
+     * @Theme("admin")
+     */
+    public function newMCQuest(Request $request,
+        HookDispatcherInterface $hookDispatcher) :Response {
+        return $this->editMCQuest($request, null, $hookDispatcher);
+    }
+
+    /**
+     * @Route("/newtfquestion")
+     * @Theme("admin")
+     */
+    public function newTFQuest(Request $request,
+        HookDispatcherInterface $hookDispatcher) :Response {
+        return $this->editTFQuest($request, null, $hookDispatcher);
+    }
+
+    /**
+     * @Route("/newmatchquestion")
+     * @Theme("admin")
+     */
+    public function newMatchQuest(Request $request,
+        HookDispatcherInterface $hookDispatcher) :Response {
+        return $this->editMatchQuest($request, null, $hookDispatcher);
+    }
+
+    /**
      * @Route("/edittextquest/{question}")
      * @Theme("admin")
      * form to add new text question

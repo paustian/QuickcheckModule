@@ -75,23 +75,23 @@ class ExtensionMenu implements ExtensionMenuInterface
         ])->setAttribute('icon', 'fas fa-edit');
 
         $menu['Questions']->addChild('Create Text Question', [
-            'route' => 'paustianquickcheckmodule_admin_edittextquest'
+            'route' => 'paustianquickcheckmodule_admin_newtextquest'
         ]);
 
         $menu['Questions']->addChild('Create True/False Question', [
-            'route' => 'paustianquickcheckmodule_admin_edittfquest'
+            'route' => 'paustianquickcheckmodule_admin_newtfquest'
         ]);
 
         $menu['Questions']->addChild('Create Multiple Choice Question', [
-            'route' => 'paustianquickcheckmodule_admin_editmcquest'
+            'route' => 'paustianquickcheckmodule_admin_newmcquest'
         ]);
 
         $menu['Questions']->addChild('Create Mult-Answer Question', [
-            'route' => 'paustianquickcheckmodule_admin_editmansquest'
+            'route' => 'paustianquickcheckmodule_admin_newmansquest'
         ]);
 
         $menu['Questions']->addChild('Create Matching Question', [
-            'route' => 'paustianquickcheckmodule_admin_editmatchquest'
+            'route' => 'paustianquickcheckmodule_admin_newmatchquest'
         ]);
 
         $menu['Questions']->addChild('List all the IDs of Questions', [
