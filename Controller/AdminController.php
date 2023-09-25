@@ -624,7 +624,7 @@ class AdminController extends AbstractController {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestion($request, $question);
             }
-            $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_edittextquest');
+            $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_newtextquest');
             return $this->_persistQuestion($question, $doMerge, $this->trans('Text question saved!'), $response);
         }
 
@@ -670,7 +670,7 @@ class AdminController extends AbstractController {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestion($request, $question);
             }
-            $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_editmatchquest');
+            $response = $this->_determineRedirect($request, 'paustianquickcheckmodule_admin_newmatchquest');
             return $this->_persistQuestion($question, $doMerge, $this->trans('Matching question saved!'), $response);
         }
 
@@ -718,7 +718,7 @@ class AdminController extends AbstractController {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestion($request, $question);
             }
-            $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_edittfquest');
+            $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_newtfquest');
             return $this->_persistQuestion($question, $doMerge, $this->trans('True/False question saved!'), $response);
         }
 
@@ -765,7 +765,7 @@ class AdminController extends AbstractController {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestion($request, $question);
             }
-            $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_editmcquest');
+            $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_newmcquest');
             return $this->_persistQuestion($question, $doMerge, $this->trans('Multiple-Choice  question saved!'), $response);
         }
 
@@ -809,7 +809,7 @@ class AdminController extends AbstractController {
             if($form->get('delete')->isClicked()){
                 return $this->deleteQuestion($request, $question);
             }
-            $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_editmansquest');
+            $response = $this->_determineRedirect($request,'paustianquickcheckmodule_admin_newmansquest');
             return $this->_persistQuestion($question, $doMerge, $this->trans('Multiple-Answer question saved!'), $response);
         }
 
