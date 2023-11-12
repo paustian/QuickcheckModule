@@ -1706,6 +1706,9 @@ class AdminController extends AbstractController {
             'showname' => true]);
     }
 
+    public function sort_students($a, $b){
+        return strcmp($a['name'], $b['name']);
+    }
     /**
      * @Route("examinestudents")
      * @Theme("admin")
@@ -1737,6 +1740,7 @@ class AdminController extends AbstractController {
             $aUser['name'] = $userRepository->find($user)->getUname();
             $students[] = $aUser;
         }
+        usort($students,  array($this, "sort_students"));
         $catArray = array_unique($catArray);
 
         $form = $this->createForm(ExamineStudentsForm::class);
