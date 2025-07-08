@@ -14,8 +14,8 @@
                    title="{{ 'Make a printable exam'|trans }}"></a>
                 <a href="{{ path('paustianquickcheckmodule_user_display') }}/{{ item.id }}" class="fas fa-eye"
                    title="{{ 'Exam Preview'|trans }}"></a>
-                <a href="{{ path('paustianquickcheckmodule_rmd_export', {"exam": item.id}) }}"
-                   class="fa fa-arrow-circle-down" title="{{ 'Download rmd export'|trans }}"></a>
+                <a href="{{ path('paustianquickcheckmodule_qti_export', {"exam": item.id}) }}"
+                   class="fa fa-arrow-circle-down" title="{{ 'Download qti export'|trans }}"></a>
                 <a href="{{ path('paustianquickcheckmodule_admin_edit') }}/{{ item.id }}" class="fas fa-edit"
                    title="{{ 'Edit exam'|trans }}"></a>
                 <a href="{{ path('paustianquickcheckmodule_admin_delete') }}/{{ item.id }}" class="fas fa-trash"

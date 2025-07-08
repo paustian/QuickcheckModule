@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Paustian\QuickcheckModule\Controller;
 
 use Doctrine\Persistence\ManagerRegistry;
+use FontLib\Table\DirectoryEntry;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Zikula\ExtensionsModule\AbstractExtension;
 use Zikula\ExtensionsModule\Api\ApiInterface\VariableApiInterface;
@@ -66,6 +67,11 @@ class QtiController extends AbstractController{
         return $this->render('@PaustianQuickcheckModule/Admin/quickcheck_admin_modify.html.twig', ['exams' => $exams]);
     }
 
+    private function getRandomString(int $n) : string {
+        return bin2hex(random_bytes($n));
+    }
+
+    // ToDo: Create the xml template and then redo the export function. I only need one file so it should be EASY
     /**
      * @Route("/export/{exam}")
      *
@@ -94,43 +100,32 @@ class QtiController extends AbstractController{
         }
         $examTitle = str_replace(' ', '', $exam->getQuickcheckname());
         //create a bunch of unique Ids that have to be created for the module
-        $manifestId = UUID::v4();
-        $examQuestionId = UUID::v4();
-        $resourceId = UUID::v4();
+
         //create the folder for the information that we will later zip up
-        $directory = realpath(__DIR__ . '/../../../' . 'web/uploads/');
-        $directory = $directory . '/' . $examTitle;
+        $namePath = preg_replace("/[^A-Za-z0-9]/", '', $exam->getQuickcheckname());
+        $this->directory = realpath($request->server->get('DOCUMENT_ROOT')) . $request->server->get('BASE') . '/uploads/' . $namePath;
 
-        //create the manifest template
-        $manifest = $this->renderView("@PaustianQuickcheckModule/Qti/imsmanifest.xml.twig",
-            ['manifestId' => $manifestId,
-                'examQuestionId' => $examQuestionId,
-                'resourceId' => $resourceId]);
-        //create the assessment meta data file
-        $assessmentMetaData = $this->renderView("@PaustianQuickcheckModule/Qti/assessment_meta.xml.twig",
-            ['examQuestionId' => $examQuestionId,
-                'examTitle' => $examTitle,
-                'examDescription' => 'An exam exported from the Quickcheckmodule']);
 
-        //create the item question data file.
-        $questionText = $this->_createQuestionXml($exam);
-        $assessmentText = $this->renderView("@PaustianQuickcheckModule/Qti/assessment.xml.twig",
-            ['examQuestionId' => $examQuestionId,
-                'quesitonText' => $questionText,
-                'examTitle' => $examTitle]);
-
+        //Create the exam questions
+        $examXML = $this->_createQuestionXml($exam);
         //write out the zip archive
         $archive = new ZipArchive();
-        $result = $archive->open($directory . '.zip', ZipArchive::CREATE);
+        $zipName = $this->directory . '.zip';
+        $result = $archive->open($this->directory . '.zip', ZipArchive::CREATE);
         if($result !== true){
             $this->addFlash('error', $this->trans('Unable to create a the zip archive'));
             return $response;
         }
-        $archive->addFromString($examTitle . '/imsmanifest.xml', $manifest);
-        $archive->addFromString($examTitle . '/'. $examQuestionId. '/' . $examQuestionId . '.xml', $assessmentText);
-        $archive->addFromString($examTitle . '/'. $examQuestionId. '/asessment_meta.xml', $assessmentMetaData);
+
+        $archive->addFromString($examTitle . ".xml", $examXML);
         $archive->close();
         $this->addFlash('status', $this->trans('Archive Created'));
+        $response = new Response(file_get_contents($zipName));
+        $response->headers->set('Content-Type', 'application/zip');
+        $response->headers->set('Content-Disposition', 'attachment;filename="' . $namePath . '.zip"');
+        $response->headers->set('Content-length', filesize($zipName));
+
+        @unlink($zipName);
         return $response;
 
     }
@@ -141,45 +136,74 @@ class QtiController extends AbstractController{
      */
     private function _createQuestionXml(QuickcheckExamEntity $exam) : string {
         $questions = $exam->getQuickcheckquestions();
-
-        $items = [];
-        $correctAnswerId = 0;
-        $returnText = "";
         $qNum = 1;
-        foreach($questions as $qId){
+        $answerText = "";
+        foreach($questions as $qId) {
             //get the question
             $question = $this->entityManager->find('PaustianQuickcheckModule:QuickcheckQuestionEntity', $qId);
-
-            if($question->getQuickcheckqType() !== AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE){
-                continue;
-            }
+            $q_type = $question->getQuickcheckqType();
+            $q_body = $question->getQuickcheckqText();
             $answers = $question->getQuickcheckqAnswer();
+            $points = 1;
+            $address_q_id = $this->getRandomString(16);
+            $question_id = $this->getRandomString(16);
+            $q_title = "Question $qNum";
+
             preg_match_all("|(.*)\|(.*)|", $answers, $matches);
             $ansCount = count($matches[1]);
-            $answerIds = "";
-            for($i = 0; $i < $ansCount; $i++){
-                $items[$i]['ident'] = rand(1000,9999);
-                if($i < $ansCount - 1){
-                    $answerIds .= $items[$i]['ident'] . ",";
-                } else {
-                    $answerIds .= $items[$i]['ident'];
+            $choices = [];
+            if ($q_type === AdminController::_QUICKCHECK_MULTIPLECHOICE_TYPE) {
+                for($i = 0; $i < $ansCount; $i++) {
+                    $choice = [];
+                    $choice['ident'] = $qNum *1000 + $i;
+                    $choice['text'] = $matches[1][$i];
+                    $choices[$i] = $choice;
+                    if($matches[2][$i] == 100){
+                        $correctid = $choice['ident'];
+                    }
                 }
-                $items[$i]['response'] = $matches[1][$i];
-                if($matches[2][$i] == 100){
-                    $correctAnswerId = $items[$i]['ident'];
+                $answerText .= $this->render('@PaustianQuickcheckModule/Qti/mcq_template.xml.twig', [
+                    'question_id' => $question_id,
+                    'q_body' => $q_body,
+                    'q_title' => $q_title,
+                    'points' => $points,
+                    'address_q_id' => $address_q_id,
+                    'choices' => $choices,
+                    'correctid' => $correctid])->getContent(). "\n";
+                $qNum++;
+            } elseif ($q_type === AdminController::_QUICKCHECK_MULTIANSWER_TYPE){
+                $correctIdArr = [];
+                for($j = 0; $j < $ansCount; $j++) {
+                    $choice = [];
+                    $choice['ident'] = $qNum *1000 + $j;
+                    $choice['text'] = $matches[1][$j];
+                    $choices[$j] = $choice;
+                    $answer_correctness = [];
+                    if($matches[2][$j] > 0){
+                        $answer_correctness['correct'] = 1;
+                        $answer_correctness['ident'] = $qNum *1000 + $j;
+                    } else {
+                        $answer_correctness['correct'] = 0;
+                        $answer_correctness['ident'] = $qNum *1000 + $j;
+                    }
+                    $correctIdArr[] = $answer_correctness;
                 }
+                $answerText .= $this->render('@PaustianQuickcheckModule/Qti/mans_template.xml.twig', [
+                    'question_id' => $question_id,
+                    'q_title' => $q_title,
+                    'points' => $points,
+                    'q_body' => $q_body,
+                    'address_q_id' => $address_q_id,
+                    'choices' => $choices,
+                    'correctids' => $correctIdArr])->getContent() . "\n";
+                $qNum++;
             }
-            $returnText .= $this->renderView("@PaustianQuickcheckModule/Qti/itemTemplate.xml.twig",
-            ['itemId' => UUID::v4(),
-            'answerIds' => $answerIds,
-            'assessId' => UUID::v4(),
-                'quickchecktext'=> $question->getQuickcheckqText(),
-                'items' => $items,
-                'correctAnswerId' => $correctAnswerId,
-                'title' => $qNum
-            ]);
-            $qNum++;
         }
-        return $returnText;
+        $examQid = $this->getRandomString(16);
+        return $this->render('@PaustianQuickcheckModule/Qti/assessment.xml.twig',
+            ['examQuestionId' => $examQid,
+                'max_attempts' => 1,
+                'questionText' => $answerText
+            ])->getContent();
     }
 }
